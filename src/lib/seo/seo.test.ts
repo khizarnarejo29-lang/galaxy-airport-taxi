@@ -23,6 +23,20 @@ describe("indexing switch", () => {
   });
 });
 
+describe("site address", () => {
+  it("defaults to the production domain when NEXT_PUBLIC_SITE_URL is not set", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    const { site } = await import("@/config/site");
+    expect(site.url).toBe("https://galaxyairporttaxi.co.uk");
+  });
+
+  it("lets NEXT_PUBLIC_SITE_URL override it", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://preview.example");
+    const { site } = await import("@/config/site");
+    expect(site.url).toBe("https://preview.example");
+  });
+});
+
 describe("sitemap", () => {
   it("lists every public page and nothing private", async () => {
     const urls = (await import("@/app/sitemap")).default().map((e) => new URL(e.url).pathname);

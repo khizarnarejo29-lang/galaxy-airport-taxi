@@ -5,7 +5,8 @@
  */
 export const site = {
   name: "Galaxy Airport Taxi",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  /** Production domain. NEXT_PUBLIC_SITE_URL can override it (e.g. for a preview). */
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://galaxyairporttaxi.co.uk",
   /** False now that real contact details are set; allows business structured data. */
   isPlaceholder: false,
   phone: { display: "+44 7470 046660", href: "tel:+447470046660" },
