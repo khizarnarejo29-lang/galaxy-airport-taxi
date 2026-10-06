@@ -1,26 +1,68 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0e1330;
+  --color-ink-soft: #4b5277;
+  --color-ink-faint: #7b81a3;
+  --color-night: #090d27;
+  --color-night-2: #121a44;
+  --color-night-3: #1d2760;
+  --color-surface: #f5f6fb;
+  --color-line: #e2e5f1;
+  --color-accent: #ffb23f;
+  --color-accent-strong: #f29a12;
+  --color-accent-soft: #fff4e2;
+  --color-sky: #6d7cff;
+  --color-danger: #c4283b;
+  --color-danger-soft: #fdecee;
+  --color-success: #0c8a5c;
+  --color-success-soft: #e6f6ef;
+
+  --shadow-card: 0 1px 2px rgb(14 19 48 / 0.06), 0 12px 40px -12px rgb(14 19 48 / 0.25);
+
+  --animate-step-in: step-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-fade-in: fade-in 200ms ease-out;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes step-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: #fff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-sky);
+    outline-offset: 2px;
+  }
+  /* Native date/time pickers: keep the icon visible and tappable. */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
 }
