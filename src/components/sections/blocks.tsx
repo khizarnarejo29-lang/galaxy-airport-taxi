@@ -4,27 +4,22 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { site } from "@/config/site";
 import { breadcrumbList } from "@/lib/seo/jsonld";
+import { RoadSkyline } from "./RoadSkyline";
 
 /* Shared building blocks for content pages. Server components: no client JS. */
 
 export const container = "mx-auto max-w-6xl px-4 sm:px-6";
 
-/** Night-sky backdrop used behind heroes; pure CSS so there's no image to load. */
-export function NightSky() {
+/** Soft navy glow behind dark bands; pure CSS so there is no image to load. */
+export function NavyGlow() {
   return (
     <div
       aria-hidden="true"
       className="absolute inset-0 -z-10"
       style={{
         background:
-          "radial-gradient(60rem 30rem at 85% -10%, rgb(109 124 255 / 0.35), transparent 60%)," +
-          "radial-gradient(40rem 24rem at -10% 110%, rgb(255 178 63 / 0.16), transparent 60%)," +
-          "radial-gradient(1px 1px at 12% 22%, #fff 50%, transparent 51%)," +
-          "radial-gradient(1px 1px at 32% 68%, #fff9 50%, transparent 51%)," +
-          "radial-gradient(1.5px 1.5px at 58% 14%, #fff 50%, transparent 51%)," +
-          "radial-gradient(1px 1px at 76% 52%, #fffa 50%, transparent 51%)," +
-          "radial-gradient(1px 1px at 92% 82%, #fff8 50%, transparent 51%)," +
-          "radial-gradient(1.5px 1.5px at 44% 88%, #fff7 50%, transparent 51%)",
+          "radial-gradient(60rem 30rem at 85% -10%, rgb(63 95 149 / 0.45), transparent 60%)," +
+          "radial-gradient(40rem 24rem at -10% 110%, rgb(36 70 126 / 0.35), transparent 60%)",
       }}
     />
   );
@@ -79,8 +74,8 @@ interface PageHeroProps {
 export function PageHero({ crumbs, eyebrow, title, lead, actions = true, children }: PageHeroProps) {
   return (
     <section className="relative isolate overflow-hidden bg-night text-white">
-      <NightSky />
-      <div className={`${container} pt-8 pb-14 sm:pt-10 lg:pb-20`}>
+      <RoadSkyline compact />
+      <div className={`${container} pt-8 pb-24 sm:pt-10 sm:pb-28 lg:pb-32`}>
         <Breadcrumbs items={crumbs} />
         {eyebrow && <p className="mt-8 text-sm font-bold tracking-wider text-accent uppercase">{eyebrow}</p>}
         <h1
@@ -101,14 +96,14 @@ export function HeroActions({ quoteHref = "/quote" }: { quoteHref?: string }) {
     <div className="mt-8 flex flex-wrap gap-3">
       <Link
         href={quoteHref}
-        className="inline-flex h-13 items-center gap-2 rounded-2xl bg-accent px-6 font-bold text-ink transition hover:bg-accent-strong"
+        className="inline-flex h-13 items-center gap-2 rounded-xl bg-white px-6 font-bold text-ink transition hover:bg-navy-100"
       >
         Get a Quote
         <Icon name="arrowRight" className="size-5" />
       </Link>
       <a
         href={site.phone.href}
-        className="inline-flex h-13 items-center gap-2 rounded-2xl border border-white/20 px-6 font-semibold text-white transition hover:bg-white/10"
+        className="inline-flex h-13 items-center gap-2 rounded-xl border-2 border-white/25 px-6 font-semibold text-white transition hover:border-white/60 hover:bg-white/5"
       >
         <Icon name="phone" className="size-4" />
         {site.phone.display}
@@ -189,8 +184,8 @@ export function FaqList({ items }: { items: { q: string; a: string }[] }) {
 }
 
 export function CtaBand({
-  title = "Check your price before you book",
-  text = "Enter your route, date and passengers to compare every vehicle before you book.",
+  title = "Get a price for your journey",
+  text = "Enter your route, date and passengers. Where we can price it online you'll see a fixed total before you book; otherwise call us for a price.",
   quoteHref = "/quote",
 }: {
   title?: string;
@@ -199,7 +194,7 @@ export function CtaBand({
 }) {
   return (
     <section className="relative isolate overflow-hidden bg-night text-white">
-      <NightSky />
+      <NavyGlow />
       <div className={`${container} flex flex-col gap-6 py-16 md:flex-row md:items-center md:justify-between`}>
         <div className="max-w-xl">
           <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>

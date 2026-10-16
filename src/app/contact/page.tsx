@@ -9,7 +9,7 @@ import { contactTopics, type ContactTopic } from "@/lib/domain/contact";
 export const metadata: Metadata = pageMetadata({
   title: "Contact Us",
   description:
-    "Contact Galaxy Airport Taxi by phone, email or online form about London airport transfers and business travel.",
+    "Contact Galaxy Airport Taxi by phone or email about London airport transfers, quotes and business travel.",
   path: "/contact",
 });
 
@@ -29,7 +29,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
         crumbs={[{ label: "Contact", href: "/contact" }]}
         eyebrow="Contact"
         title="Get in touch"
-        lead="For a price, the quickest route is the online calculator. For anything else, including changes to a booking or business enquiries, contact us here."
+        lead={`To get a price, change a booking or ask anything else, please call us on ${site.phone.display}. Phone is currently the most reliable way to reach us.`}
       />
       <div className="bg-surface">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.4fr]">
@@ -64,6 +64,17 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
           </div>
           <div className="relative">
             <h2 className="sr-only">Send us a message</h2>
+            <p role="note" className="mb-4 flex items-start gap-2 rounded-2xl bg-accent-soft px-4 py-3 text-sm text-ink">
+              <Icon name="alert" className="mt-0.5 size-4 shrink-0 text-accent-strong" />
+              <span>
+                This form isn&apos;t connected to our inbox yet, so messages sent here may not reach us, and journey details
+                from the calculator aren&apos;t passed on. For a quote or anything urgent, please call{" "}
+                <a href={site.phone.href} className="font-semibold underline">
+                  {site.phone.display}
+                </a>
+                .
+              </span>
+            </p>
             <ContactForm initialTopic={initialTopic} />
           </div>
         </div>

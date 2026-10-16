@@ -8,7 +8,7 @@ import { services } from "@/content/services";
 export const metadata: Metadata = pageMetadata({
   title: "Airport Transfer Services",
   description:
-    "London airport drop-offs and pickups, Meet & Greet in arrivals and corporate airport transfers. Get an instant quote online.",
+    "London airport drop-offs and pickups, Meet & Greet in arrivals and corporate airport transfers. Get a quote online or by phone.",
   path: "/services",
 });
 

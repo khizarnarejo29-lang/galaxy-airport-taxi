@@ -1,8 +1,9 @@
 import { site } from "@/config/site";
 import { getVehicle } from "@/config/fleet";
-import { getAirport } from "@/lib/domain/airports";
 import { contactTopics, type ContactInput } from "@/lib/domain/contact";
-import type { Booking } from "@/lib/domain/types";
+import { describeLuggage } from "@/lib/domain/luggage";
+import { describeEnd, meetAndGreetAllowed } from "@/lib/domain/route";
+import type { Booking, PricedAddress } from "@/lib/domain/types";
 import { formatJourneyDate } from "@/lib/utils/dates";
 import { formatGBP } from "@/lib/utils/money";
 
@@ -18,29 +19,37 @@ const escape = (s: string) =>
 
 /** Key/value rows describing a booking, shared by every template and the confirmation page. */
 export function bookingSummaryRows(b: Booking): [string, string][] {
-  const airport = getAirport(b.journey.airport)!;
-  const terminal = airport.terminals.find((t) => t.id === b.journey.terminal)?.name;
-  const airportLabel = terminal ? `${airport.name}, ${terminal}` : airport.name;
-  const address = [b.journey.address.line1, b.journey.address.postcode ?? b.journey.address.label]
-    .filter(Boolean)
-    .join(", ");
-  const toAirport = b.journey.direction === "to_airport";
-
+  const j = b.journey;
+  const stop = (s: PricedAddress) => (s.line1 ? `${s.line1}, ${s.label}` : s.label);
   const rows: [string, string][] = [
     ["Booking reference", b.reference],
-    ["Pickup", toAirport ? address : airportLabel],
-    ["Destination", toAirport ? airportLabel : address],
-    ...b.journey.extraStops.map((s, i): [string, string] => [`Stop ${i + 1}`, s.line1 ? `${s.line1}, ${s.label}` : s.label]),
-    ["Date", formatJourneyDate(b.journey.date)],
-    [toAirport ? "Pickup time" : "Flight landing time", b.journey.time],
+    ["Pickup", describeEnd(j.pickup)],
+    ...j.extraStops.map((s, i): [string, string] => [`Stop ${i + 1}`, stop(s)]),
+    ["Destination", describeEnd(j.dropoff)],
+    ["Date", formatJourneyDate(j.date)],
+    [j.pickup.kind === "airport" ? "Flight landing time" : "Pickup time", j.time],
   ];
-  if (b.journey.flightNumber) rows.push(["Flight number", b.journey.flightNumber]);
+  if (j.flightNumber) rows.push(["Flight number", j.flightNumber]);
+
+  const r = j.returnJourney;
+  if (r) {
+    // The way back always ends at the outward pickup.
+    rows.push(
+      ["Return pickup", describeEnd(r.pickup)],
+      ...r.extraStops.map((s, i): [string, string] => [`Return stop ${i + 1}`, stop(s)]),
+      ["Return destination", describeEnd(j.pickup)],
+      ["Return date", formatJourneyDate(r.date)],
+      [r.pickup.kind === "airport" ? "Return flight landing time" : "Return pickup time", r.time],
+    );
+    if (r.flightNumber) rows.push(["Return flight number", r.flightNumber]);
+  }
   rows.push(
     ["Vehicle", getVehicle(b.vehicleId)?.name ?? b.vehicleId],
-    ["Passengers", String(b.journey.passengers)],
-    ["Luggage", `${b.journey.luggage.large} large, ${b.journey.luggage.small} small`],
+    ["Passengers", String(j.passengers)],
+    ["Luggage", describeLuggage(j.luggage, j.luggageCategory)],
   );
-  if (b.addOns.meetAndGreet && !toAirport) rows.push(["Meet & Greet", "Yes"]);
+  if (j.tripType === "return") rows.push(["Journey type", "Return"]);
+  if (b.addOns.meetAndGreet && meetAndGreetAllowed(j)) rows.push(["Meet & Greet", "Yes"]);
   if (b.addOns.childSeats) rows.push(["Child seats", String(b.addOns.childSeats)]);
   if (b.specialRequirements) rows.push(["Special requirements", b.specialRequirements]);
   if (b.notes) rows.push(["Notes", b.notes]);
@@ -73,11 +82,24 @@ export function bookingReceivedCustomerEmail(b: Booking): EmailMessage {
   return { to: b.customer.email, subject: `Booking received: ${b.reference}`, text, html };
 }
 
+/** How the price was set — for the operator only, never the customer. */
+function operatorPricingRows(b: Booking): [string, string][] {
+  const rows: [string, string][] = [];
+  if (b.referenceFare) {
+    rows.push(
+      ["Reference fare", `${b.referenceFare.id} · ${formatGBP(b.referenceFare.referenceTotal)}`],
+      ["Reference checked", b.referenceFare.checkedAt],
+    );
+  }
+  if (b.reviewFlags?.length) rows.push(["Needs review", b.reviewFlags.join(", ")]);
+  return rows;
+}
+
 export function newBookingOperatorEmail(b: Booking, to: string): EmailMessage {
   const { text, html } = render(
     `New booking ${b.reference}`,
     `${b.customer.name} · ${b.customer.phone} · ${b.customer.email}`,
-    bookingSummaryRows(b),
+    [...bookingSummaryRows(b), ...operatorPricingRows(b)],
   );
   return { to, subject: `New booking ${b.reference} (${formatJourneyDate(b.journey.date)} ${b.journey.time})`, text, html };
 }

@@ -26,14 +26,14 @@ export default function CorporateTravelPage() {
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/contact?topic=corporate"
-            className="inline-flex h-13 items-center gap-2 rounded-2xl bg-accent px-6 font-bold text-ink transition hover:bg-accent-strong"
+            className="inline-flex h-13 items-center gap-2 rounded-xl bg-white px-6 font-bold text-ink transition hover:bg-navy-100"
           >
             Make a business enquiry
             <Icon name="arrowRight" className="size-5" />
           </Link>
           <Link
             href="/quote"
-            className="inline-flex h-13 items-center rounded-2xl border border-white/20 px-6 font-semibold text-white transition hover:bg-white/10"
+            className="inline-flex h-13 items-center rounded-xl border-2 border-white/25 px-6 font-semibold text-white transition hover:border-white/60 hover:bg-white/5"
           >
             Get a Quote
           </Link>

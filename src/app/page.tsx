@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 const points: { icon: IconName; text: string }[] = [
-  { icon: "check", text: "Your price is shown before you book" },
+  { icon: "check", text: "Where we can price your journey online, you see the fixed total before you book" },
   { icon: "plane", text: "Flight number recorded for every airport pickup" },
   { icon: "user", text: "Saloons through to 8-seaters" },
 ];
@@ -26,12 +26,12 @@ const steps = [
     text: "Choose to or from the airport, find your London address and add the date, time and who's travelling.",
   },
   {
-    title: "Compare vehicles",
-    text: "See a price for every vehicle that fits your group and luggage, with each charge listed separately.",
+    title: "See your options",
+    text: "Each vehicle shows a fixed total for your booking, or “Price on request” if we need to confirm it. For a price on request, call us.",
   },
   {
     title: "Book and keep your reference",
-    text: "Add your contact details and any extras, check the summary and book. You'll get a booking reference straight away.",
+    text: "Add your contact details, check the summary and book. You'll get a booking reference straight away.",
   },
 ];
 
@@ -47,15 +47,15 @@ export default function HomePage() {
         eyebrow="London airport transfers"
         title={
           <>
-            Your airport run, <span className="text-accent">priced up front.</span>
+            Your airport run, <span className="text-accent">made simple.</span>
           </>
         }
-        lead="Door-to-door journeys between any Greater London address and all five London airports. Tell us the route, compare every vehicle's price, then book in a few taps."
+        lead="Door-to-door journeys between any Greater London address and all five London airports. Tell us the route and see the vehicles we can offer, then book online or call us for a price."
       >
         <ul className="space-y-3">
           {points.map((p) => (
             <li key={p.text} className="flex items-center gap-3 text-white/85">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-navy-700/70 ring-1 ring-white/10">
                 <Icon name={p.icon} className="size-4 text-accent" />
               </span>
               {p.text}
@@ -122,7 +122,7 @@ export default function HomePage() {
         tone="surface"
         eyebrow="Fleet"
         title="A vehicle for every group size"
-        intro="Maximum passengers and luggage for each vehicle class. The calculator only offers vehicles that fit your group."
+        intro="Typical maximum passengers for each vehicle class. Luggage space varies, so we confirm it for your journey. If you're unsure, call us."
       >
         <FleetGrid />
       </Section>

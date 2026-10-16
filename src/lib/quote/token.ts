@@ -8,7 +8,8 @@ import type { Quote } from "@/lib/domain/types";
 
 const DEV_SECRET = "dev-only-quote-secret-do-not-use-in-production";
 
-function secret(): string {
+/** The server signing secret. Required (32+ characters) in production. Also signs booking viewing passes. */
+export function signingSecret(): string {
   const value = process.env.QUOTE_SIGNING_SECRET;
   if (value && value.length >= 32) return value;
   if (process.env.NODE_ENV === "production") {
@@ -17,7 +18,7 @@ function secret(): string {
   return DEV_SECRET;
 }
 
-const sign = (payload: string) => createHmac("sha256", secret()).update(payload).digest("base64url");
+const sign = (payload: string) => createHmac("sha256", signingSecret()).update(payload).digest("base64url");
 
 export function signQuote(quote: Quote): string {
   const payload = Buffer.from(JSON.stringify(quote)).toString("base64url");

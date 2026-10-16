@@ -8,8 +8,8 @@ import { addDays, isValidDateString, isValidTimeString, londonToUtc, londonToday
 import { getAirport, requiresTerminal } from "./airports";
 import { fitsAnyVehicle } from "./capacity";
 import { fieldError } from "./errors";
-import { normalisePostcode } from "./geo";
-import type { AddOns, Customer, FieldError, JourneyInput } from "./types";
+import { isLuggageCategory } from "./luggage";
+import type { AddOns, AddressDetail, Customer, FieldError, JourneyEndInput, JourneyInput } from "./types";
 
 type Rules = typeof bookingRules;
 
@@ -24,24 +24,60 @@ export function isValidFlightNumber(value: string): boolean {
   return FLIGHT_NUMBER.test(normaliseFlightNumber(value));
 }
 
-export function validateJourneyStep(input: Partial<JourneyInput>, rules: Rules = bookingRules): FieldError[] {
+/** An end that has been filled in: an address picked from search, or a known airport. */
+function endErrors(field: string, end: JourneyEndInput | undefined): FieldError[] {
+  if (end?.kind === "airport") return getAirport(end.airport) ? [] : [fieldError(field, "AIRPORT_REQUIRED")];
+  if (end?.kind === "address" && end.locationId) return [];
+  return [fieldError(field, "ADDRESS_REQUIRED")];
+}
+
+const sameAddress = (a: JourneyEndInput | undefined, b: JourneyEndInput | undefined) =>
+  a?.kind === "address" && b?.kind === "address" && Boolean(a.locationId) && a.locationId === b.locationId;
+
+/**
+ * Stops on one leg: at most the limit, each picked from search, none at the
+ * leg's start or end, and none twice. Compared by search result, never by distance.
+ */
+function stopErrors(
+  prefix: string,
+  stops: AddressDetail[],
+  ends: (JourneyEndInput | undefined)[],
+  rules: Rules,
+): FieldError[] {
   const errors: FieldError[] = [];
-  if (input.direction !== "to_airport" && input.direction !== "from_airport") {
-    errors.push(fieldError("direction", "DIRECTION_REQUIRED"));
-  }
-  if (!input.airport || !getAirport(input.airport)) {
-    errors.push(fieldError("airport", "AIRPORT_REQUIRED"));
-  }
-  if (!input.address?.locationId) {
-    errors.push(fieldError("address", "ADDRESS_REQUIRED"));
-  }
-  const stops = input.extraStops ?? [];
-  if (stops.length > rules.maxExtraStops) {
-    errors.push(fieldError("extraStops", "STOP_LIMIT", { max: rules.maxExtraStops }));
-  }
+  if (stops.length > rules.maxExtraStops) errors.push(fieldError(prefix, "STOP_LIMIT", { max: rules.maxExtraStops }));
   stops.forEach((stop, i) => {
-    if (!stop.locationId) errors.push(fieldError(`extraStops.${i}`, "ADDRESS_REQUIRED"));
+    const field = `${prefix}.${i}`;
+    const asEnd: JourneyEndInput = { kind: "address", locationId: stop.locationId };
+    if (!stop.locationId) errors.push(fieldError(field, "ADDRESS_REQUIRED"));
+    else if (ends.some((e) => sameAddress(e, asEnd))) errors.push(fieldError(field, "STOP_SAME_LOCATION"));
+    else if (stops.slice(0, i).some((s) => s.locationId === stop.locationId)) errors.push(fieldError(field, "STOP_DUPLICATE"));
   });
+  return errors;
+}
+
+/** Terminal for an airport end at a multi-terminal airport. */
+function terminalErrors(field: string, end: JourneyEndInput | undefined): FieldError[] {
+  if (end?.kind !== "airport" || !requiresTerminal(end.airport)) return [];
+  const airport = getAirport(end.airport)!;
+  if (!end.terminal) return [fieldError(field, "TERMINAL_REQUIRED")];
+  return airport.terminals.some((t) => t.id === end.terminal) ? [] : [fieldError(field, "TERMINAL_INVALID")];
+}
+
+/** A flight number is needed to collect from an airport; otherwise it's optional but must look right. */
+function flightErrors(field: string, flightNumber: string | undefined, pickup: JourneyEndInput | undefined): FieldError[] {
+  const flight = flightNumber?.trim();
+  if (!flight) return pickup?.kind === "airport" ? [fieldError(field, "FLIGHT_NUMBER_REQUIRED")] : [];
+  return isValidFlightNumber(flight) ? [] : [fieldError(field, "FLIGHT_NUMBER_INVALID")];
+}
+
+/** Pickup, drop-off and stops of the outward leg. Service-area checks need lookups and run on the server. */
+export function validateJourneyStep(input: Partial<JourneyInput>, rules: Rules = bookingRules): FieldError[] {
+  const { pickup, dropoff } = input;
+  const errors = [...endErrors("pickup", pickup), ...endErrors("dropoff", dropoff)];
+  if (pickup?.kind === "airport" && dropoff?.kind === "airport") errors.push(fieldError("dropoff", "ROUTE_UNSUPPORTED"));
+  else if (sameAddress(pickup, dropoff)) errors.push(fieldError("dropoff", "SAME_LOCATION"));
+  errors.push(...stopErrors("extraStops", input.extraStops ?? [], [pickup, dropoff], rules));
   return errors;
 }
 
@@ -82,7 +118,6 @@ export function validatePartyStep(input: Partial<JourneyInput>): FieldError[] {
     errors.push(fieldError("passengers", "PASSENGERS_INVALID"));
   }
 
-  const validCount = (n: unknown) => Number.isInteger(n) && (n as number) >= 0 && (n as number) <= 20;
   if (!luggage || !validCount(luggage.large) || !validCount(luggage.small)) {
     errors.push(fieldError("luggage", "LUGGAGE_INVALID"));
   }
@@ -93,22 +128,79 @@ export function validatePartyStep(input: Partial<JourneyInput>): FieldError[] {
   return errors;
 }
 
+/** Terminals for the outward leg's airport end, and the flight number (required when collecting from an airport). */
 export function validateAirportStep(input: Partial<JourneyInput>): FieldError[] {
-  const errors: FieldError[] = [];
-  const airport = input.airport ? getAirport(input.airport) : undefined;
+  return [
+    ...terminalErrors("pickup.terminal", input.pickup),
+    ...terminalErrors("dropoff.terminal", input.dropoff),
+    ...flightErrors("flightNumber", input.flightNumber, input.pickup),
+  ];
+}
 
-  if (airport && requiresTerminal(airport.code)) {
-    if (!input.terminal) errors.push(fieldError("terminal", "TERMINAL_REQUIRED"));
-    else if (!airport.terminals.some((t) => t.id === input.terminal)) {
-      errors.push(fieldError("terminal", "TERMINAL_INVALID"));
-    }
+const maxPassengers = Math.max(...fleet.map((v) => v.maxPassengers));
+const validCount = (n: unknown) => Number.isInteger(n) && (n as number) >= 0 && (n as number) <= 20;
+
+/**
+ * Passengers and a luggage category (none, hand luggage or suitcases). Vehicle
+ * fit is decided per fare (owner-confirmed combinations), not from the fleet's
+ * luggage figures.
+ */
+export function validateReferencePartyStep(input: Partial<JourneyInput>): FieldError[] {
+  const errors: FieldError[] = [];
+  const { passengers, luggageCategory } = input;
+
+  if (passengers === null || passengers === undefined) {
+    errors.push(fieldError("passengers", "PASSENGERS_REQUIRED"));
+  } else if (!Number.isInteger(passengers) || passengers < 1) {
+    errors.push(fieldError("passengers", "PASSENGERS_INVALID"));
+  } else if (passengers > maxPassengers) {
+    errors.push(fieldError("passengers", "CAPACITY_EXCEEDED"));
   }
 
-  const flight = input.flightNumber?.trim();
-  if (!flight) {
-    if (input.direction === "from_airport") errors.push(fieldError("flightNumber", "FLIGHT_NUMBER_REQUIRED"));
-  } else if (!isValidFlightNumber(flight)) {
-    errors.push(fieldError("flightNumber", "FLIGHT_NUMBER_INVALID"));
+  if (!isLuggageCategory(luggageCategory)) errors.push(fieldError("luggageCategory", "LUGGAGE_CATEGORY_REQUIRED"));
+  if (typeof input.largeItems !== "boolean") errors.push(fieldError("largeItems", "LARGE_ITEMS_REQUIRED"));
+  return errors;
+}
+
+/**
+ * Where the way back can start. The return always ends at the outward pickup.
+ * Its pickup may be another address, or another terminal at the airport the
+ * outward journey went to — never a different airport, and never an airport
+ * when the outward journey ended at an address.
+ */
+function returnPickupErrors(input: Partial<JourneyInput>, pickup: JourneyEndInput): FieldError[] {
+  const field = "returnJourney.pickup";
+  if (pickup.kind === "airport") {
+    const outward = input.dropoff;
+    return outward?.kind === "airport" && outward.airport === pickup.airport ? [] : [fieldError(field, "RETURN_PICKUP_INVALID")];
+  }
+  return sameAddress(pickup, input.pickup) ? [fieldError(field, "SAME_LOCATION")] : [];
+}
+
+/** Checks for the way back of a return booking that don't need any lookups. */
+export function validateReturnJourney(
+  input: Partial<JourneyInput>,
+  now: Date = new Date(),
+  rules: Rules = bookingRules,
+): FieldError[] {
+  const r = input.returnJourney;
+  if (!r) return [fieldError("returnJourney", "RETURN_JOURNEY_REQUIRED")];
+  const prefix = (e: FieldError) => ({ ...e, field: `returnJourney.${e.field}` });
+  const errors = validateWhenStep({ date: r.date, time: r.time }, now, rules).map(prefix);
+
+  const pickupProblems = endErrors("returnJourney.pickup", r.pickup);
+  errors.push(...pickupProblems);
+  if (!pickupProblems.length) errors.push(...returnPickupErrors(input, r.pickup));
+  // The way back runs from its pickup to the outward pickup.
+  errors.push(...stopErrors("returnJourney.extraStops", r.extraStops ?? [], [r.pickup, input.pickup], rules));
+  errors.push(...terminalErrors("returnJourney.pickup.terminal", r.pickup));
+  errors.push(...flightErrors("returnJourney.flightNumber", r.flightNumber, r.pickup));
+
+  const timesValid =
+    input.date && input.time && isValidDateString(input.date) && isValidTimeString(input.time) &&
+    isValidDateString(r.date) && isValidTimeString(r.time);
+  if (timesValid && londonToUtc(r.date, r.time) <= londonToUtc(input.date!, input.time!)) {
+    errors.push(fieldError("returnJourney.date", "RETURN_BEFORE_OUTBOUND"));
   }
   return errors;
 }
@@ -118,17 +210,17 @@ export function validateJourney(input: Partial<JourneyInput>, now: Date = new Da
   return [
     ...validateJourneyStep(input),
     ...validateWhenStep(input, now),
-    ...validatePartyStep(input),
+    // Always the luggage category: no fallback to old luggage counts or the fleet's unconfirmed limits.
+    ...validateReferencePartyStep(input),
     ...validateAirportStep(input),
+    ...(input.tripType === "return" ? validateReturnJourney(input, now) : []),
   ];
 }
 
 export interface BookingDetailsInput {
   customer: Customer;
-  addressLine1?: string;
-  addressPostcode?: string;
-  /** True when the chosen location is a named area rather than a full postcode. */
-  needsPostcode: boolean;
+  /** House number and street for every address end of the journey, keyed by request field. */
+  addressLines: { field: string; value?: string }[];
   addOns: AddOns;
   specialRequirements?: string;
   notes?: string;
@@ -152,15 +244,9 @@ export function validateBookingDetails(
     errors.push(fieldError("customer.phone", "PHONE_INVALID"));
   }
 
-  if (!input.addressLine1?.trim()) errors.push(fieldError("addressLine1", "ADDRESS_LINE_REQUIRED"));
-  else if (input.addressLine1.length > 120) {
-    errors.push(fieldError("addressLine1", "TEXT_TOO_LONG", { max: 120 }));
-  }
-  if (input.needsPostcode) {
-    if (!input.addressPostcode?.trim()) errors.push(fieldError("addressPostcode", "POSTCODE_REQUIRED"));
-    else if (!normalisePostcode(input.addressPostcode)) {
-      errors.push(fieldError("addressPostcode", "POSTCODE_INVALID"));
-    }
+  for (const { field, value } of input.addressLines) {
+    if (!value?.trim()) errors.push(fieldError(field, "ADDRESS_LINE_REQUIRED"));
+    else if (value.length > 120) errors.push(fieldError(field, "TEXT_TOO_LONG", { max: 120 }));
   }
 
   if (!Number.isInteger(addOns.childSeats) || addOns.childSeats < 0 || addOns.childSeats > rules.maxChildSeats) {

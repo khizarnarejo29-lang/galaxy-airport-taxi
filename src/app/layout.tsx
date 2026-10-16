@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Figtree } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import { MobileActionBar } from "@/components/layout/MobileActionBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -7,12 +7,13 @@ import { indexingEnabled } from "@/config/seo";
 import { site } from "@/config/site";
 import "./globals.css";
 
-const heading = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-heading", display: "swap" });
-const body = Figtree({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+// Fraunces headings with optical sizing; Manrope for body text and forms.
+const heading = Fraunces({ subsets: ["latin"], variable: "--font-heading", display: "swap", axes: ["opsz"] });
+const body = Manrope({ subsets: ["latin"], variable: "--font-body", display: "swap" });
 
 const defaultTitle = `${site.name} | London Airport Transfers`;
 const defaultDescription =
-  "Transfers between London addresses and Heathrow, Gatwick, Stansted, Luton and London City airports. See your price instantly and book online.";
+  "Transfers between London addresses and Heathrow, Gatwick, Stansted, Luton and London City airports. Fixed prices online where available, or call us for a price.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#090d27",
+  themeColor: "#071226",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

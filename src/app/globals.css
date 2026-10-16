@@ -1,29 +1,51 @@
 @import "tailwindcss";
 
+/*
+ * Navy and white. Every colour pair used for text meets WCAG AA (4.5:1, or 3:1
+ * for large text and icons); the existing token names are kept so components
+ * pick the new palette up unchanged.
+ */
 @theme {
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), ui-serif, Georgia, serif;
 
-  --color-ink: #0e1330;
-  --color-ink-soft: #4b5277;
-  --color-ink-faint: #7b81a3;
-  --color-night: #090d27;
-  --color-night-2: #121a44;
-  --color-night-3: #1d2760;
-  --color-surface: #f5f6fb;
-  --color-line: #e2e5f1;
-  --color-accent: #ffb23f;
-  --color-accent-strong: #f29a12;
-  --color-accent-soft: #fff4e2;
-  --color-sky: #6d7cff;
-  --color-danger: #c4283b;
+  /* Navy scale, for new work. */
+  --color-navy-950: #071226;
+  --color-navy-900: #0b1a33;
+  --color-navy-800: #12264a;
+  --color-navy-700: #1b3866;
+  --color-navy-600: #24467e;
+  --color-navy-500: #3f5f95;
+  --color-navy-100: #e8eff9;
+  --color-navy-50: #f5f7fb;
+
+  --color-ink: #0b1a33;
+  --color-ink-soft: #3e4c66;
+  --color-ink-faint: #5e6a82;
+  --color-night: #071226;
+  --color-night-2: #0b1a33;
+  --color-night-3: #1b3866;
+  --color-surface: #f5f7fb;
+  --color-line: #dce3ee;
+  /* Soft navy blue: readable on navy (6:1) and as large text or icons on white (3:1); navy text on it is 5.7:1. */
+  --color-accent: #6e95d4;
+  /* Deep navy blue for text and icons on white and light surfaces (9:1). */
+  --color-accent-strong: #24467e;
+  --color-accent-soft: #e8eff9;
+  /* Light navy blue, e.g. for small accents on navy (7.7:1 with navy text). */
+  --color-accent-hover: #8eaee2;
+  --color-sky: #2b5594;
+  --color-danger: #b42335;
   --color-danger-soft: #fdecee;
-  --color-success: #0c8a5c;
-  --color-success-soft: #e6f6ef;
+  --color-success: #0b7a52;
+  --color-success-soft: #e6f4ee;
 
-  --shadow-card: 0 1px 2px rgb(14 19 48 / 0.06), 0 12px 40px -12px rgb(14 19 48 / 0.25);
+  --radius-control: 0.625rem;
 
-  --animate-step-in: step-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shadow-card: 0 1px 2px rgb(11 26 51 / 0.05), 0 16px 40px -16px rgb(11 26 51 / 0.22);
+  --shadow-control: inset 0 1px 1px rgb(11 26 51 / 0.04);
+
+  --animate-step-in: step-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-fade-in: fade-in 200ms ease-out;
 }
 
@@ -46,6 +68,16 @@
     background: #fff;
     color: var(--color-ink);
     font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+  }
+  /* Fraunces: optical sizing keeps large headings fine and small ones sturdy. */
+  h1, h2, h3, h4, .font-display {
+    font-optical-sizing: auto;
+    letter-spacing: -0.01em;
+  }
+  ::selection {
+    background: var(--color-navy-100);
+    color: var(--color-ink);
   }
   :focus-visible {
     outline: 3px solid var(--color-sky);

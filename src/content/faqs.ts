@@ -26,12 +26,12 @@ export function faqGroups(): FaqGroup[] {
       title: "Quotes and prices",
       items: [
         {
-          q: "How is my price worked out?",
-          a: "Your quote depends on the airport, the distance to or from your address, the vehicle you choose and any extras you add. Each part is shown as a separate line before you book, so you can see exactly what makes up the total.",
+          q: "How is my price shown?",
+          a: "Where we can price your journey online, each vehicle shows one fixed total for the whole booking, including both journeys of a return. If we can't, it shows “Price on request”.",
         },
         {
-          q: "Are airport charges included?",
-          a: "Yes. Where an airport charges for dropping off or for parking while your driver collects you, the charge appears in your quote and is included in the total.",
+          q: "What does “Price on request” mean?",
+          a: `We can't confirm an instant price for that journey online, for example because of the exact address, date, luggage, stops or extras. Please call us on ${site.phone.display} and we'll give you a fixed price. Phone is currently the most reliable way to get a quote.`,
         },
         {
           q: "How long is my quote valid?",
@@ -39,7 +39,7 @@ export function faqGroups(): FaqGroup[] {
         },
         {
           q: "Why can't I choose some vehicles?",
-          a: "The calculator only offers vehicles with enough seats and luggage space for the passengers and bags you entered. Vehicles that don't fit are shown with the reason.",
+          a: `You can only book a vehicle online when it has a confirmed price for your journey. Others show “Price on request”. Call us on ${site.phone.display} and we'll help.`,
         },
       ],
     },
@@ -60,11 +60,11 @@ export function faqGroups(): FaqGroup[] {
         },
         {
           q: "Can I add stops along the way?",
-          a: `Yes. You can add up to ${bookingRules.maxExtraStops} extra stops when you enter your journey. Each stop is priced and shown in your quote.`,
+          a: `Yes. You can add up to ${bookingRules.maxExtraStops} extra stops when you enter your journey. Journeys with stops may show “Price on request”. If so, please call us for a price.`,
         },
         {
           q: "Can I request a child seat?",
-          a: `Yes. You can request up to ${bookingRules.maxChildSeats} child seats in the extras section before you book. They're priced as a separate line in your quote.`,
+          a: `Yes. You can request up to ${bookingRules.maxChildSeats} child seats in the extras step, before you see prices. Some journeys with child seats may show “Price on request”. If so, please call us.`,
         },
         {
           q: "What happens after I book?",

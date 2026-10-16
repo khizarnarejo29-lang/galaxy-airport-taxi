@@ -6,7 +6,7 @@ import { AirportGrid } from "@/components/sections/cards";
 export const metadata: Metadata = pageMetadata({
   title: "London Airport Transfers",
   description:
-    "Taxi transfers between Greater London and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Instant online quotes.",
+    "Taxi transfers between Greater London and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Online quotes, or call us for a price.",
   path: "/airport-transfers",
 });
 
@@ -37,16 +37,18 @@ export default function AirportTransfersPage() {
         </div>
       </Section>
 
-      <Section id="included" eyebrow="Your quote" title="What's in the price">
+      <Section id="included" eyebrow="Your quote" title="How your price works">
         <div className="grid gap-4 md:grid-cols-3">
-          <FeatureCard icon="route" title="The journey">
-            Based on the airport, the distance to or from your address and the vehicle you choose.
+          <FeatureCard icon="route" title="One fixed total">
+            An online price is a single fixed total for your booking, covering both journeys if you book a return.
           </FeatureCard>
-          <FeatureCard icon="terminal" title="Airport charges">
-            Drop-off or pickup parking charges, where they apply, are listed separately and included in the total.
+          <FeatureCard icon="sparkle" title="Stops and extras">
+            Tell us about any stops, child seats or Meet &amp; Greet before you see prices. Some journeys with extras
+            can&apos;t be priced online and show &ldquo;Price on request&rdquo;.
           </FeatureCard>
-          <FeatureCard icon="sparkle" title="Extras you choose">
-            Extra stops, child seats and Meet &amp; Greet are added only if you select them.
+          <FeatureCard icon="phone" title="Price on request">
+            If a journey can&apos;t be priced online, please call us. Phone is currently the most reliable way to get a
+            quote.
           </FeatureCard>
         </div>
       </Section>

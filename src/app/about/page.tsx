@@ -6,7 +6,7 @@ import { site } from "@/config/site";
 export const metadata: Metadata = pageMetadata({
   title: "About Us",
   description:
-    "Galaxy Airport Taxi arranges transfers between Greater London and the five London airports, with clear online prices and simple booking.",
+    "Galaxy Airport Taxi arranges transfers between Greater London and the five London airports, with fixed prices agreed before you book.",
   path: "/about",
 });
 
@@ -23,14 +23,15 @@ export default function AboutPage() {
         lead={`${site.name} focuses on one thing: getting you between your London address and Heathrow, Gatwick, Stansted, Luton or London City airport.`}
       />
 
-      <Section id="approach" eyebrow="How we work" title="Clear prices, straightforward booking">
+      <Section id="approach" eyebrow="How we work" title="Fixed prices, straightforward booking">
         <div className="grid gap-4 md:grid-cols-3">
           <FeatureCard icon="check" title="Price before you book">
-            Every quote shows each part of the price on its own line, from the journey fare to airport charges and any
-            extras you add.
+            Where we can price your journey online, you see one fixed total for the booking before you confirm. If not,
+            it shows &ldquo;Price on request&rdquo; and we&apos;ll give you a price by phone.
           </FeatureCard>
           <FeatureCard icon="suitcase" title="The right vehicle">
-            You tell us how many people and bags are travelling, and we only offer vehicles with room for them.
+            You tell us how many people and bags are travelling. Where we can&apos;t confirm a vehicle for your luggage
+            online, we&apos;ll check it with you by phone.
           </FeatureCard>
           <FeatureCard icon="plane" title="Built around your flight">
             Pickups are booked against your flight number and landing time, so the details travel with your booking.
