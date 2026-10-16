@@ -44,23 +44,11 @@ export function FleetGrid() {
         <li key={v.id} className="flex flex-col rounded-3xl border border-line bg-white p-6">
           <h3 className="font-display text-2xl font-bold">{v.name}</h3>
           <p className="mt-2 flex-1 leading-relaxed text-ink-soft">{v.summary}</p>
-          <dl className="mt-5 grid grid-cols-3 gap-2 text-center">
-            {(
-              [
-                ["user", "Passengers", v.maxPassengers],
-                ["suitcase", "Large cases", v.maxLargeCases],
-                ["bag", "Small bags", v.maxSmallCases],
-              ] as const
-            ).map(([icon, label, n]) => (
-              <div key={label} className="rounded-2xl bg-surface px-2 py-3">
-                <dt className="flex flex-col items-center gap-1 text-xs text-ink-soft">
-                  <Icon name={icon} className="size-4" />
-                  {label}
-                </dt>
-                <dd className="mt-1 font-display text-xl font-bold">{n}</dd>
-              </div>
-            ))}
-          </dl>
+          {/* Luggage space isn't shown: the fleet figures are unconfirmed and differ by vehicle. */}
+          <p className="mt-5 flex items-center gap-2 rounded-2xl bg-surface px-4 py-3 text-sm text-ink-soft">
+            <Icon name="user" className="size-4 shrink-0" />
+            Up to {v.maxPassengers} passengers
+          </p>
         </li>
       ))}
     </ul>

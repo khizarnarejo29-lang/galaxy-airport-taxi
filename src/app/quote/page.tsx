@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { Calculator } from "@/components/calculator/Calculator";
+import { RoadSkyline } from "@/components/sections/RoadSkyline";
 import { airports } from "@/lib/domain/airports";
 import type { AirportCode, Direction } from "@/lib/domain/types";
 
 export const metadata: Metadata = pageMetadata({
   title: "Get a Quote",
   description:
-    "Get an instant price for a transfer between London and Heathrow, Gatwick, Stansted, Luton or London City airport.",
+    "Get a fixed price for a transfer between London and Heathrow, Gatwick, Stansted, Luton or London City airport, online where available or by phone.",
   path: "/quote",
 });
 
@@ -19,13 +20,19 @@ export default async function QuotePage({ searchParams }: PageProps<"/quote">) {
     | Direction
     | undefined;
 
+  // Side by side on desktop; on phones a short intro, then straight into the calculator.
   return (
-    <div className="bg-surface">
-      <div className="mx-auto max-w-2xl px-4 pt-6 pb-16 sm:px-6 sm:pt-10">
-        <h1 className="mb-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">Get an instant quote</h1>
-        <p className="mb-5 text-ink-soft">London to the airport, or the airport to London. Prices for every vehicle.</p>
-        <Calculator variant="hero" initialAirport={airport} initialDirection={direction} />
+    <section className="relative isolate overflow-hidden bg-night text-white">
+      <RoadSkyline />
+      <div className="mx-auto grid max-w-6xl gap-x-14 gap-y-5 px-4 pt-6 pb-16 sm:px-6 sm:pt-10 lg:grid-cols-[1fr_minmax(0,30rem)] lg:pt-14 lg:pb-28">
+        <div className="lg:pt-6">
+          <h1 className="font-display text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl lg:text-5xl">Get a quote</h1>
+          <p className="mt-2 max-w-md leading-relaxed text-white/75 sm:mt-4 sm:text-lg">London to the airport, or the airport to London. Where we can price your journey online you&apos;ll see a fixed total; otherwise please call us for a price.</p>
+        </div>
+        <div>
+          <Calculator variant="hero" initialAirport={airport} initialDirection={direction} />
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

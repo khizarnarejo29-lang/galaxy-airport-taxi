@@ -72,7 +72,7 @@ export function SiteNav() {
                 aria-controls={`${menuId}-${item.label}`}
                 onClick={() => setOpenGroup((g) => (g === item.label ? null : item.label))}
                 className={`${linkBase} inline-flex items-center gap-1 ${
-                  groupActive(pathname, item) ? "text-white" : "text-white/75 hover:text-white"
+                  groupActive(pathname, item) ? "text-ink" : "text-ink-soft hover:bg-surface hover:text-ink"
                 }`}
               >
                 {item.label}
@@ -83,14 +83,14 @@ export function SiteNav() {
               <ul
                 id={`${menuId}-${item.label}`}
                 hidden={openGroup !== item.label}
-                className="absolute top-full left-0 mt-2 w-64 rounded-2xl bg-white p-2 shadow-card ring-1 ring-black/5 animate-fade-in"
+                className="absolute top-full left-0 mt-2 w-64 rounded-2xl border border-line bg-white p-2 shadow-card animate-fade-in"
               >
                 {item.children.map((c) => (
                   <li key={c.href}>
                     <Link
                       href={c.href}
                       aria-current={pathname === c.href ? "page" : undefined}
-                      className="block rounded-xl px-3 py-2.5 text-sm font-medium text-ink hover:bg-surface aria-[current=page]:bg-surface aria-[current=page]:font-bold"
+                      className="block rounded-xl px-3 py-2.5 text-sm font-medium text-ink hover:bg-surface aria-[current=page]:bg-accent-soft aria-[current=page]:font-bold aria-[current=page]:text-accent-strong"
                     >
                       {c.label}
                     </Link>
@@ -103,7 +103,7 @@ export function SiteNav() {
               <Link
                 href={item.href}
                 aria-current={isActive(pathname, item.href) ? "page" : undefined}
-                className={`${linkBase} text-white/75 hover:text-white aria-[current=page]:text-white`}
+                className={`${linkBase} text-ink-soft hover:bg-surface hover:text-ink aria-[current=page]:text-ink`}
               >
                 {item.label}
               </Link>
@@ -116,7 +116,7 @@ export function SiteNav() {
       <button
         ref={toggleRef}
         type="button"
-        className="grid size-10 place-items-center rounded-full text-white hover:bg-white/10 lg:hidden"
+        className="grid size-11 place-items-center rounded-xl text-ink transition-colors hover:bg-surface lg:hidden"
         aria-expanded={mobileOpen}
         aria-controls={`${menuId}-mobile`}
         onClick={() => setMobileOpen((o) => !o)}
@@ -146,21 +146,21 @@ function MobileMenu({ id, pathname }: { id: string; pathname: string }) {
     <div
       ref={ref}
       id={id}
-      className="fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto bg-night px-4 pt-4 pb-10 animate-fade-in lg:hidden"
+      className="fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto border-t border-line bg-white px-4 pt-4 pb-10 animate-fade-in lg:hidden"
     >
       <ul className="space-y-1">
         {mainNav.map((item) => (
-          <li key={item.label} className="border-b border-white/10 pb-1">
+          <li key={item.label} className="border-b border-line pb-1">
             {isGroup(item) ? (
               <>
-                <p className="px-2 pt-3 pb-1 text-xs font-bold tracking-wider text-white/50 uppercase">{item.label}</p>
+                <p className="px-2 pt-3 pb-1 text-xs font-bold tracking-wider text-ink-faint uppercase">{item.label}</p>
                 <ul>
                   {item.children.map((c) => (
                     <li key={c.href}>
                       <Link
                         href={c.href}
                         aria-current={pathname === c.href ? "page" : undefined}
-                        className="block rounded-xl px-2 py-3 text-base font-medium text-white/85 aria-[current=page]:text-accent"
+                        className="block rounded-xl px-2 py-3 text-base font-medium text-ink-soft hover:bg-surface aria-[current=page]:bg-accent-soft aria-[current=page]:font-semibold aria-[current=page]:text-accent-strong"
                       >
                         {c.label}
                       </Link>
@@ -172,7 +172,7 @@ function MobileMenu({ id, pathname }: { id: string; pathname: string }) {
               <Link
                 href={item.href}
                 aria-current={isActive(pathname, item.href) ? "page" : undefined}
-                className="block rounded-xl px-2 py-3.5 text-lg font-semibold text-white aria-[current=page]:text-accent"
+                className="block rounded-xl px-2 py-3.5 text-lg font-semibold text-ink hover:bg-surface aria-[current=page]:bg-accent-soft aria-[current=page]:text-accent-strong"
               >
                 {item.label}
               </Link>
@@ -181,12 +181,12 @@ function MobileMenu({ id, pathname }: { id: string; pathname: string }) {
         ))}
       </ul>
       <div className="mt-6 grid gap-3">
-        <Link href="/quote" className="flex h-13 items-center justify-center rounded-2xl bg-accent font-bold text-ink">
+        <Link href="/quote" className="flex h-14 items-center justify-center rounded-xl bg-ink font-bold text-white transition hover:bg-night-3">
           Get a Quote
         </Link>
         <a
           href={site.phone.href}
-          className="flex h-13 items-center justify-center gap-2 rounded-2xl border border-white/20 font-semibold text-white"
+          className="flex h-14 items-center justify-center gap-2 rounded-xl border-2 border-line font-semibold text-ink transition-colors hover:border-ink"
         >
           <Icon name="phone" className="size-4" />
           Call {site.phone.display}

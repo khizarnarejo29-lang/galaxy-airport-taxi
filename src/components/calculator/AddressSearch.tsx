@@ -91,12 +91,14 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
   if (value) {
     return (
       <div>
-        <p className="mb-1.5 text-sm font-semibold text-ink">{label}</p>
+        <p className="mb-2 text-sm font-semibold text-ink">{label}</p>
         <div
-          className={`flex items-center gap-3 rounded-xl border bg-white px-4 py-3 ${shownError ? "border-danger" : "border-line"}`}
+          className={`flex min-h-13 items-center gap-3 rounded-(--radius-control) border bg-surface py-1.5 pr-1.5 pl-4 ${shownError ? "border-danger" : "border-line"}`}
         >
           <Icon name="pin" className="size-5 shrink-0 text-accent-strong" />
-          <p className="min-w-0 flex-1 truncate font-semibold">{value.label}</p>
+          <p id={`${id}-value`} className="min-w-0 flex-1 truncate font-semibold">
+            {value.label}
+          </p>
           <button
             type="button"
             id={id}
@@ -104,15 +106,17 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
               onChange(null);
               requestAnimationFrame(() => document.getElementById(`${id}-input`)?.focus());
             }}
-            className="rounded-lg px-2 py-1 text-sm font-semibold text-sky hover:bg-surface"
+            className="inline-flex h-10 shrink-0 items-center rounded-lg px-3 text-sm font-semibold text-sky transition hover:bg-white"
             aria-label={`Change ${label.toLowerCase()}`}
+            // Screen readers hear the chosen place, and any problem with it, with the button.
+            aria-describedby={[`${id}-value`, shownError ? `${id}-error` : null].filter(Boolean).join(" ")}
           >
             Change
           </button>
         </div>
         <FieldError id={`${id}-error`} message={shownError} />
         {outside && !error && (
-          <p className="mt-1 text-sm text-ink-soft">
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
             We currently quote online within {serviceArea.label}. Call{" "}
             <a className="font-semibold underline" href={site.phone.href}>
               {site.phone.display}
@@ -128,7 +132,7 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
 
   return (
     <div className="relative">
-      <label htmlFor={`${id}-input`} className="mb-1.5 block text-sm font-semibold text-ink">
+      <label htmlFor={`${id}-input`} className="mb-2 block text-sm font-semibold text-ink">
         {label}
       </label>
       <div className="relative">
@@ -168,14 +172,14 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
         )}
       </div>
       {!shownError && (
-        <p id={`${id}-hint`} className="mt-1.5 text-sm text-ink-soft">
+        <p id={`${id}-hint`} className="mt-2 text-sm leading-relaxed text-ink-soft">
           Search by postcode or area. You&apos;ll add your house number later.
         </p>
       )}
       <FieldError id={`${id}-error`} message={shownError} />
 
       {showList && (
-        <div className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-line bg-white shadow-card animate-fade-in">
+        <div className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-(--radius-control) border border-line bg-white shadow-card animate-fade-in">
           <ul id={listId} role="listbox" aria-label={`${label} suggestions`} className="max-h-72 overflow-y-auto py-1">
             {results.map((r, i) => (
               <li
@@ -185,36 +189,38 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
                 aria-selected={i === active}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(r)}
-                className={`flex cursor-pointer items-center gap-3 px-4 py-3 ${i === active ? "bg-surface" : "hover:bg-surface"}`}
+                className={`flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 ${i === active ? "bg-accent-soft" : "hover:bg-surface"}`}
               >
-                <Icon name="pin" className="size-4 shrink-0 text-ink-faint" />
+                <Icon name="pin" className="size-4 shrink-0 text-accent-strong" />
                 <span className="truncate">{r.label}</span>
               </li>
             ))}
           </ul>
           {status === "done" && results.length === 0 && (
-            <p className="px-4 py-3 text-sm text-ink-soft" role="status">
+            <p className="flex items-center gap-2.5 px-4 py-3.5 text-sm text-ink-soft" role="status">
+              <Icon name="search" className="size-4 shrink-0" />
               No matches. Try your full postcode.
             </p>
           )}
           {status === "loading" && results.length === 0 && (
-            <p className="px-4 py-3 text-sm text-ink-soft" role="status">
+            <p className="flex items-center gap-2.5 px-4 py-3.5 text-sm text-ink-soft" role="status">
+              <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-line border-t-ink" aria-hidden="true" />
               Searching…
             </p>
           )}
           {status === "failed" && (
-            <div className="space-y-2 px-4 py-3 text-sm" role="alert">
+            <div className="space-y-2 px-4 py-3.5 text-sm" role="alert">
               <p className="text-danger">{errorMessages.LOCATION_LOOKUP_FAILED}</p>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setAttempt((n) => n + 1)}
-                  className="font-semibold text-sky underline"
+                  className="inline-flex min-h-10 items-center font-semibold text-sky underline underline-offset-2"
                 >
                   Try again
                 </button>
-                <a href={site.phone.href} className="font-semibold underline">
+                <a href={site.phone.href} className="inline-flex min-h-10 items-center font-semibold underline underline-offset-2">
                   Call {site.phone.display}
                 </a>
               </div>

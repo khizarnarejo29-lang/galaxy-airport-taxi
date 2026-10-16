@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Calculator } from "@/components/calculator/Calculator";
 import type { AirportCode } from "@/lib/domain/types";
-import { Breadcrumbs, NightSky, type Crumb } from "./blocks";
+import { Breadcrumbs, type Crumb } from "./blocks";
+import { RoadSkyline } from "./RoadSkyline";
 
 interface Props {
   crumbs?: Crumb[];
@@ -17,7 +18,7 @@ interface Props {
 export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, children }: Props) {
   return (
     <section id="quote" className="relative isolate scroll-mt-16 overflow-hidden bg-night text-white">
-      <NightSky />
+      <RoadSkyline />
       <div className="mx-auto grid max-w-6xl gap-x-14 gap-y-8 px-4 pt-7 pb-14 sm:px-6 sm:pt-10 lg:grid-cols-[1fr_minmax(0,30rem)] lg:grid-rows-[auto_1fr] lg:pt-14 lg:pb-24">
         <div className="lg:pt-6">
           {crumbs && (

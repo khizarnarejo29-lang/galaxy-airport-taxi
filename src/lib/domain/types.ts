@@ -1,6 +1,10 @@
 import type { Pence } from "@/lib/utils/money";
 
+/** Kept for the airport landing pages, which pre-select an airport as the pickup or the drop-off. */
 export type Direction = "to_airport" | "from_airport";
+/** Worked out from a journey's two ends; never chosen by the customer. Airport to airport is never allowed. */
+export type JourneyKind = "to_airport" | "from_airport" | "address_to_address";
+export type TripType = "one_way" | "return";
 export type AirportCode = "LHR" | "LGW" | "STN" | "LTN" | "LCY";
 export type VehicleId = "saloon" | "estate" | "executive" | "mpv" | "minibus";
 
@@ -41,13 +45,32 @@ export interface AddressDetail {
   locationId: string;
   /** House number/name and street. Required to book, optional to quote. */
   line1?: string;
-  /** Needed to book when the location was a named area rather than a postcode. */
-  postcode?: string;
 }
+
+/** One end of a journey leg: an address found by postcode search, or one of the airports. */
+export type JourneyEndInput =
+  | ({ kind: "address" } & AddressDetail)
+  | { kind: "airport"; airport: AirportCode; terminal?: string };
 
 export interface Luggage {
   large: number;
   small: number;
+}
+
+/** Luggage in the reference website's terms, used to match reference fares. */
+/** Luggage as one category, the same way the reference website asks for it. */
+export const luggageCategories = ["none", "hand_luggage", "suitcases"] as const;
+export type LuggageCategory = (typeof luggageCategories)[number];
+
+/** The way back for a return booking. It always ends at the outward pickup. */
+export interface ReturnJourneyInput {
+  /** Usually the outward drop-off; may be another address, or another terminal at the same airport. */
+  pickup: JourneyEndInput;
+  extraStops: AddressDetail[];
+  /** London local date, YYYY-MM-DD, and time, HH:mm, of the return pickup. */
+  date: string;
+  time: string;
+  flightNumber?: string;
 }
 
 export interface Vehicle {
@@ -61,18 +84,27 @@ export interface Vehicle {
 
 /** Everything needed to price a journey. */
 export interface JourneyInput {
-  direction: Direction;
-  airport: AirportCode;
-  terminal?: string;
-  address: AddressDetail;
+  pickup: JourneyEndInput;
+  dropoff: JourneyEndInput;
+  /** Stops on the outward leg, in order. */
   extraStops: AddressDetail[];
   /** London local date, YYYY-MM-DD. */
   date: string;
-  /** London local time, HH:mm. Landing time for airport pickups. */
+  /** London local time, HH:mm. Landing time when the pickup is an airport. */
   time: string;
   passengers: number | null;
-  luggage: Luggage;
+  /** Legacy luggage counts. Not accepted from requests any more; kept only for older stored bookings. */
+  luggage?: Luggage;
   flightNumber?: string;
+  /** Defaults to one-way. A return needs `returnJourney`. */
+  tripType?: TripType;
+  returnJourney?: ReturnJourneyInput;
+  /** Required by validation: none, hand luggage or suitcases. */
+  luggageCategory?: LuggageCategory;
+  /** Required by validation. True means large or unusual items: never priced instantly. */
+  largeItems?: boolean;
+  /** Extras the price should include; they must match the reference fare. */
+  extras?: AddOns;
 }
 
 export interface AddOns {
@@ -86,21 +118,43 @@ export interface PriceLine {
   amount: Pence;
 }
 
+/** How a vehicle's price was decided. Signed into the quote token. */
+export type OptionPricing =
+  | {
+      status: "priced";
+      fareId: string;
+      referenceTotal: Pence;
+      checkedAt: string;
+      /** The fare stops being usable at this instant. */
+      validUntil: string;
+      flags: string[];
+    }
+  | { status: "price_on_request"; reason: string };
+
 export interface QuoteOption {
   vehicleId: VehicleId;
+  /** True only when the vehicle fits and has a matched price. */
   available: boolean;
   unavailableReason?: string;
   lines: PriceLine[];
+  /** 0 when the price is on request. */
   total: Pence;
+  pricing: OptionPricing;
 }
+
+/** A resolved address with the customer's house number and street, once given. */
+export type PricedAddress = ResolvedLocation & { line1?: string };
+
+/** One end of a priced leg. A terminal is set for every airport end that has one. */
+export type JourneyEnd =
+  | { kind: "address"; address: PricedAddress }
+  | { kind: "airport"; airport: AirportCode; terminal?: string };
 
 /** A journey after the server has resolved locations and measured distance. */
 export interface PricedJourney {
-  direction: Direction;
-  airport: AirportCode;
-  terminal?: string;
-  address: ResolvedLocation & { line1?: string };
-  extraStops: (ResolvedLocation & { line1?: string })[];
+  pickup: JourneyEnd;
+  dropoff: JourneyEnd;
+  extraStops: PricedAddress[];
   date: string;
   time: string;
   pickupAtUtc: string;
@@ -108,6 +162,23 @@ export interface PricedJourney {
   luggage: Luggage;
   flightNumber?: string;
   distanceMiles: number;
+  tripType: TripType;
+  returnJourney?: PricedReturnJourney;
+  luggageCategory?: LuggageCategory;
+  /** Large or unusual items declared: every vehicle is price on request. */
+  largeItems?: boolean;
+  /** Extras the quoted prices include. */
+  extras: AddOns;
+}
+
+/** The way back. Its destination is always the outward pickup, so it isn't stored twice. */
+export interface PricedReturnJourney {
+  pickup: JourneyEnd;
+  extraStops: PricedAddress[];
+  date: string;
+  time: string;
+  pickupAtUtc: string;
+  flightNumber?: string;
 }
 
 export interface Quote {
@@ -142,6 +213,10 @@ export interface Booking {
   payment: { status: PaymentStatus; method: string };
   flightCheck: { status: "unverified" | "verified" | "not_found" };
   createdAt: string;
+  /** The reference fare the total was taken from (reference total − £2). */
+  referenceFare?: { id: string; referenceTotal: Pence; checkedAt: string };
+  /** Things the operator should check, e.g. a price matched on postcode only. */
+  reviewFlags?: string[];
 }
 
 export interface FieldError {

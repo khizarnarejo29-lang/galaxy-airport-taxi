@@ -4,9 +4,11 @@ import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "rea
 import { Icon } from "./Icon";
 
 export const inputClass =
-  "block w-full rounded-xl border border-line bg-white px-4 text-base text-ink placeholder:text-ink-faint " +
-  "transition-colors focus:border-sky focus:outline-none focus:ring-4 focus:ring-sky/15 " +
-  "aria-invalid:border-danger aria-invalid:ring-danger/10";
+  "block w-full rounded-(--radius-control) border border-line bg-white px-4 text-base text-ink shadow-control " +
+  "placeholder:text-ink-faint transition-[border-color,box-shadow] hover:border-ink-faint/60 " +
+  "focus:border-sky focus:outline-none focus:ring-4 focus:ring-sky/15 " +
+  "aria-invalid:border-danger aria-invalid:focus:ring-danger/15 " +
+  "disabled:cursor-not-allowed disabled:bg-surface disabled:text-ink-faint";
 
 export function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -31,13 +33,13 @@ interface FieldProps {
 export function Field({ id, label, hint, error, optional, children }: FieldProps) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 flex items-baseline justify-between gap-2 text-sm font-semibold text-ink">
+      <label htmlFor={id} className="mb-2 flex items-baseline justify-between gap-2 text-sm font-semibold text-ink">
         <span>{label}</span>
         {optional && <span className="text-xs font-normal text-ink-faint">Optional</span>}
       </label>
       {children}
       {hint && !error && (
-        <p id={`${id}-hint`} className="mt-1.5 text-sm text-ink-soft">
+        <p id={`${id}-hint`} className="mt-2 text-sm leading-relaxed text-ink-soft">
           {hint}
         </p>
       )}
@@ -80,11 +82,12 @@ export function Counter({ id, label, hint, icon, value, min = 0, max, error, onC
   const current = value ?? min - 1;
   const btn =
     "grid size-11 place-items-center rounded-full border border-line bg-white text-ink transition " +
-    "hover:border-ink-faint active:scale-95 disabled:opacity-35 disabled:hover:border-line";
+    "hover:border-ink hover:bg-surface active:scale-95 " +
+    "disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-line disabled:hover:bg-white";
   return (
     <div>
       <div
-        className={`flex items-center gap-3 rounded-2xl border bg-white p-3 pl-4 ${error ? "border-danger" : "border-line"}`}
+        className={`flex items-center gap-3 rounded-xl border bg-white p-3 pl-4 shadow-control ${error ? "border-danger" : "border-line"}`}
       >
         <Icon name={icon} className="size-5 shrink-0 text-ink-soft" />
         <div className="min-w-0 flex-1">
@@ -107,7 +110,7 @@ export function Counter({ id, label, hint, icon, value, min = 0, max, error, onC
           aria-labelledby={`${id}-label`}
           aria-live="polite"
           tabIndex={-1}
-          className="w-7 text-center font-display text-xl font-bold tabular-nums"
+          className="w-8 text-center font-display text-xl font-semibold tabular-nums"
         >
           {value ?? "–"}
         </output>
@@ -158,14 +161,16 @@ export function ChoiceCards<T extends string>({
 }: ChoiceCardsProps<T>) {
   return (
     <fieldset id={id} tabIndex={-1} aria-describedby={error ? `${id}-error` : undefined}>
-      <legend className={hideLegend ? "sr-only" : "mb-2 text-sm font-semibold text-ink"}>{legend}</legend>
+      <legend className={hideLegend ? "sr-only" : "mb-2.5 text-sm font-semibold text-ink"}>{legend}</legend>
       <div className={`grid gap-2 ${columns}`}>
         {options.map((o) => (
           <label
             key={o.value}
             className={
-              "relative flex cursor-pointer flex-col justify-center rounded-xl border bg-white px-3.5 py-3 transition " +
-              "has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:ring-4 has-focus-visible:ring-sky/30 " +
+              "group relative flex min-h-12 cursor-pointer flex-col justify-center rounded-(--radius-control) border bg-white py-3 pr-8 pl-3.5 " +
+              "transition-[border-color,background-color,color,box-shadow] " +
+              "has-checked:border-ink has-checked:bg-ink has-checked:text-white has-checked:shadow-card " +
+              "has-focus-visible:ring-4 has-focus-visible:ring-sky/30 " +
               (error ? "border-danger" : "border-line hover:border-ink-faint")
             }
           >
@@ -177,8 +182,15 @@ export function ChoiceCards<T extends string>({
               onChange={() => onChange(o.value)}
               className="sr-only"
             />
+            {/* Selected mark: decorative, the radio itself carries the state. */}
+            <span
+              aria-hidden="true"
+              className="absolute top-2.5 right-2.5 grid size-4.5 place-items-center rounded-full border border-line group-has-checked:border-white group-has-checked:bg-white group-has-checked:text-ink"
+            >
+              <Icon name="check" className="hidden size-3 group-has-checked:block" strokeWidth={2.6} />
+            </span>
             <span className="font-semibold leading-tight">{o.label}</span>
-            {o.description && <span className="mt-0.5 text-xs opacity-70">{o.description}</span>}
+            {o.description && <span className="mt-1 text-xs leading-snug opacity-75">{o.description}</span>}
           </label>
         ))}
       </div>

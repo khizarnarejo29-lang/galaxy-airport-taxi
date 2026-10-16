@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { describedBy, Field, FieldError, TextArea, TextInput, inputClass } from "@/components/ui/form";
 import { Icon } from "@/components/ui/Icon";
+import { site } from "@/config/site";
 import { contactTopics, validateContact, type ContactInput, type ContactTopic } from "@/lib/domain/contact";
 import type { FieldError as FieldErrorType } from "@/lib/domain/types";
 
@@ -61,8 +62,15 @@ export function ContactForm({ initialTopic = "general" }: { initialTopic?: Conta
         <span className="mx-auto grid size-12 place-items-center rounded-full bg-success-soft text-success">
           <Icon name="check" className="size-6" />
         </span>
-        <h2 className="mt-4 font-display text-2xl font-bold">Message received</h2>
-        <p className="mt-2 text-ink-soft">Thanks, {values.name.split(" ")[0]}. We&apos;ll reply to {values.email}.</p>
+        <h2 className="mt-4 font-display text-2xl font-bold">Message submitted</h2>
+        <p className="mt-2 text-ink-soft">
+          Thanks, {values.name.split(" ")[0]}. Our online form isn&apos;t connected to our inbox yet, so please also call us
+          on{" "}
+          <a href={site.phone.href} className="font-semibold text-ink underline">
+            {site.phone.display}
+          </a>{" "}
+          to make sure we get your message.
+        </p>
       </div>
     );
   }
@@ -135,7 +143,7 @@ export function ContactForm({ initialTopic = "general" }: { initialTopic?: Conta
       <button
         type="submit"
         disabled={status === "sending"}
-        className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-ink px-6 font-bold text-white transition hover:bg-night-3 disabled:cursor-wait disabled:opacity-70 sm:w-auto"
+        className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-ink px-6 font-bold text-white transition hover:bg-night-3 disabled:cursor-wait disabled:opacity-70 sm:w-auto"
       >
         {status === "sending" ? "Sending…" : "Send message"}
         {status !== "sending" && <Icon name="arrowRight" className="size-5" />}

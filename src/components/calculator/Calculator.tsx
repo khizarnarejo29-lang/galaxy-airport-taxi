@@ -8,22 +8,26 @@ import { errorMessages } from "@/lib/domain/errors";
 import type { AirportCode, Direction, FieldError } from "@/lib/domain/types";
 import { formatGBP } from "@/lib/utils/money";
 import { requestQuote, submitBooking } from "./api";
-import { priceWithAddOns } from "./pricing";
 import {
+  addressLines,
   emptyDraft,
   fieldId,
   reducer,
+  selectedOption,
   STEPS,
+  stepsFor,
   stepForErrors,
   toJourneyInput,
   validateStep,
   type CalcState,
   type Draft,
+  type QuoteState,
   type StepId,
 } from "./state";
 import {
   AirportStep,
   DetailsStep,
+  ExtrasStep,
   JourneyStep,
   PartyStep,
   ReviewStep,
@@ -32,13 +36,15 @@ import {
   type StepProps,
 } from "./steps";
 
-const STORAGE_KEY = "gat:calculator:v1";
+// v4: pickup and drop-off, each an address or an airport.
+const STORAGE_KEY = "gat:calculator:v4";
 
 const STEP_COMPONENTS: Record<StepId, ComponentType<StepProps>> = {
   journey: JourneyStep,
   when: WhenStep,
   party: PartyStep,
   airport: AirportStep,
+  extras: ExtrasStep,
   vehicle: VehicleStep,
   details: DetailsStep,
   review: ReviewStep,
@@ -47,7 +53,7 @@ const STEP_COMPONENTS: Record<StepId, ComponentType<StepProps>> = {
 const NEEDS_QUOTE: StepId[] = ["vehicle", "details", "review"];
 
 interface Props {
-  /** Pre-select an airport (e.g. on an airport landing page). */
+  /** Pre-select an airport (e.g. on an airport landing page): the drop-off, or the pickup when coming from the airport. */
   initialAirport?: AirportCode;
   initialDirection?: Direction;
   /** "hero": the page has its own <h1>, so step titles are <h2>. "page": step titles are the <h1>. */
@@ -67,15 +73,18 @@ function focusField(errors: FieldError[]) {
   });
 }
 
+/** The starting journey for a page: to the airport unless the page says otherwise. */
+function initialDraft(airport?: AirportCode, direction?: Direction): Draft {
+  return direction === "from_airport"
+    ? { ...emptyDraft, pickupKind: "airport", pickupAirport: airport ?? null, dropoffKind: "address" }
+    : { ...emptyDraft, dropoffAirport: airport ?? null };
+}
+
 export function Calculator({ initialAirport, initialDirection, variant = "page" }: Props) {
   const router = useRouter();
   const [state, dispatch] = useReducer(reducer, undefined, (): CalcState => ({
     step: "journey",
-    draft: {
-      ...emptyDraft,
-      airport: initialAirport ?? null,
-      direction: initialDirection ?? emptyDraft.direction,
-    },
+    draft: initialDraft(initialAirport, initialDirection),
     errors: [],
     quote: null,
     busy: null,
@@ -95,10 +104,12 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
         const parsed = JSON.parse(raw) as Pick<CalcState, "step" | "draft" | "quote">;
         const quote = parsed.quote && new Date(parsed.quote.quote.expiresAt) > new Date() ? parsed.quote : null;
         const draft: Draft = { ...emptyDraft, ...parsed.draft };
-        // An airport page pre-selects its airport unless the visitor is already past the first step.
-        if (initialAirport && (parsed.step === "journey" || !draft.airport) && draft.airport !== initialAirport) {
-          draft.airport = initialAirport;
+        // An airport page pre-selects its airport on the journey's airport end, unless the visitor is past the first step.
+        const end = draft.pickupKind === "airport" ? "pickupAirport" : draft.dropoffKind === "airport" ? "dropoffAirport" : null;
+        if (initialAirport && end && (parsed.step === "journey" || !draft[end]) && draft[end] !== initialAirport) {
+          draft[end] = initialAirport;
           draft.terminal = "";
+          draft.returnTerminal = "";
         }
         saved = { step: parsed.step, draft, quote };
       }
@@ -144,15 +155,16 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
   );
 
   const fetchQuote = useCallback(
-    async (draft: Draft, notice?: string): Promise<boolean> => {
+    async (draft: Draft, notice?: string): Promise<QuoteState | null> => {
       dispatch({ type: "busy", busy: "quote" });
       const res = await requestQuote(toJourneyInput(draft));
       if (!res.ok) {
         fail(res.errors);
-        return false;
+        return null;
       }
-      dispatch({ type: "quoted", quote: { quote: res.quote, token: res.token }, notice });
-      return true;
+      const quote = { quote: res.quote, token: res.token };
+      dispatch({ type: "quoted", quote, notice });
+      return quote;
     },
     [fail],
   );
@@ -166,18 +178,20 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
 
   async function submit() {
     const { draft, quote } = state;
-    if (!quote || !draft.vehicleId) return;
+    const option = selectedOption(draft, quote);
+    if (!quote || !option?.available) return;
     dispatch({ type: "busy", busy: "booking" });
     const res = await submitBooking({
       quoteToken: quote.token,
-      vehicleId: draft.vehicleId,
+      vehicleId: option.vehicleId,
       addOns: draft.addOns,
       customer: draft.customer,
-      addressLine1: draft.addressLine1,
-      addressPostcode: draft.address?.kind === "place" ? draft.addressPostcode : undefined,
+      // House number and street for each address end of this journey only.
+      ...Object.fromEntries(addressLines(draft).map(({ field }) => [field, draft[field]])),
       specialRequirements: draft.specialRequirements || undefined,
       notes: draft.notes || undefined,
-      expectedTotal: priceWithAddOns(quote, draft.vehicleId, draft.addOns).total,
+      // Only echoes the server's signed figure back so a changed price is caught; the server sets the price.
+      expectedTotal: option.total,
     });
     if (res.ok) {
       try {
@@ -189,8 +203,10 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
       return;
     }
     const code = res.errors[0]?.code;
-    if (code === "QUOTE_EXPIRED" || code === "PRICE_CHANGED") {
-      await fetchQuote(draft, errorMessages[code]);
+    if (code === "QUOTE_EXPIRED" || code === "PRICE_CHANGED" || code === "FARE_UNAVAILABLE") {
+      const fresh = await fetchQuote(draft, errorMessages[code]);
+      // The chosen vehicle may no longer have a price: show the refreshed options.
+      if (fresh && !selectedOption(draft, fresh)?.available) go("vehicle");
       return;
     }
     if (stepForErrors(res.errors)) fail(res.errors);
@@ -203,8 +219,9 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
       fail(errors);
       return;
     }
-    const index = STEPS.findIndex((s) => s.id === state.step);
-    if (state.step === "airport") {
+    const steps = stepsFor(state.draft);
+    const index = steps.findIndex((s) => s.id === state.step);
+    if (state.step === "extras") {
       if (state.quote || (await fetchQuote(state.draft))) go("vehicle");
       return;
     }
@@ -212,21 +229,25 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
       await submit();
       return;
     }
-    go(STEPS[index + 1].id);
+    go(steps[index + 1].id);
   }
 
-  const index = STEPS.findIndex((s) => s.id === state.step);
-  const current = STEPS[index];
+  // The airport step only appears for journeys that use an airport.
+  const steps = stepsFor(state.draft);
+  const found = steps.findIndex((s) => s.id === state.step);
+  const index = Math.max(found, 0);
+  const current = STEPS.find((s) => s.id === state.step)!;
   const StepBody = STEP_COMPONENTS[state.step];
   const generalErrors = state.errors.filter((e) => !stepForErrors([e]));
-  const runningTotal =
-    state.quote && state.draft.vehicleId && NEEDS_QUOTE.includes(state.step)
-      ? priceWithAddOns(state.quote, state.draft.vehicleId, state.draft.addOns).total
-      : null;
+  // Shown only from the server's quote, never worked out in the browser.
+  const chosen = selectedOption(state.draft, state.quote);
+  const runningTotal = chosen?.available && NEEDS_QUOTE.includes(state.step) ? chosen.total : null;
+  const nothingPriced =
+    state.step === "vehicle" && state.quote !== null && !state.quote.quote.options.some((o) => o.available);
 
   const primaryLabel =
-    state.step === "airport"
-      ? "Get my instant quote"
+    state.step === "extras"
+      ? "Get my prices"
       : state.step === "review"
         ? "Confirm booking"
         : "Continue";
@@ -236,7 +257,12 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
   return (
     <div
       ref={rootRef}
-      className="scroll-mt-20 overflow-clip rounded-3xl bg-white text-ink shadow-card ring-1 ring-black/5"
+      className={
+        "scroll-mt-20 overflow-clip rounded-2xl bg-white text-ink shadow-card ring-1 ring-navy-900/5 sm:rounded-3xl " +
+        // Focused fields keep room below them for their error message and the sticky action bar,
+        // and room above for the site header.
+        "[&_:is(input,textarea,button,fieldset,output)]:scroll-mt-28 [&_:is(input,textarea,button,fieldset,output)]:scroll-mb-44"
+      }
       aria-busy={state.busy !== null}
     >
       <form
@@ -247,97 +273,128 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
         }}
       >
         {/* Progress */}
-        <div className="px-5 pt-5 sm:px-7 sm:pt-6">
-          <div className="flex items-center justify-between text-xs font-semibold text-ink-soft">
+        <div className="px-5 pt-5 sm:px-8 sm:pt-7">
+          <p className="flex flex-wrap items-baseline gap-x-1.5 text-xs font-semibold tracking-wide text-ink-soft uppercase">
             <span>
-              Step {index + 1} of {STEPS.length}
+              Step {index + 1} of {steps.length}
             </span>
-            {index > 0 && (
-              <button
-                type="button"
-                onClick={() => go(STEPS[index - 1].id)}
-                className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 hover:bg-surface hover:text-ink"
-              >
-                <Icon name="arrowLeft" className="size-3.5" />
-                Back
-              </button>
-            )}
-          </div>
+            <span aria-hidden="true">·</span>
+            <span className="text-accent-strong">{current.title}</span>
+          </p>
           <div
-            className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface"
+            className="mt-3 flex gap-1"
             role="progressbar"
             aria-label="Booking progress"
             aria-valuemin={1}
-            aria-valuemax={STEPS.length}
+            aria-valuemax={steps.length}
             aria-valuenow={index + 1}
+            aria-valuetext={`Step ${index + 1} of ${steps.length}: ${current.title}`}
           >
-            <div
-              className="h-full rounded-full bg-accent transition-[width] duration-500 ease-out"
-              style={{ width: `${((index + 1) / STEPS.length) * 100}%` }}
-            />
+            {steps.map((s, i) => (
+              <span
+                key={s.id}
+                className={
+                  "h-1 flex-1 rounded-full transition-colors duration-500 " +
+                  (i < index ? "bg-ink" : i === index ? "bg-accent" : "bg-line")
+                }
+              />
+            ))}
           </div>
           <HeadingTag
             ref={headingRef}
             tabIndex={-1}
-            className="mt-5 font-display text-2xl font-bold tracking-tight outline-none sm:text-[1.7rem]"
+            className="mt-6 font-display text-[1.65rem] leading-tight font-semibold tracking-tight outline-none sm:text-3xl"
           >
             {current.title}
           </HeadingTag>
         </div>
 
         {/* Body */}
-        <div key={state.step} className="px-5 pt-5 pb-6 animate-step-in sm:px-7">
+        <div key={state.step} className="px-5 pt-6 pb-7 animate-step-in sm:px-8">
           {state.notice && (
             <p
               role="status"
-              className="mb-4 flex items-start gap-2 rounded-xl bg-accent-soft px-4 py-3 text-sm font-medium text-ink"
+              className="mb-5 flex items-start gap-2.5 rounded-xl border border-accent/40 bg-accent-soft px-4 py-3 text-sm font-medium text-ink"
             >
               <Icon name="alert" className="mt-0.5 size-4 shrink-0 text-accent-strong" />
               {state.notice}
             </p>
           )}
           {generalErrors.length > 0 && (
-            <div role="alert" className="mb-4 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">
-              {generalErrors.map((e) => (
-                <p key={e.code}>{e.message}</p>
-              ))}
-              {generalErrors.some((e) => e.code === "LOCATION_LOOKUP_FAILED" || e.code === "SERVER_ERROR") && (
-                <p className="mt-1">
-                  You can also book by phone on{" "}
-                  <a className="font-semibold underline" href={site.phone.href}>
-                    {site.phone.display}
-                  </a>
-                  .
-                </p>
-              )}
+            <div
+              role="alert"
+              className="mb-5 flex items-start gap-2.5 rounded-xl border border-danger/25 bg-danger-soft px-4 py-3 text-sm text-danger"
+            >
+              <Icon name="alert" className="mt-0.5 size-4 shrink-0" />
+              <div className="space-y-1">
+                {generalErrors.map((e) => (
+                  <p key={e.code}>{e.message}</p>
+                ))}
+                {generalErrors.some((e) => ["LOCATION_LOOKUP_FAILED", "SERVER_ERROR", "BOOKING_UNAVAILABLE"].includes(e.code)) && (
+                  <p>
+                    You can also book by phone on{" "}
+                    <a className="font-semibold underline underline-offset-2" href={site.phone.href}>
+                      {site.phone.display}
+                    </a>
+                    .
+                  </p>
+                )}
+              </div>
             </div>
           )}
           <StepBody state={state} set={set} go={go} />
         </div>
 
         {/* Action bar — sticks to the bottom of the screen on mobile while the card is in view. */}
-        <div className="sticky bottom-0 z-20 border-t border-line bg-white/95 px-5 py-4 backdrop-blur sm:px-7">
-          <div className="flex items-center gap-4">
+        <div className="sticky bottom-0 z-20 border-t border-line bg-white/95 px-5 py-3.5 backdrop-blur sm:px-8 sm:py-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            {index > 0 && (
+              <button
+                type="button"
+                onClick={() => go(steps[index - 1].id)}
+                disabled={state.busy !== null}
+                className={
+                  "inline-flex h-14 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-4 " +
+                  "text-base font-semibold text-ink transition hover:border-ink hover:bg-surface disabled:opacity-50 sm:px-5"
+                }
+              >
+                <Icon name="arrowLeft" className="size-5" />
+                Back
+              </button>
+            )}
             {runningTotal !== null && (
-              <div className="min-w-0" aria-live="polite">
+              <div className="min-w-0 shrink-0" aria-live="polite">
                 <p className="text-xs text-ink-soft">Total</p>
-                <p className="font-display text-xl font-bold tabular-nums">{formatGBP(runningTotal)}</p>
+                <p className="font-display text-xl font-semibold tabular-nums">{formatGBP(runningTotal)}</p>
               </div>
             )}
-            <button
-              type="submit"
-              disabled={state.busy !== null}
-              className={
-                "inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl px-6 text-base font-bold transition " +
-                "active:scale-[0.99] disabled:cursor-wait disabled:opacity-70 " +
-                (state.step === "airport" || state.step === "review"
-                  ? "bg-accent text-ink hover:bg-accent-strong"
-                  : "bg-ink text-white hover:bg-night-3")
-              }
-            >
-              {busyLabel ?? primaryLabel}
-              {!busyLabel && <Icon name={state.step === "review" ? "check" : "arrowRight"} className="size-5" />}
-            </button>
+            {nothingPriced ? (
+              <a
+                href={site.phone.href}
+                className="inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-base font-bold text-white transition hover:bg-night-3 sm:px-6"
+              >
+                <Icon name="phone" className="size-5 shrink-0" />
+                <span className="truncate">Call {site.phone.display}</span>
+              </a>
+            ) : (
+              <button
+                type="submit"
+                disabled={state.busy !== null}
+                className={
+                  "inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-base font-bold text-white " +
+                  "transition hover:bg-night-3 active:scale-[0.99] disabled:cursor-wait disabled:opacity-80 sm:px-6"
+                }
+              >
+                {busyLabel && (
+                  <span
+                    className="size-4 shrink-0 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="truncate">{busyLabel ?? primaryLabel}</span>
+                {!busyLabel && <Icon name={state.step === "review" ? "check" : "arrowRight"} className="size-5 shrink-0" />}
+              </button>
+            )}
           </div>
         </div>
       </form>

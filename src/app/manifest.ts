@@ -5,11 +5,11 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: site.name,
     short_name: "Galaxy Taxi",
-    description: "London airport transfers with instant online quotes.",
+    description: "London airport transfers with fixed prices agreed before you book.",
     start_url: "/",
     display: "standalone",
-    background_color: "#090d27",
-    theme_color: "#090d27",
+    background_color: "#071226",
+    theme_color: "#071226",
     icons: [
       { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
       { src: "/apple-icon", sizes: "180x180", type: "image/png" },
