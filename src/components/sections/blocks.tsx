@@ -4,7 +4,8 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { site } from "@/config/site";
 import { breadcrumbList } from "@/lib/seo/jsonld";
-import { RoadSkyline } from "./RoadSkyline";
+import { PageIllustration, type IllustrationName } from "./PageIllustration";
+import { RoadSkyline, type RoadScene } from "./RoadSkyline";
 
 /* Shared building blocks for content pages. Server components: no client JS. */
 
@@ -68,24 +69,38 @@ interface PageHeroProps {
   lead: string;
   /** Show the Get a Quote / Call buttons. */
   actions?: boolean;
+  /** Picture of the page's subject: beside the text on desktop, below it on phones. */
+  illustration?: IllustrationName;
+  scene?: RoadScene;
   children?: ReactNode;
 }
 
-export function PageHero({ crumbs, eyebrow, title, lead, actions = true, children }: PageHeroProps) {
+export function PageHero({ crumbs, eyebrow, title, lead, actions = true, illustration, scene, children }: PageHeroProps) {
   return (
     <section className="relative isolate overflow-hidden bg-night text-white">
-      <RoadSkyline compact />
-      <div className={`${container} pt-8 pb-24 sm:pt-10 sm:pb-28 lg:pb-32`}>
-        <Breadcrumbs items={crumbs} />
-        {eyebrow && <p className="mt-8 text-sm font-bold tracking-wider text-accent uppercase">{eyebrow}</p>}
-        <h1
-          className={`${eyebrow ? "mt-3" : "mt-8"} max-w-3xl font-display text-4xl leading-[1.05] font-extrabold tracking-tight text-balance sm:text-5xl lg:text-6xl`}
-        >
-          {title}
-        </h1>
-        <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/75">{lead}</p>
-        {actions && <HeroActions />}
-        {children}
+      <RoadSkyline compact scene={scene} />
+      <div
+        className={`${container} pt-8 pb-24 sm:pt-10 sm:pb-28 lg:pb-32 ${
+          illustration ? "grid gap-10 lg:grid-cols-[1fr_minmax(0,26rem)] lg:items-center lg:gap-14" : ""
+        }`}
+      >
+        <div>
+          <Breadcrumbs items={crumbs} />
+          {eyebrow && <p className="mt-8 text-sm font-bold tracking-wider text-accent uppercase">{eyebrow}</p>}
+          <h1
+            className={`${eyebrow ? "mt-3" : "mt-8"} max-w-3xl font-display text-4xl leading-[1.05] font-extrabold tracking-tight text-balance sm:text-5xl lg:text-6xl`}
+          >
+            {title}
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/75">{lead}</p>
+          {actions && <HeroActions />}
+          {children}
+        </div>
+        {illustration && (
+          <div className="mx-auto w-full max-w-md lg:max-w-none">
+            <PageIllustration name={illustration} />
+          </div>
+        )}
       </div>
     </section>
   );

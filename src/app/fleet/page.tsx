@@ -16,6 +16,7 @@ export default function FleetPage() {
       <PageHero
         crumbs={[{ label: "Fleet", href: "/fleet" }]}
         eyebrow="Fleet"
+        illustration="fleet"
         title="Pick the vehicle that fits your trip"
         lead="Five vehicle classes, from a saloon for one or two travellers to an 8-seater for larger groups."
       />

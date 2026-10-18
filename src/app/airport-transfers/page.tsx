@@ -16,6 +16,8 @@ export default function AirportTransfersPage() {
       <PageHero
         crumbs={[{ label: "Airport Transfers", href: "/airport-transfers" }]}
         eyebrow="Airport transfers"
+        illustration="airport"
+        scene="takeoff"
         title="Transfers between London and its five airports"
         lead="Whether you're heading to departures or landing back home, book a door-to-door transfer between your Greater London address and any London airport."
       />

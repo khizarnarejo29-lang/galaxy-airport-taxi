@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { Calculator } from "@/components/calculator/Calculator";
 import type { AirportCode } from "@/lib/domain/types";
 import { Breadcrumbs, type Crumb } from "./blocks";
-import { RoadSkyline } from "./RoadSkyline";
+import { PageIllustration, type IllustrationName } from "./PageIllustration";
+import { RoadSkyline, type RoadScene } from "./RoadSkyline";
 
 interface Props {
   crumbs?: Crumb[];
@@ -10,15 +11,18 @@ interface Props {
   title: ReactNode;
   lead: string;
   initialAirport?: AirportCode;
+  scene?: RoadScene;
+  /** Picture of the page's subject, after the intro (below the calculator on phones). */
+  illustration?: IllustrationName;
   /** Shown below the calculator on phones, under the intro on desktop. */
   children?: ReactNode;
 }
 
 /** Hero with the quote calculator. On phones the calculator comes straight after the headline. */
-export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, children }: Props) {
+export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, scene, illustration, children }: Props) {
   return (
     <section id="quote" className="relative isolate scroll-mt-16 overflow-hidden bg-night text-white">
-      <RoadSkyline />
+      <RoadSkyline scene={scene} />
       <div className="mx-auto grid max-w-6xl gap-x-14 gap-y-8 px-4 pt-7 pb-14 sm:px-6 sm:pt-10 lg:grid-cols-[1fr_minmax(0,30rem)] lg:grid-rows-[auto_1fr] lg:pt-14 lg:pb-24">
         <div className="lg:pt-6">
           {crumbs && (
@@ -42,7 +46,16 @@ export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, c
           <Calculator variant="hero" initialAirport={initialAirport} />
         </div>
 
-        {children && <div>{children}</div>}
+        {(children || illustration) && (
+          <div>
+            {illustration && (
+              <div className="max-w-md">
+                <PageIllustration name={illustration} />
+              </div>
+            )}
+            {children && <div className={illustration ? "mt-10" : ""}>{children}</div>}
+          </div>
+        )}
       </div>
     </section>
   );

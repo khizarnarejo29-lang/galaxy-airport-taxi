@@ -19,6 +19,7 @@ export default function AboutPage() {
       <PageHero
         crumbs={[{ label: "About Us", href: "/about" }]}
         eyebrow="About us"
+        illustration="london"
         title="Airport transfers, kept simple"
         lead={`${site.name} focuses on one thing: getting you between your London address and Heathrow, Gatwick, Stansted, Luton or London City airport.`}
       />

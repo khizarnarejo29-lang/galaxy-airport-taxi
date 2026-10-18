@@ -38,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-GB" className={`${heading.variable} ${body.variable} antialiased`}>
+    <html lang="en-GB" data-scroll-behavior="smooth" className={`${heading.variable} ${body.variable} antialiased`}>
       <body className="flex min-h-dvh flex-col">
         <a
           href="#main"

@@ -19,6 +19,7 @@ export default function CorporateTravelPage() {
       <PageHero
         crumbs={[{ label: "Services", href: "/services" }, { label: "Corporate Travel", href: "/services/corporate-travel" }]}
         eyebrow="Corporate travel"
+        illustration="corporate"
         title="Airport transfers for your business"
         lead="Book transfers for yourself, your colleagues or visiting clients between London and the five London airports, or talk to us about how we can support your organisation's travel."
         actions={false}
