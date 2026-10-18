@@ -1,6 +1,11 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { airports } from "@/lib/domain/airports";
 import { site } from "@/config/site";
+
+// The car from the brand logo, inlined so the image needs no fetch while rendering.
+const carMark = `data:image/png;base64,${readFileSync(join(process.cwd(), "public/brand/car-mark.png")).toString("base64")}`;
 
 export const ogSize = { width: 1200, height: 630 };
 
@@ -23,12 +28,10 @@ export function renderOgImage({ eyebrow, title }: { eyebrow: string; title: stri
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <svg width="56" height="56" viewBox="0 0 32 32">
-            <circle cx="16" cy="16" r="15" fill="#12264a" />
-            <ellipse cx="16" cy="16" rx="11" ry="5" fill="none" stroke="#6e95d4" strokeWidth="1.6" transform="rotate(-25 16 16)" />
-            <circle cx="16" cy="16" r="4.2" fill="#ffffff" />
-            <circle cx="25" cy="10.5" r="1.4" fill="#fff" />
-          </svg>
+          <div style={{ width: 64, height: 64, borderRadius: 14, background: "#653bbb", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse renders plain <img> only */}
+            <img src={carMark} width={50} height={26} alt="" />
+          </div>
           <div style={{ fontSize: 34, fontWeight: 700, display: "flex" }}>{site.name}</div>
         </div>
 
