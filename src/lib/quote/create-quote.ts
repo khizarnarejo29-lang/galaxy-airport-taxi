@@ -1,3 +1,4 @@
+import { activeTariff, type PricingConfig } from "@/config/pricing";
 import { bookingRules } from "@/config/booking-rules";
 import { fleet } from "@/config/fleet";
 import { referenceFareRules } from "@/config/reference-vehicles";
@@ -37,6 +38,8 @@ interface Options {
   /** Reference fares to price with; defaults to the stored, validated fare data. */
   fares?: readonly ReferenceFare[];
   area?: ServiceAreaConfig;
+  /** Location tariff for journeys no reference fare covers; defaults to the active one (none until real figures are set). */
+  tariff?: PricingConfig | null;
 }
 
 const NO_EXTRAS = { meetAndGreet: false, childSeats: 0 };
@@ -60,7 +63,7 @@ const coordinates = (end: JourneyEnd): LatLng => (end.kind === "airport" ? getAi
 export async function createQuote(
   input: JourneyInput,
   services: Pick<Services, "locations" | "distance">,
-  { now = new Date(), fares, area = serviceArea }: Options = {},
+  { now = new Date(), fares, area = serviceArea, tariff = activeTariff() }: Options = {},
 ): Promise<QuoteResult> {
   const tripType = input.tripType ?? "one_way";
   const invalid = validateJourney(input, now);
@@ -126,8 +129,12 @@ export async function createQuote(
   if (ret) legErrors("returnJourney.extraStops", returnPickup!, returnStops, pickup, "returnJourney.pickup");
   if (errors.length) return { ok: false, status: 422, errors };
 
-  // Shown to the customer as "about N miles"; it plays no part in the price.
+  // Shown to the customer as "about N miles"; the location tariff (where used) prices by it.
   const distanceMiles = await services.distance.routeMiles([coordinates(pickup), ...extraStops, coordinates(dropoff)]);
+  // The way back runs from its pickup, through its stops, to the outward pickup.
+  const returnDistanceMiles = ret
+    ? await services.distance.routeMiles([coordinates(returnPickup!), ...returnStops, coordinates(pickup)])
+    : undefined;
 
   let returnJourney: PricedReturnJourney | undefined;
   if (ret) {
@@ -139,6 +146,7 @@ export async function createQuote(
       pickupAtUtc: londonToUtc(ret.date, ret.time).toISOString(),
       // A flight number belongs only to a leg that starts or ends at an airport.
       flightNumber: returnPickup!.kind === "airport" || pickup.kind === "airport" ? flightOf(ret.flightNumber) : undefined,
+      distanceMiles: returnDistanceMiles,
     };
   }
 
@@ -167,8 +175,8 @@ export async function createQuote(
   const fareData = fares ?? currentReferenceFares(now);
   const options: QuoteOption[] = fleet.map((vehicle) => {
     // The fleet's luggage figures are unconfirmed and never used: only an owner-confirmed fare decides fit.
-    const { pricing, lines, total } = priceVehicle(journey, vehicle.id, journey.extras, fareData, now);
-    const priced = pricing.status === "priced";
+    const { pricing, lines, total } = priceVehicle(journey, vehicle.id, journey.extras, fareData, now, tariff);
+    const priced = pricing.status !== "price_on_request";
     return {
       vehicleId: vehicle.id,
       available: priced,

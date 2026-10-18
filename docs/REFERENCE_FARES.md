@@ -129,7 +129,7 @@ The source URL is stored with the fare as `Source: …` at the start of its note
 ## What customers see
 
 - **Matching, approved, in-date fare**: a fixed total (reference total − £2) that they can book online.
-- **Anything else**: "Price on request", with the Galaxy phone number. This covers no fare, an expired or pending fare, a different pickup, drop-off, house number, terminal, date, vehicle, luggage, stop or extra, an area chosen without a full postcode, the reference site's published Christmas and New Year surcharge dates, and any customer who says they're bringing large or unusual items (such as bikes or golf bags). Checked fares never cover large or unusual items, so don't record fares for them.
+- **Anything else**: the location tariff prices it once real tariff figures are switched on (see `TARIFF.md`); until then, "Price on request", with the Galaxy phone number. This covers no fare, an expired or pending fare, a different pickup, drop-off, house number, terminal, date, vehicle, luggage, stop or extra, an area chosen without a full postcode, the reference site's published Christmas and New Year surcharge dates, and any customer who says they're bringing large or unusual items (such as bikes or golf bags). Checked fares never cover large or unusual items, so don't record fares for them.
 
 ## Common import problems
 

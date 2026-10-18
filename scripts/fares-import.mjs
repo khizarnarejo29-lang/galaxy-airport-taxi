@@ -68,7 +68,7 @@ const VEHICLE_NAMES = {
 const SOURCE_HOSTS = new Set(["www.airporttaxis-uk.co.uk", "airporttaxis-uk.co.uk"]);
 
 /** Lets plain Node load the website's TypeScript modules ("@/…" paths, no file extensions). */
-function registerTypeScriptPaths() {
+export function registerTypeScriptPaths() {
   const hooks = `
     import { statSync } from "node:fs";
     import { fileURLToPath } from "node:url";

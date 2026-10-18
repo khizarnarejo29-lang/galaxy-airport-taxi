@@ -561,7 +561,7 @@ export function VehicleStep({ state, set }: StepProps) {
         <div className="space-y-2.5">
           {q.quote.options.map((o) => {
             const v = getVehicle(o.vehicleId)!;
-            const priced = o.available && o.pricing.status === "priced";
+            const priced = o.available && o.pricing.status !== "price_on_request";
             return (
               <label
                 key={o.vehicleId}
@@ -610,6 +610,9 @@ export function VehicleStep({ state, set }: StepProps) {
                     <>
                       <span className="block font-display text-2xl font-semibold tabular-nums">{formatGBP(o.total)}</span>
                       <span className="text-xs text-ink-soft">{j.tripType === "return" ? "return total" : "total"}</span>
+                      {o.pricing.status === "tariff" && o.pricing.events.length > 0 && (
+                        <span className="mt-0.5 block text-xs font-semibold text-accent-strong">Includes {o.pricing.events.join(" and ")}</span>
+                      )}
                     </>
                   ) : (
                     <span className="block max-w-24 text-sm font-semibold leading-tight text-ink-soft">Price on request</span>

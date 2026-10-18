@@ -131,6 +131,14 @@ export type OptionPricing =
       validUntil: string;
       flags: string[];
     }
+  /** Priced from Galaxy's own location tariff, used where no reference fare matches. */
+  | {
+      status: "tariff";
+      /** The tariff's version; a booking is refused if the tariff changed since the quote. */
+      tariffVersion: string;
+      /** Event rates included, e.g. "Christmas rate". */
+      events: string[];
+    }
   | { status: "price_on_request"; reason: string };
 
 export interface QuoteOption {
@@ -183,6 +191,8 @@ export interface PricedReturnJourney {
   time: string;
   pickupAtUtc: string;
   flightNumber?: string;
+  /** Estimated miles for the way back, used by the location tariff. */
+  distanceMiles?: number;
 }
 
 export interface Quote {
@@ -219,6 +229,8 @@ export interface Booking {
   createdAt: string;
   /** The reference fare the total was taken from (reference total − £2). */
   referenceFare?: { id: string; referenceTotal: Pence; checkedAt: string };
+  /** Set when the price came from the location tariff instead of a reference fare. */
+  tariff?: { version: string; events: string[] };
   /** Things the operator should check, e.g. a price matched on postcode only. */
   reviewFlags?: string[];
 }

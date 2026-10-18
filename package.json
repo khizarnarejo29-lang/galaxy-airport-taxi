@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "fares:import": "node --disable-warning=ExperimentalWarning scripts/fares-import.mjs",
-    "fares:report": "node --disable-warning=ExperimentalWarning scripts/fares-report.mjs"
+    "fares:report": "node --disable-warning=ExperimentalWarning scripts/fares-report.mjs",
+    "tariff:check": "node --disable-warning=ExperimentalWarning scripts/tariff-check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.3",
