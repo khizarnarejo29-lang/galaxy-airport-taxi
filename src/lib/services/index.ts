@@ -16,6 +16,7 @@ import { postcodesIo } from "./location/postcodes-io";
 import type { LocationProvider } from "./location/types";
 import { emailNotifier, logEmailSender, type Notifier } from "./notifications";
 import { paymentLater, type PaymentProvider } from "./payments";
+import { stripeConfigFromEnv, stripePayments } from "./stripe";
 import {
   memoryQuoteRequestRepository,
   supabaseQuoteRequestRepository,
@@ -62,6 +63,16 @@ export function chooseStorage(env: Env = process.env): Storage {
   return { kind: "memory", bookings: memoryBookingRepository(), quoteRequests: memoryQuoteRequestRepository() };
 }
 
+/**
+ * Card payments online when Stripe's keys are set and bookings can be saved;
+ * otherwise bookings are taken unpaid, to be paid as arranged.
+ */
+export function choosePayments(storage: Pick<Storage, "kind">, env: Env = process.env): PaymentProvider {
+  const stripe = stripeConfigFromEnv(env);
+  if (stripe && storage.kind !== "unavailable") return stripePayments(stripe);
+  return paymentLater;
+}
+
 let services: Services | undefined;
 
 export function getServices(): Services {
@@ -71,7 +82,7 @@ export function getServices(): Services {
       locations: postcodesIo,
       distance: estimatedDistance(),
       flights: unverifiedFlights,
-      payments: paymentLater,
+      payments: choosePayments(storage),
       notifier: emailNotifier(logEmailSender, process.env.BOOKINGS_NOTIFY_EMAIL || site.email),
       bookings: storage.bookings,
       quoteRequests: storage.quoteRequests,

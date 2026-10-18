@@ -3,6 +3,7 @@
  * capacity, terminals…) live in lib/domain/validation and run afterwards.
  */
 import { z } from "zod";
+import { bookingRules } from "@/config/booking-rules";
 import { fleet } from "@/config/fleet";
 import { airportCodes } from "@/lib/domain/airports";
 import { fieldError, type ApiErrorBody } from "@/lib/domain/errors";
@@ -50,6 +51,14 @@ export const journeySchema = z.object({
   luggageCategory: z.enum(luggageCategories),
   /** Optional, with suitcases: hand luggage as well. Never changes the price. */
   handLuggageToo: z.boolean().optional(),
+  /** Optional: bags of each chosen kind. Never changes the price. */
+  luggageCounts: z
+    .object({
+      handLuggage: z.number().int().min(1).max(bookingRules.maxLuggageItems).optional(),
+      suitcases: z.number().int().min(1).max(bookingRules.maxLuggageItems).optional(),
+    })
+    .strict()
+    .optional(),
   /** Required: large or unusual items (bikes, golf bags…) are never priced instantly. */
   largeItems: z.boolean(),
   extras: addOns.optional(),

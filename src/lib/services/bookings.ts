@@ -6,6 +6,8 @@ export interface BookingRepository {
   create(booking: Booking): Promise<void>;
   findByReference(reference: string): Promise<Booking | null>;
   exists(reference: string): Promise<boolean>;
+  /** Replaces a saved booking (e.g. once it is paid). Throws if it was never saved. */
+  update(booking: Booking): Promise<void>;
 }
 
 /**
@@ -52,6 +54,11 @@ export function memoryBookingRepository(): BookingRepository {
     async exists(reference) {
       return store.has(normaliseReference(reference));
     },
+    async update(booking) {
+      const key = normaliseReference(booking.reference);
+      if (!store.has(key)) throw new BookingStorageError("Booking update failed");
+      store.set(key, structuredClone(booking));
+    },
   };
 }
 
@@ -60,7 +67,7 @@ export function unavailableBookingRepository(): BookingRepository {
   const fail = async (): Promise<never> => {
     throw new BookingStorageError("Booking storage is not configured");
   };
-  return { create: fail, findByReference: fail, exists: fail };
+  return { create: fail, findByReference: fail, exists: fail, update: fail };
 }
 
 /** Key columns for searching and constraints; the full booking is kept as JSON. */
@@ -108,6 +115,12 @@ export function supabaseBookingRepository(client: SupabaseClient): BookingReposi
       const { data, error } = await table().select("reference").eq("reference", normaliseReference(reference)).maybeSingle();
       if (error) throw failed("lookup", error);
       return data !== null;
+    },
+    async update(booking) {
+      const { reference, ...row } = bookingToRow(booking);
+      const { data, error } = await table().update(row).eq("reference", reference).select("reference");
+      if (error) throw failed("update", error);
+      if (!data?.length) throw new BookingStorageError("Booking update failed");
     },
   };
 }

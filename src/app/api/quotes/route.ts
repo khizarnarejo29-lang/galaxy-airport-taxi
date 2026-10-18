@@ -6,7 +6,9 @@ export async function POST(request: Request) {
   const parsed = journeySchema.safeParse(await readJson(request));
   if (!parsed.success) return badRequest();
 
-  const result = await createQuote(parsed.data, getServices());
+  const services = getServices();
+  const result = await createQuote(parsed.data, services);
   if (!result.ok) return Response.json({ ok: false, errors: result.errors }, { status: result.status });
-  return Response.json({ ok: true, quote: result.quote, token: result.token });
+  // Lets the calculator say "Confirm and pay" when the card page follows the booking.
+  return Response.json({ ok: true, quote: result.quote, token: result.token, cardPayments: Boolean(services.payments.checkout) });
 }

@@ -20,7 +20,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
   const channels = [
     { icon: "phone" as const, label: "Phone", value: site.phone.display, href: site.phone.href },
     { icon: "mail" as const, label: "Email", value: site.email, href: `mailto:${site.email}` },
-    ...(site.whatsapp ? [{ icon: "phone" as const, label: "WhatsApp", value: site.whatsapp.display, href: site.whatsapp.href }] : []),
+    ...(site.whatsapp ? [{ icon: "chat" as const, label: "WhatsApp", value: site.whatsapp.display, href: site.whatsapp.href }] : []),
   ];
 
   return (

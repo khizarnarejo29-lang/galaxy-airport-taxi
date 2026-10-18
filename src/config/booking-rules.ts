@@ -7,6 +7,8 @@ export const bookingRules = {
   /** Per leg: the outward journey and the way back can each have this many. */
   maxExtraStops: 2,
   maxChildSeats: 3,
+  /** Most hand luggage bags, and most suitcases, a customer can enter. */
+  maxLuggageItems: 10,
   /** How long a quoted price is held. */
   quoteValidityMinutes: 30,
 } as const;

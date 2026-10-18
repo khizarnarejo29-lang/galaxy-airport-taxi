@@ -13,4 +13,10 @@ describe("describeLuggage", () => {
     expect(describeLuggage(none, "hand_luggage", true)).toBe("Hand luggage");
     expect(describeLuggage(none, "none")).toBe("None");
   });
+
+  it("gives the number of each kind when known", () => {
+    expect(describeLuggage(none, "suitcases", true, { suitcases: 2, handLuggage: 1 })).toBe("2 suitcases and 1 hand luggage bag");
+    expect(describeLuggage(none, "hand_luggage", false, { handLuggage: 3 })).toBe("3 hand luggage bags");
+    expect(describeLuggage(none, "suitcases", false, { suitcases: 1 })).toBe("1 suitcase");
+  });
 });

@@ -62,6 +62,7 @@ function repo(overrides: Partial<BookingRepository> = {}): BookingRepository {
     create: async () => {},
     findByReference: async (r) => (r === "GAT-ABC234" ? booking : null),
     exists: async (r) => r === "GAT-ABC234",
+    update: async () => {},
     ...overrides,
   };
 }

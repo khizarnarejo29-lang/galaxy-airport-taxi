@@ -2,6 +2,7 @@ import Link from "next/link";
 import { isGroup, legalNav, mainNav } from "@/config/navigation";
 import { site } from "@/config/site";
 import { Logo } from "./Logo";
+import { QuoteLink } from "./QuoteLink";
 
 export function SiteFooter() {
   const groups = mainNav.filter(isGroup);
@@ -29,8 +30,8 @@ export function SiteFooter() {
             </li>
             {site.whatsapp && (
               <li>
-                <a href={site.whatsapp.href} className="inline-block py-1.5 transition-colors hover:text-white" rel="noopener">
-                  {site.whatsapp.display}
+                <a href={site.whatsapp.href} className="inline-block py-1.5 transition-colors hover:text-white" target="_blank" rel="noopener">
+                  WhatsApp {site.whatsapp.display}
                 </a>
               </li>
             )}
@@ -64,9 +65,9 @@ export function SiteFooter() {
               </li>
             ))}
             <li>
-              <Link href="/quote" className="inline-block py-1.5 transition-colors hover:text-white">
+              <QuoteLink className="inline-block py-1.5 transition-colors hover:text-white">
                 Get a Quote
-              </Link>
+              </QuoteLink>
             </li>
           </ul>
         </nav>

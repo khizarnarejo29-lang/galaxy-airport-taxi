@@ -14,6 +14,7 @@ import type {
   JourneyEndInput,
   JourneyInput,
   LatLng,
+  LuggageCounts,
   PricedAddress,
   PricedJourney,
   PricedReturnJourney,
@@ -168,6 +169,7 @@ export async function createQuote(
     luggageCategory: input.luggageCategory,
     // Only meaningful alongside suitcases; dropped otherwise so it can't contradict the category.
     handLuggageToo: input.luggageCategory === "suitcases" && input.handLuggageToo === true ? true : undefined,
+    luggageCounts: luggageCountsFor(input),
     largeItems: input.largeItems,
     extras: effectiveExtras({ pickup, returnJourney }, input.extras ?? NO_EXTRAS),
   };
@@ -198,4 +200,14 @@ export async function createQuote(
     expiresAt: new Date(Math.min(holdUntil, ...fareLimits)).toISOString(),
   };
   return { ok: true, quote, token: signQuote(quote) };
+}
+
+/** Keeps only the counts for the luggage actually chosen, so they can't contradict the category. */
+function luggageCountsFor(input: JourneyInput): LuggageCounts | undefined {
+  const hand = input.luggageCategory === "hand_luggage" || (input.luggageCategory === "suitcases" && input.handLuggageToo === true);
+  const counts: LuggageCounts = {
+    ...(hand && input.luggageCounts?.handLuggage ? { handLuggage: input.luggageCounts.handLuggage } : {}),
+    ...(input.luggageCategory === "suitcases" && input.luggageCounts?.suitcases ? { suitcases: input.luggageCounts.suitcases } : {}),
+  };
+  return Object.keys(counts).length ? counts : undefined;
 }

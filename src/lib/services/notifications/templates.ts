@@ -46,7 +46,7 @@ export function bookingSummaryRows(b: Booking): [string, string][] {
   rows.push(
     ["Vehicle", getVehicle(b.vehicleId)?.name ?? b.vehicleId],
     ["Passengers", String(j.passengers)],
-    ["Luggage", describeLuggage(j.luggage, j.luggageCategory, j.handLuggageToo)],
+    ["Luggage", describeLuggage(j.luggage, j.luggageCategory, j.handLuggageToo, j.luggageCounts)],
   );
   if (j.tripType === "return") rows.push(["Journey type", "Return"]);
   if (b.addOns.meetAndGreet && meetAndGreetAllowed(j)) rows.push(["Meet & Greet", "Yes"]);

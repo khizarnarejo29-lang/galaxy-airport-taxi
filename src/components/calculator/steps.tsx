@@ -80,10 +80,13 @@ export function PriceOnRequestPanel({ compact = false }: { compact?: boolean }) 
         </a>
         <Link
           href="/contact"
+          target="_blank"
+          rel="noopener"
           className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-line bg-white px-4 py-2.5 font-semibold text-ink transition hover:border-ink"
         >
           <Icon name="mail" className="size-4" />
           Other ways to contact us
+          <span className="sr-only"> (opens in a new tab)</span>
         </Link>
       </div>
     </div>
@@ -332,6 +335,7 @@ export function WhenStep({ state, set }: StepProps) {
 export function PartyStep({ state, set }: StepProps) {
   const d = state.draft;
   const maxPassengers = Math.max(...fleet.map((v) => v.maxPassengers));
+  const chosen = chosenLuggage(d);
   return (
     <div className="space-y-3">
       <Counter
@@ -350,13 +354,37 @@ export function PartyStep({ state, set }: StepProps) {
           id={fieldId("luggageCategory")}
           legend="Luggage"
           hint="Choose all that apply."
-          checked={chosenLuggage(d)}
+          checked={chosen}
           error={err(state, "luggageCategory")}
           columns="grid-cols-1 sm:grid-cols-3"
           options={luggageCategories.map((c) => ({ value: c, label: luggageCategoryLabels[c] }))}
           onToggle={(item) => set(toggleLuggage(d, item))}
         />
       </div>
+      {chosen.hand_luggage && (
+        <Counter
+          id={fieldId("luggageCounts.handLuggage")}
+          label="Hand luggage"
+          hint="How many bags"
+          icon="bag"
+          value={d.handLuggageCount}
+          min={1}
+          max={bookingRules.maxLuggageItems}
+          onChange={(handLuggageCount) => set({ handLuggageCount })}
+        />
+      )}
+      {chosen.suitcases && (
+        <Counter
+          id={fieldId("luggageCounts.suitcases")}
+          label="Suitcases"
+          hint="How many suitcases"
+          icon="suitcase"
+          value={d.suitcaseCount}
+          min={1}
+          max={bookingRules.maxLuggageItems}
+          onChange={(suitcaseCount) => set({ suitcaseCount })}
+        />
+      )}
       <div className="pt-3">
         {/* "Yes" is never priced instantly: no size is assumed for a "suitcases" fare. */}
         <ChoiceCards
@@ -814,7 +842,7 @@ export function ReviewStep({ state, go }: StepProps) {
       step: "party",
       rows: [
         row("Passengers", String(j.passengers)),
-        row("Luggage", describeLuggage(j.luggage, j.luggageCategory, j.handLuggageToo)),
+        row("Luggage", describeLuggage(j.luggage, j.luggageCategory, j.handLuggageToo, j.luggageCounts)),
         row("Vehicle", getVehicle(option.vehicleId)!.name),
       ],
     },
@@ -879,6 +907,12 @@ export function ReviewStep({ state, go }: StepProps) {
           </div>
         </dl>
       </section>
+      {q.cardPayments && (
+        <p className="flex items-start gap-2 text-sm text-ink-soft">
+          <Icon name="check" className="mt-0.5 size-4 shrink-0 text-success" />
+          Next you pay by card on Stripe&apos;s secure payment page. Your card details never reach this website.
+        </p>
+      )}
     </div>
   );
 }

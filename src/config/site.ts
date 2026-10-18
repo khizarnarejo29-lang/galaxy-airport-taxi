@@ -10,8 +10,11 @@ export const site = {
   /** False now that real contact details are set; allows business structured data. */
   isPlaceholder: false,
   phone: { display: "+44 7470 046660", href: "tel:+447470046660" },
-  /** None provided. */
-  whatsapp: null as { display: string; href: string } | null,
+  /** WhatsApp Business on the same number, confirmed by the owner. Opens a chat with a greeting filled in. */
+  whatsapp: {
+    display: "+44 7470 046660",
+    href: `https://wa.me/447470046660?text=${encodeURIComponent("Hello Galaxy Airport Taxi, I would like a quote.")}`,
+  } as { display: string; href: string } | null,
   email: "info@galaxyairporttaxi.co.uk",
   /** e.g. "Mon–Sun, 24 hours". Not shown until set. */
   openingHours: null as string | null,
