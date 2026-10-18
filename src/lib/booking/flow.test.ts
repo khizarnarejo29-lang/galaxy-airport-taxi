@@ -149,6 +149,25 @@ describe("createQuote", () => {
     expect(verifyQuote(result.token)?.journey.dropoff).toEqual(LHR_T5);
   });
 
+  it("prices suitcases plus hand luggage exactly as suitcases, and keeps the hand luggage for the driver", async () => {
+    const result = await createQuote({ ...journey, handLuggageToo: true }, services(), { now, fares });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const estate = result.quote.options.find((o) => o.vehicleId === "estate");
+    expect(estate).toMatchObject({ available: true, total: 9800 });
+    expect(result.quote.journey.handLuggageToo).toBe(true);
+    expect(verifyQuote(result.token)?.journey.handLuggageToo).toBe(true);
+  });
+
+  it("drops the hand-luggage note unless the party also has suitcases", async () => {
+    for (const luggageCategory of ["none", "hand_luggage"] as const) {
+      const result = await createQuote({ ...journey, luggageCategory, handLuggageToo: true }, services(), { now, fares });
+      expect(result.ok && result.quote.journey.handLuggageToo).toBe(undefined);
+    }
+    const plain = await createQuote(journey, services(), { now, fares });
+    expect(plain.ok && plain.quote.journey.handLuggageToo).toBe(undefined);
+  });
+
   it("rejects a request without a luggage category, with no fallback to the fleet's luggage limits", async () => {
     const r = await createQuote({ ...journey, luggageCategory: undefined }, services(), { now, fares });
     expect(r.ok || [r.status, r.errors.map((e) => e.code)]).toEqual([422, ["LUGGAGE_CATEGORY_REQUIRED"]]);
@@ -216,6 +235,15 @@ describe("createQuote", () => {
     const withoutCategory: Record<string, unknown> = { ...base };
     delete withoutCategory.luggageCategory;
     expect(journeySchema.safeParse(withoutCategory).success).toBe(false);
+  });
+
+  it("accepts an optional yes/no for hand luggage alongside the category", () => {
+    for (const handLuggageToo of [true, false, undefined]) {
+      expect(journeySchema.safeParse({ ...journey, handLuggageToo }).success).toBe(true);
+    }
+    for (const handLuggageToo of ["yes", 1, null]) {
+      expect(journeySchema.safeParse({ ...journey, handLuggageToo }).success).toBe(false);
+    }
   });
 
   it("requires a yes/no answer about large items at the API", () => {

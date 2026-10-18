@@ -135,6 +135,59 @@ interface ChoiceOption<T extends string> {
   description?: ReactNode;
 }
 
+interface ToggleCardsProps<T extends string> {
+  id: string;
+  legend: string;
+  hint?: string;
+  options: ChoiceOption<T>[];
+  /** Which options are chosen. */
+  checked: Record<T, boolean>;
+  error?: string;
+  columns?: string;
+  onToggle: (value: T) => void;
+}
+
+/** Checkbox group styled like ChoiceCards, for answers where more than one can apply. */
+export function ToggleCards<T extends string>({ id, legend, hint, options, checked, error, columns = "grid-cols-2", onToggle }: ToggleCardsProps<T>) {
+  const describedBy = [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(" ") || undefined;
+  return (
+    <fieldset id={id} tabIndex={-1} aria-describedby={describedBy}>
+      <legend className="mb-2.5 text-sm font-semibold text-ink">{legend}</legend>
+      {hint && (
+        <p id={`${id}-hint`} className="-mt-1.5 mb-2.5 text-sm text-ink-soft">
+          {hint}
+        </p>
+      )}
+      <div className={`grid gap-2 ${columns}`}>
+        {options.map((o) => (
+          <label
+            key={o.value}
+            className={
+              "group relative flex min-h-12 cursor-pointer flex-col justify-center rounded-(--radius-control) border bg-white py-3 pr-8 pl-3.5 " +
+              "transition-[border-color,background-color,color,box-shadow] " +
+              "has-checked:border-ink has-checked:bg-ink has-checked:text-white has-checked:shadow-card " +
+              "has-focus-visible:ring-4 has-focus-visible:ring-sky/30 " +
+              (error ? "border-danger" : "border-line hover:border-ink-faint")
+            }
+          >
+            <input type="checkbox" value={o.value} checked={checked[o.value]} onChange={() => onToggle(o.value)} className="sr-only" />
+            {/* Square mark: tells a multiple choice apart from the round single-choice cards. */}
+            <span
+              aria-hidden="true"
+              className="absolute top-2.5 right-2.5 grid size-4.5 place-items-center rounded-[5px] border border-line group-has-checked:border-white group-has-checked:bg-white group-has-checked:text-ink"
+            >
+              <Icon name="check" className="hidden size-3 group-has-checked:block" strokeWidth={2.6} />
+            </span>
+            <span className="font-semibold leading-tight">{o.label}</span>
+            {o.description && <span className="mt-1 text-xs leading-snug opacity-75">{o.description}</span>}
+          </label>
+        ))}
+      </div>
+      <FieldError id={`${id}-error`} message={error} />
+    </fieldset>
+  );
+}
+
 interface ChoiceCardsProps<T extends string> {
   id: string;
   legend: string;

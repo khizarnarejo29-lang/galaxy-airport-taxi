@@ -12,7 +12,8 @@ export function isLuggageCategory(value: unknown): value is LuggageCategory {
 }
 
 /** Customer-facing luggage summary, preferring the luggage category when given. */
-export function describeLuggage(luggage: Luggage, category?: LuggageCategory): string {
+export function describeLuggage(luggage: Luggage, category?: LuggageCategory, handLuggageToo?: boolean): string {
+  if (category === "suitcases" && handLuggageToo) return "Suitcases and hand luggage";
   if (category) return luggageCategoryLabels[category];
   return `${luggage.large} large, ${luggage.small} small`;
 }

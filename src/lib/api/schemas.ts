@@ -48,6 +48,8 @@ export const journeySchema = z.object({
     .optional(),
   /** Required: none, hand luggage or suitcases. Anything else, or nothing, is rejected. */
   luggageCategory: z.enum(luggageCategories),
+  /** Optional, with suitcases: hand luggage as well. Never changes the price. */
+  handLuggageToo: z.boolean().optional(),
   /** Required: large or unusual items (bikes, golf bags…) are never priced instantly. */
   largeItems: z.boolean(),
   extras: addOns.optional(),
