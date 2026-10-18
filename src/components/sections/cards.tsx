@@ -4,13 +4,17 @@ import { fleet } from "@/config/fleet";
 import { airportContent } from "@/content/airports";
 import { airports } from "@/lib/domain/airports";
 import type { AirportCode } from "@/lib/domain/types";
+import { centralLondonFrom, exampleFares, exampleVehicles } from "@/lib/pricing/example-fares";
+import { formatGBP } from "@/lib/utils/money";
 
 export function AirportGrid({ exclude }: { exclude?: AirportCode }) {
   return (
     <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {airports
         .filter((a) => a.code !== exclude)
-        .map((a) => (
+        .map((a) => {
+          const from = centralLondonFrom(a.code);
+          return (
           <li key={a.code}>
             <Link
               href={`/${a.slug}`}
@@ -26,13 +30,20 @@ export function AirportGrid({ exclude }: { exclude?: AirportCode }) {
                   ? `${a.terminals.length} terminals: ${a.terminals.map((t) => t.name.replace("Terminal ", "")).join(", ")}`
                   : "Single terminal"}
               </p>
+              {from !== null && (
+                <p className="mt-4 flex items-baseline justify-between gap-3 rounded-2xl bg-accent-soft px-4 py-3">
+                  <span className="text-sm text-ink-soft">Central London, saloon</span>
+                  <span className="font-display text-xl font-bold text-ink">from {formatGBP(from)}</span>
+                </p>
+              )}
               <span className="mt-5 inline-flex items-center gap-1.5 font-semibold text-ink">
                 {a.shortName} transfers
                 <Icon name="arrowRight" className="size-4 transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
           </li>
-        ))}
+          );
+        })}
     </ul>
   );
 }
@@ -52,5 +63,42 @@ export function FleetGrid() {
         </li>
       ))}
     </ul>
+  );
+}
+
+/** Example one-way prices from several London areas to one airport, per vehicle. */
+export function ExampleFaresTable({ airport }: { airport: AirportCode }) {
+  const rows = exampleFares(airport);
+  if (!rows.length) return null;
+  const vehicles = exampleVehicles.map((id) => fleet.find((v) => v.id === id)!);
+  return (
+    <div className="overflow-x-auto rounded-3xl border border-line bg-white">
+      <table className="w-full min-w-[36rem] text-left text-sm">
+        <caption className="sr-only">One-way prices by area and vehicle</caption>
+        <thead className="bg-surface text-xs font-bold tracking-wider text-ink-soft uppercase">
+          <tr>
+            <th scope="col" className="px-5 py-3.5">From</th>
+            {vehicles.map((v) => (
+              <th key={v.id} scope="col" className="px-4 py-3.5 text-right">{v.name}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-line">
+          {rows.map((r) => (
+            <tr key={r.postcode}>
+              <th scope="row" className="px-5 py-3.5 font-normal">
+                <span className="block font-semibold text-ink">{r.area}</span>
+                <span className="text-ink-soft">{r.postcode}</span>
+              </th>
+              {vehicles.map((v) => (
+                <td key={v.id} className="px-4 py-3.5 text-right font-display text-base font-semibold tabular-nums">
+                  {r.prices[v.id] !== undefined ? formatGBP(r.prices[v.id]!) : "–"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
