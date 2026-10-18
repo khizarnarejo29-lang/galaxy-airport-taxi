@@ -26,9 +26,9 @@ export function searchLocations(q: string, signal: AbortSignal) {
 }
 
 export function requestQuote(journey: JourneyInput) {
-  return call<{ quote: Quote; token: string }>("/api/quotes", { method: "POST", body: JSON.stringify(journey) });
+  return call<{ quote: Quote; token: string; cardPayments?: boolean }>("/api/quotes", { method: "POST", body: JSON.stringify(journey) });
 }
 
 export function submitBooking(request: BookingRequest) {
-  return call<{ reference: string }>("/api/bookings", { method: "POST", body: JSON.stringify(request) });
+  return call<{ reference: string; checkoutUrl?: string }>("/api/bookings", { method: "POST", body: JSON.stringify(request) });
 }

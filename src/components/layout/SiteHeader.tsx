@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { site } from "@/config/site";
 import { Logo } from "./Logo";
+import { QuoteLink } from "./QuoteLink";
 import { SiteNav } from "./SiteNav";
 
 export function SiteHeader() {
@@ -20,12 +21,11 @@ export function SiteHeader() {
             <Icon name="phone" className="size-4" />
             <span className="lg:sr-only xl:not-sr-only">{site.phone.display}</span>
           </a>
-          <Link
-            href="/quote"
+          <QuoteLink
             className="order-first inline-flex h-10 items-center rounded-xl bg-ink px-3.5 text-sm font-bold whitespace-nowrap text-white transition hover:bg-night-3 sm:px-4 lg:order-last"
           >
             Get a Quote
-          </Link>
+          </QuoteLink>
         </div>
       </div>
     </header>

@@ -9,7 +9,7 @@ Anything marked **not yet received** must not be filled in or guessed.
 - **Email:** info@galaxyairporttaxi.co.uk
 - **Phone:** +44 7470046660
 - **Address:** 4-6 Greatorex Street, London E1 5NF
-- **WhatsApp:** none provided. Do not add one.
+- **WhatsApp:** WhatsApp Business on the phone number, +44 7470046660 (confirmed by the owner, 2026-10-18).
 - **Company registration number:** none provided. Do not add one.
 - **Licence number/details:** none provided. Do not add any.
 
@@ -19,7 +19,7 @@ All of the following are pending and not confirmed. Do NOT invent final policies
 
 - Waiting time
 - Flight delays
-- Payment methods
+- Payment methods beyond card payment online (card via Stripe Checkout confirmed by the owner, 2026-10-18)
 - Additional cancellation conditions
 - Cancellation fees
 - Refund percentages

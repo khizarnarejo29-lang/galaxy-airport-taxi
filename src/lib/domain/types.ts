@@ -62,6 +62,12 @@ export interface Luggage {
 export const luggageCategories = ["none", "hand_luggage", "suitcases"] as const;
 export type LuggageCategory = (typeof luggageCategories)[number];
 
+/** How many of each chosen kind of luggage, for the driver. Never changes the price. */
+export interface LuggageCounts {
+  handLuggage?: number;
+  suitcases?: number;
+}
+
 /** The way back for a return booking. It always ends at the outward pickup. */
 export interface ReturnJourneyInput {
   /** Usually the outward drop-off; may be another address, or another terminal at the same airport. */
@@ -103,6 +109,8 @@ export interface JourneyInput {
   luggageCategory?: LuggageCategory;
   /** With suitcases only: the party has hand luggage as well. Shown to the driver; priced as suitcases. */
   handLuggageToo?: boolean;
+  /** Optional: how many bags of each chosen kind. Shown to the driver; never priced. */
+  luggageCounts?: LuggageCounts;
   /** Required by validation. True means large or unusual items: never priced instantly. */
   largeItems?: boolean;
   /** Extras the price should include; they must match the reference fare. */
@@ -177,6 +185,8 @@ export interface PricedJourney {
   luggageCategory?: LuggageCategory;
   /** Hand luggage as well as suitcases. Display only: the suitcases fare applies. */
   handLuggageToo?: boolean;
+  /** Bags of each chosen kind. Display only. */
+  luggageCounts?: LuggageCounts;
   /** Large or unusual items declared: every vehicle is price on request. */
   largeItems?: boolean;
   /** Extras the quoted prices include. */
@@ -224,7 +234,13 @@ export interface Booking {
   customer: Customer;
   specialRequirements?: string;
   notes?: string;
-  payment: { status: PaymentStatus; method: string };
+  payment: {
+    status: PaymentStatus;
+    method: string;
+    /** Card payments: the last checkout session opened, and when the payment was confirmed. */
+    checkoutSessionId?: string;
+    paidAt?: string;
+  };
   flightCheck: { status: "unverified" | "verified" | "not_found" };
   createdAt: string;
   /** The reference fare the total was taken from (reference total − £2). */

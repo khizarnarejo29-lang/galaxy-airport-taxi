@@ -333,4 +333,13 @@ describe("luggage choice", () => {
     const handOnly = { ...emptyDraft, ...tap("hand_luggage") };
     expect(toJourneyInput(handOnly).handLuggageToo).toBeUndefined();
   });
+
+  it("sends a count for each kind of luggage chosen, and none otherwise", () => {
+    const both = { ...emptyDraft, ...tap("hand_luggage", "suitcases"), handLuggageCount: 2, suitcaseCount: 4 };
+    expect(toJourneyInput(both).luggageCounts).toEqual({ handLuggage: 2, suitcases: 4 });
+    const handOnly = { ...emptyDraft, ...tap("hand_luggage"), handLuggageCount: 3, suitcaseCount: 4 };
+    expect(toJourneyInput(handOnly).luggageCounts).toEqual({ handLuggage: 3 });
+    expect(toJourneyInput({ ...emptyDraft, ...tap("none") }).luggageCounts).toBeUndefined();
+  });
 });
+

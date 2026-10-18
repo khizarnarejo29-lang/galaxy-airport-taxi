@@ -162,7 +162,7 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
         fail(res.errors);
         return null;
       }
-      const quote = { quote: res.quote, token: res.token };
+      const quote = { quote: res.quote, token: res.token, cardPayments: res.cardPayments };
       dispatch({ type: "quoted", quote, notice });
       return quote;
     },
@@ -199,7 +199,9 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
       } catch {
         /* ignore */
       }
-      router.push(`/booking/${res.reference}`);
+      // Card payments: on to the secure card page. Otherwise straight to the confirmation.
+      if (res.checkoutUrl) window.location.assign(res.checkoutUrl);
+      else router.push(`/booking/${res.reference}`);
       return;
     }
     const code = res.errors[0]?.code;
@@ -249,14 +251,18 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
     state.step === "extras"
       ? "Get my prices"
       : state.step === "review"
-        ? "Confirm booking"
+        ? state.quote?.cardPayments && runningTotal !== null
+          ? `Confirm and pay ${formatGBP(runningTotal)}`
+          : "Confirm booking"
         : "Continue";
-  const busyLabel = state.busy === "quote" ? "Calculating…" : state.busy === "booking" ? "Booking…" : null;
+  const busyLabel =
+    state.busy === "quote" ? "Calculating…" : state.busy === "booking" ? (state.quote?.cardPayments ? "Opening payment…" : "Booking…") : null;
   const HeadingTag = variant === "hero" ? "h2" : "h1";
 
   return (
     <div
       ref={rootRef}
+      data-calculator
       className={
         "scroll-mt-20 overflow-clip rounded-2xl bg-white text-ink shadow-card ring-1 ring-navy-900/5 sm:rounded-3xl " +
         // Focused fields keep room below them for their error message and the sticky action bar,
@@ -303,6 +309,7 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
           <HeadingTag
             ref={headingRef}
             tabIndex={-1}
+            data-calculator-heading
             className="mt-6 font-display text-[1.65rem] leading-tight font-semibold tracking-tight outline-none sm:text-3xl"
           >
             {current.title}

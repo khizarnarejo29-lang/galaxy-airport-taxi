@@ -66,6 +66,9 @@ export interface Draft {
   luggageCategory: LuggageCategory | null;
   /** Hand luggage chosen as well as suitcases. */
   handLuggageToo: boolean;
+  /** How many hand luggage bags and suitcases, used only for the kinds chosen. */
+  handLuggageCount: number;
+  suitcaseCount: number;
   /** Large or unusual items (bikes, golf bags…); null until answered. Yes means price on request. */
   largeItems: boolean | null;
   /** Terminal of the outward journey's airport end (a journey never has two airports). */
@@ -87,6 +90,8 @@ export interface Draft {
 export interface QuoteState {
   quote: Quote;
   token: string;
+  /** Booking is followed by the card payment page. */
+  cardPayments?: boolean;
 }
 
 export interface CalcState {
@@ -120,6 +125,8 @@ export const emptyDraft: Draft = {
   passengers: null,
   luggageCategory: null,
   handLuggageToo: false,
+  handLuggageCount: 1,
+  suitcaseCount: 1,
   largeItems: null,
   terminal: "",
   flightNumber: "",
@@ -155,6 +162,8 @@ const PRICED_FIELDS: (keyof Draft)[] = [
   "passengers",
   "luggageCategory",
   "handLuggageToo",
+  "handLuggageCount",
+  "suitcaseCount",
   "largeItems",
   "terminal",
   "flightNumber",
@@ -305,6 +314,7 @@ export function toJourneyInput(d: Draft): JourneyInput {
       : undefined,
     luggageCategory: d.luggageCategory ?? undefined,
     handLuggageToo: (d.luggageCategory === "suitcases" && d.handLuggageToo) || undefined,
+    luggageCounts: luggageCountsFor(d),
     largeItems: d.largeItems ?? undefined,
     extras: { meetAndGreet: meetAndGreetAvailable(d) && d.addOns.meetAndGreet, childSeats: d.addOns.childSeats },
   };
@@ -366,7 +376,7 @@ export function validateStep(step: StepId, d: Draft, quote: QuoteState | null): 
 const FIELD_STEPS: [RegExp, StepId][] = [
   [/^(tripType|pickup|dropoff)$|^extraStops(\.\d+)?$|^returnJourney(\.(pickup|extraStops(\.\d+)?))?$/, "journey"],
   [/^(date|time)$|^returnJourney\.(date|time)$/, "when"],
-  [/^(passengers|luggage|luggageCategory|largeItems)(\.|$)/, "party"],
+  [/^(passengers|luggage|luggageCategory|luggageCounts|largeItems)(\.|$)/, "party"],
   [/^(pickup|dropoff)\.terminal$|^flightNumber$|^returnJourney\.(pickup\.terminal|flightNumber)$/, "airport"],
   [/^(addOns|extras)(\.|$)/, "extras"],
   [/^vehicleId$/, "vehicle"],
@@ -422,4 +432,14 @@ export function toggleLuggage(
   if (suitcases) return { luggageCategory: "suitcases", handLuggageToo: hand };
   if (hand) return { luggageCategory: "hand_luggage", handLuggageToo: false };
   return { luggageCategory: null, handLuggageToo: false };
+}
+
+/** The counts to send: one for each kind of luggage chosen. */
+export function luggageCountsFor(d: Pick<Draft, "luggageCategory" | "handLuggageToo" | "handLuggageCount" | "suitcaseCount">) {
+  const chosen = chosenLuggage(d);
+  if (!chosen.hand_luggage && !chosen.suitcases) return undefined;
+  return {
+    ...(chosen.hand_luggage ? { handLuggage: d.handLuggageCount } : {}),
+    ...(chosen.suitcases ? { suitcases: d.suitcaseCount } : {}),
+  };
 }

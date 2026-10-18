@@ -50,6 +50,7 @@ function services(overrides: Partial<Services> = {}): Services {
       create: async (b) => void store.set(b.reference, b),
       findByReference: async (r) => store.get(r) ?? null,
       exists: async (r) => store.has(r),
+      update: async (b) => void store.set(b.reference, b),
     },
     quoteRequests: memoryQuoteRequestRepository(),
     ...overrides,
@@ -170,6 +171,23 @@ describe("createQuote", () => {
     expect(plain.ok && plain.quote.journey.handLuggageToo).toBe(undefined);
   });
 
+  it("keeps bag counts for the luggage chosen, without changing the price", async () => {
+    const result = await createQuote(
+      { ...journey, handLuggageToo: true, luggageCounts: { suitcases: 3, handLuggage: 2 } },
+      services(),
+      { now, fares },
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.quote.options.find((o) => o.vehicleId === "estate")).toMatchObject({ available: true, total: 9800 });
+    expect(verifyQuote(result.token)?.journey.luggageCounts).toEqual({ suitcases: 3, handLuggage: 2 });
+    // Counts for luggage that wasn't chosen are dropped.
+    const handOnly = await createQuote({ ...journey, luggageCategory: "hand_luggage", luggageCounts: { suitcases: 3, handLuggage: 2 } }, services(), { now, fares });
+    expect(handOnly.ok && handOnly.quote.journey.luggageCounts).toEqual({ handLuggage: 2 });
+    const none = await createQuote({ ...journey, luggageCategory: "none", luggageCounts: { suitcases: 3 } }, services(), { now, fares });
+    expect(none.ok && none.quote.journey.luggageCounts).toBe(undefined);
+  });
+
   it("rejects a request without a luggage category, with no fallback to the fleet's luggage limits", async () => {
     const r = await createQuote({ ...journey, luggageCategory: undefined }, services(), { now, fares });
     expect(r.ok || [r.status, r.errors.map((e) => e.code)]).toEqual([422, ["LUGGAGE_CATEGORY_REQUIRED"]]);
@@ -245,6 +263,13 @@ describe("createQuote", () => {
     }
     for (const handLuggageToo of ["yes", 1, null]) {
       expect(journeySchema.safeParse({ ...journey, handLuggageToo }).success).toBe(false);
+    }
+  });
+
+  it("accepts bag counts from 1 to the limit only", () => {
+    expect(journeySchema.safeParse({ ...journey, luggageCounts: { suitcases: 1, handLuggage: 10 } }).success).toBe(true);
+    for (const luggageCounts of [{ suitcases: 0 }, { handLuggage: 11 }, { suitcases: 1.5 }, { bikes: 1 }]) {
+      expect(journeySchema.safeParse({ ...journey, luggageCounts }).success).toBe(false);
     }
   });
 

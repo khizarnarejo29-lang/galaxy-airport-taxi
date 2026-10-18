@@ -22,6 +22,7 @@ const paths = {
   terminal: "M4 20V8l8-4 8 4v12M9 20v-6h6v6",
   sparkle: "M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18M6 18l2.5-2.5m7-7L18 6",
   mail: "M4 6h16v12H4V6Zm0 0 8 7 8-7",
+  chat: "M4 5h16v11H9l-5 4V5Zm4 5h8m-8 3h5",
   route: "M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12-10a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 17h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16",
 } as const;
 

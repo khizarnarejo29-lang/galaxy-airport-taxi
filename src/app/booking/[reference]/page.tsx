@@ -44,8 +44,17 @@ function ReferenceOnly({ message }: { message: string }) {
   );
 }
 
-export default async function BookingPage({ params }: PageProps<"/booking/[reference]">) {
+/** What the card payment page sent the customer back with. */
+const PAYMENT_NOTES: Record<string, { tone: "good" | "warn"; text: string }> = {
+  success: { tone: "good", text: "Thank you, your card payment has gone through. It can take a minute to show here." },
+  cancelled: { tone: "warn", text: "Your payment wasn’t completed and you haven’t been charged. You can pay below, or call us." },
+  error: { tone: "warn", text: "We couldn’t open the card payment page. Please try again, or call us." },
+  expired: { tone: "warn", text: "For your security, please call us to pay for this booking." },
+};
+
+export default async function BookingPage({ params, searchParams }: PageProps<"/booking/[reference]">) {
   const { reference } = await params;
+  const { payment: returned } = await searchParams;
   const pass = (await cookies()).get(VIEW_PASS_COOKIE)?.value;
   const view = await bookingView(reference, pass, getServices().bookings);
 
@@ -66,6 +75,9 @@ export default async function BookingPage({ params }: PageProps<"/booking/[refer
     );
   }
   const { booking } = view;
+  const paid = booking.payment.status === "paid";
+  const canPay = !paid && booking.status !== "cancelled" && Boolean(getServices().payments.checkout);
+  const note = typeof returned === "string" && !(paid && returned !== "success") ? PAYMENT_NOTES[returned] : undefined;
 
   // Reference and total get their own treatment; the rest is a plain list.
   const rows = bookingSummaryRows(booking).filter(([k]) => k !== "Booking reference" && k !== "Total fare");
@@ -118,9 +130,35 @@ export default async function BookingPage({ params }: PageProps<"/booking/[refer
               </div>
               <div className="flex justify-between gap-4 pt-1 text-ink-soft">
                 <dt>Payment</dt>
-                <dd className="text-right">{booking.payment.method}</dd>
+                <dd className={`text-right ${paid ? "font-semibold text-success" : ""}`}>
+                  {paid ? "Paid by card" : canPay ? "Not paid yet" : booking.payment.method}
+                </dd>
               </div>
             </dl>
+
+            {note && (
+              <p
+                role="status"
+                className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${
+                  note.tone === "good" ? "border-success/30 bg-success-soft text-success" : "border-danger/25 bg-danger-soft text-danger"
+                }`}
+              >
+                {note.text}
+              </p>
+            )}
+
+            {canPay && returned !== "success" && (
+              <form method="post" action={`/booking/${booking.reference}/pay`} className="mt-4">
+                <button
+                  type="submit"
+                  className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-ink px-6 text-base font-bold text-white transition hover:bg-night-3"
+                >
+                  Pay {formatGBP(booking.total)} by card
+                  <Icon name="arrowRight" className="size-5" />
+                </button>
+                <p className="mt-2 text-center text-xs text-ink-soft">Secure payment by Stripe. Your card details never reach this website.</p>
+              </form>
+            )}
 
             <div className="mt-8 rounded-xl border border-line p-5 sm:p-6">
               <h2 className="font-display text-xl font-semibold tracking-tight">Need to change something?</h2>

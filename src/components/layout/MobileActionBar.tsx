@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { site } from "@/config/site";
 import { airports } from "@/lib/domain/airports";
+import { QuoteLink } from "./QuoteLink";
 
 /** Pages that already show the calculator (with its own action bar) or don't need one. */
 const HIDDEN = new Set(["/", "/quote", ...airports.map((a) => `/${a.slug}`)]);
@@ -29,12 +29,11 @@ export function MobileActionBar() {
             <Icon name="phone" className="size-4" />
             Call
           </a>
-          <Link
-            href="/quote"
+          <QuoteLink
             className="inline-flex h-12 flex-[2] items-center justify-center rounded-xl bg-ink font-bold text-white transition hover:bg-night-3"
           >
             Get a Quote
-          </Link>
+          </QuoteLink>
         </div>
       </nav>
     </>

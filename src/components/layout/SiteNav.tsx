@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { Icon } from "@/components/ui/Icon";
 import { isGroup, mainNav, type NavGroup } from "@/config/navigation";
 import { site } from "@/config/site";
+import { QuoteLink } from "./QuoteLink";
 
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
 const groupActive = (pathname: string, g: NavGroup) => g.children.some((c) => isActive(pathname, c.href));
@@ -131,12 +132,12 @@ export function SiteNav() {
         )}
       </button>
       {/* Portalled to <body>: the header's backdrop blur would otherwise trap a fixed element inside it. */}
-      {mobileOpen && createPortal(<MobileMenu id={`${menuId}-mobile`} pathname={pathname} />, document.body)}
+      {mobileOpen && createPortal(<MobileMenu id={`${menuId}-mobile`} pathname={pathname} onClose={() => setMobileOpen(false)} />, document.body)}
     </nav>
   );
 }
 
-function MobileMenu({ id, pathname }: { id: string; pathname: string }) {
+function MobileMenu({ id, pathname, onClose }: { id: string; pathname: string; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     ref.current?.querySelector("a")?.focus();
@@ -181,9 +182,9 @@ function MobileMenu({ id, pathname }: { id: string; pathname: string }) {
         ))}
       </ul>
       <div className="mt-6 grid gap-3">
-        <Link href="/quote" className="flex h-14 items-center justify-center rounded-xl bg-ink font-bold text-white transition hover:bg-night-3">
+        <QuoteLink onClick={onClose} className="flex h-14 items-center justify-center rounded-xl bg-ink font-bold text-white transition hover:bg-night-3">
           Get a Quote
-        </Link>
+        </QuoteLink>
         <a
           href={site.phone.href}
           className="flex h-14 items-center justify-center gap-2 rounded-xl border-2 border-line font-semibold text-ink transition-colors hover:border-ink"

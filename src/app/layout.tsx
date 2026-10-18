@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Manrope } from "next/font/google";
+import { FloatingContact } from "@/components/layout/FloatingContact";
 import { MobileActionBar } from "@/components/layout/MobileActionBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <SiteFooter />
         <MobileActionBar />
+        <FloatingContact />
       </body>
     </html>
   );
