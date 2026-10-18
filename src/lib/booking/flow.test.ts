@@ -15,6 +15,13 @@ import { LocationLookupError, type LocationProvider } from "@/lib/services/locat
 import { memoryQuoteRequestRepository } from "@/lib/services/quote-requests";
 import { createBooking, type BookingRequest } from "./create-booking";
 
+// Most tests here are about reference fares alone: without a tariff passed in, none is used.
+// The "location tariff" tests pass their own; activeTariff itself is tested below.
+vi.mock("@/config/pricing", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/config/pricing")>();
+  return { ...real, activeTariff: (...args: Parameters<typeof real.activeTariff>) => (args.length ? real.activeTariff(...args) : null) };
+});
+
 const now = new Date("2026-10-05T09:00:00Z");
 
 const places: Record<string, ResolvedLocation> = {
@@ -1005,7 +1012,7 @@ describe("activeTariff", () => {
     expect(activeTariff({ NODE_ENV: "production" }, real)).toBe(real);
   });
 
-  it("ships switched off: the tariff figures are still placeholders", () => {
-    expect(activeTariff({ NODE_ENV: "production" })).toBeNull();
+  it("ships switched on, with real figures", () => {
+    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-19" });
   });
 });
