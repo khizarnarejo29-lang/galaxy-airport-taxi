@@ -91,10 +91,159 @@
   }
 }
 
+/*
+ * Hero road and page illustrations (see components/sections/art.tsx).
+ * SVG transforms here are in the drawing's own units.
+ */
+@keyframes art-taxi-in {
+  from { transform: translateX(-1100px); }
+  to { transform: none; }
+}
+@keyframes art-wheel {
+  from { transform: rotate(-1800deg); }
+  to { transform: none; }
+}
+@keyframes art-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes art-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.9; }
+}
+@keyframes art-blink {
+  0%, 85%, 100% { opacity: 0; }
+  90% { opacity: 1; }
+}
+@keyframes art-traffic {
+  from { transform: translateX(-240px); }
+  to { transform: translateX(3600px); }
+}
+@keyframes art-traffic-near {
+  from { transform: translateX(-260px); }
+  to { transform: translateX(2300px); }
+}
+@keyframes art-brake {
+  0%, 40% { opacity: 0; }
+  55%, 92% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes art-indicate {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes art-settle {
+  0% { transform: none; }
+  30% { transform: rotate(1.6deg); }
+  65% { transform: rotate(-0.6deg); }
+  100% { transform: none; }
+}
+@keyframes art-plane-takeoff {
+  0% { transform: translate(-80px, 240px) rotate(-12deg); opacity: 0; }
+  6% { opacity: 1; }
+  55% { transform: translate(1540px, 10px) rotate(-12deg); opacity: 1; }
+  56%, 100% { transform: translate(1540px, 10px) rotate(-12deg); opacity: 0; }
+}
+@keyframes art-plane-landing {
+  0% { transform: translate(-80px, 30px) rotate(8deg); opacity: 0; }
+  6% { opacity: 1; }
+  55% { transform: translate(1540px, 230px) rotate(8deg); opacity: 1; }
+  56%, 100% { transform: translate(1540px, 230px) rotate(8deg); opacity: 0; }
+}
+/* The same flights inside a 400-wide page illustration. */
+@keyframes art-plane-sm-takeoff {
+  0% { transform: translate(-50px, 150px) rotate(-14deg); opacity: 0; }
+  6% { opacity: 1; }
+  60% { transform: translate(450px, 30px) rotate(-14deg); opacity: 1; }
+  61%, 100% { transform: translate(450px, 30px) rotate(-14deg); opacity: 0; }
+}
+@keyframes art-plane-sm-landing {
+  0% { transform: translate(180px, 100px) rotate(8deg); opacity: 0; }
+  6% { opacity: 1; }
+  60% { transform: translate(420px, 160px) rotate(8deg); opacity: 1; }
+  61%, 100% { transform: translate(420px, 160px) rotate(8deg); opacity: 0; }
+}
+@keyframes art-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes art-bob {
+  0%, 100% { transform: none; }
+  50% { transform: translateY(-6px); }
+}
+@keyframes art-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes art-zoom {
+  from { transform: scale(1.12); }
+  to { transform: scale(1); }
+}
+@keyframes art-drive-in {
+  from { transform: translateX(-420px); }
+  to { transform: none; }
+}
+
+/* Wait until the drawing is on screen (components/sections/InView.tsx). */
+.art-scope:not([data-inview]),
+.art-scope:not([data-inview]) * {
+  animation-play-state: paused !important;
+}
+
+.art-taxi-in { animation: art-taxi-in 2.4s cubic-bezier(0.16, 0.84, 0.3, 1) 0.2s both; }
+.art-wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-wheel 2.4s cubic-bezier(0.16, 0.84, 0.3, 1) 0.2s both;
+}
+.art-beam { animation: art-fade-in 0.6s ease-out 2.4s both; }
+.art-twinkle { animation: art-twinkle 5s ease-in-out infinite; }
+.art-blink { animation: art-blink 1.4s linear infinite; }
+.art-traffic-far-a { animation: art-traffic 16s linear 1s infinite both; }
+.art-traffic-far-b { animation: art-traffic 16s linear 6.5s infinite both; }
+.art-traffic-far-c { animation: art-traffic 16s linear 12s infinite both; }
+.art-brake { opacity: 0; animation: art-brake 2.4s linear 0.2s both; }
+.art-indicate { opacity: 0; animation: art-indicate 1s steps(1) 2.9s infinite; }
+.art-settle {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: art-settle 0.7s ease-out 2.5s both;
+}
+.art-traffic-near-a { animation: art-traffic-near 10s linear 3s infinite both; }
+.art-traffic-near-b { animation: art-traffic-near 10s linear 6.4s infinite both; }
+.art-traffic-near-c { animation: art-traffic-near 10s linear 9.8s infinite both; }
+.art-wheel-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-spin 0.45s linear infinite;
+}
+.art-beam-on { opacity: 1; }
+.art-plane-takeoff { animation: art-plane-takeoff 16s ease-in 1.5s infinite both; }
+.art-plane-landing { animation: art-plane-landing 16s ease-out 1.5s infinite both; }
+.art-plane-sm-takeoff { animation: art-plane-sm-takeoff 11s ease-in 1s infinite both; }
+.art-plane-sm-landing { animation: art-plane-sm-landing 11s ease-out 1s infinite both; }
+.art-rise { animation: art-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both; }
+.art-bob { animation: art-bob 3s ease-in-out infinite; }
+.art-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-spin 40s linear infinite;
+}
+.art-zoom { animation: art-zoom 6s ease-out both; }
+.art-drive-in { animation: art-drive-in 1.8s cubic-bezier(0.16, 0.84, 0.3, 1) 0.4s both; }
+.art-drive-in-late { animation: art-drive-in 1.8s cubic-bezier(0.16, 0.84, 0.3, 1) 0.9s both; }
+.art-drive-in-later { animation: art-drive-in 1.8s cubic-bezier(0.16, 0.84, 0.3, 1) 1.4s both; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Looping decoration would flicker at 1ms: switch it off and hide what only makes sense moving. */
+  .art-loop { visibility: hidden; }
+  .art-loop, .art-twinkle, .art-blink, .art-bob, .art-spin, .art-wheel-spin, .art-indicate, .art-brake { animation: none !important; }
+  /* Entrances: show the end state straight away. */
+  .art-taxi-in, .art-wheel, .art-beam, .art-settle, .art-rise, .art-zoom, .art-drive-in, .art-drive-in-late, .art-drive-in-later {
+    animation-delay: 0s !important;
   }
 }

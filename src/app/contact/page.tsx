@@ -28,6 +28,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
       <PageHero
         crumbs={[{ label: "Contact", href: "/contact" }]}
         eyebrow="Contact"
+        illustration="contact"
         title="Get in touch"
         lead={`To get a price, change a booking or ask anything else, please call us on ${site.phone.display}. Phone is currently the most reliable way to reach us.`}
       />

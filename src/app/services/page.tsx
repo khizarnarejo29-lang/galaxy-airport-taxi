@@ -18,6 +18,8 @@ export default function ServicesPage() {
       <PageHero
         crumbs={[{ label: "Services", href: "/services" }]}
         eyebrow="Services"
+        illustration="services"
+        scene="takeoff"
         title="Airport transfers, plus the extras that make them easier"
         lead="Every journey runs between a Greater London address and one of the five London airports. Here's what you can book."
       />

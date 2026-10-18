@@ -45,6 +45,7 @@ export default function HomePage() {
       <JsonLd data={localBusiness()} />
       <CalculatorHero
         eyebrow="London airport transfers"
+        illustration="london"
         title={
           <>
             Your airport run, <span className="text-accent">made simple.</span>

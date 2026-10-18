@@ -21,6 +21,7 @@ export default function FaqPage() {
       <PageHero
         crumbs={[{ label: "FAQ", href: "/faq" }]}
         eyebrow="FAQ"
+        illustration="faq"
         title="Questions and answers"
         lead="How quotes work, what's included and what to expect when you book."
       />

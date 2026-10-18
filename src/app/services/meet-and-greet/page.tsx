@@ -31,6 +31,8 @@ export default function MeetAndGreetPage() {
       <PageHero
         crumbs={[{ label: "Services", href: "/services" }, { label: "Meet & Greet", href: "/services/meet-and-greet" }]}
         eyebrow="Meet & Greet"
+        illustration="meet"
+        scene="landing"
         title="Find your driver as soon as you land"
         lead={meetAndGreet.description}
       />

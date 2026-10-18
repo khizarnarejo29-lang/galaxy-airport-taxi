@@ -42,6 +42,8 @@ export default async function AirportPage({ params }: PageProps<"/[airport]">) {
         title={content.h1}
         lead={content.lead}
         initialAirport={airport.code}
+        scene="takeoff"
+        illustration="airport"
       >
         <p className="flex items-start gap-3 text-white/75">
           <Icon name="pin" className="mt-1 size-5 shrink-0 text-accent" />
