@@ -39,7 +39,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
       <JsonLd data={breadcrumbList(items, current.href)} />
       <ol className="flex flex-wrap items-center gap-1.5 text-sm text-white/60">
         <li>
-          <Link href="/" className="hover:text-white">
+          <Link href="/" className="inline-block py-1 hover:text-white">
             Home
           </Link>
         </li>
@@ -47,7 +47,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
           <li key={c.href} className="flex items-center gap-1.5">
             <span aria-hidden="true">/</span>
             {c !== current ? (
-              <Link href={c.href} className="hover:text-white">
+              <Link href={c.href} className="inline-block py-1 hover:text-white">
                 {c.label}
               </Link>
             ) : (

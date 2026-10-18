@@ -23,6 +23,7 @@ export default function NotFound() {
       </section>
       <div className="bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 className="mb-6 font-display text-2xl font-bold tracking-tight">Airports we serve</h2>
           <AirportGrid />
         </div>
       </div>
