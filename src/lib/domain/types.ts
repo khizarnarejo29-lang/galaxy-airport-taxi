@@ -101,6 +101,8 @@ export interface JourneyInput {
   returnJourney?: ReturnJourneyInput;
   /** Required by validation: none, hand luggage or suitcases. */
   luggageCategory?: LuggageCategory;
+  /** With suitcases only: the party has hand luggage as well. Shown to the driver; priced as suitcases. */
+  handLuggageToo?: boolean;
   /** Required by validation. True means large or unusual items: never priced instantly. */
   largeItems?: boolean;
   /** Extras the price should include; they must match the reference fare. */
@@ -165,6 +167,8 @@ export interface PricedJourney {
   tripType: TripType;
   returnJourney?: PricedReturnJourney;
   luggageCategory?: LuggageCategory;
+  /** Hand luggage as well as suitcases. Display only: the suitcases fare applies. */
+  handLuggageToo?: boolean;
   /** Large or unusual items declared: every vehicle is price on request. */
   largeItems?: boolean;
   /** Extras the quoted prices include. */

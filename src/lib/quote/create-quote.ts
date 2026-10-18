@@ -158,6 +158,8 @@ export async function createQuote(
     distanceMiles,
     returnJourney,
     luggageCategory: input.luggageCategory,
+    // Only meaningful alongside suitcases; dropped otherwise so it can't contradict the category.
+    handLuggageToo: input.luggageCategory === "suitcases" && input.handLuggageToo === true ? true : undefined,
     largeItems: input.largeItems,
     extras: effectiveExtras({ pickup, returnJourney }, input.extras ?? NO_EXTRAS),
   };

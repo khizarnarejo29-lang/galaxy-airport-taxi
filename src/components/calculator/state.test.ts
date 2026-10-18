@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fieldError } from "@/lib/domain/errors";
 import type { ResolvedLocation } from "@/lib/domain/types";
 import {
+  chosenLuggage,
   emptyDraft,
   meetAndGreetAvailable,
   reducer,
@@ -9,6 +10,7 @@ import {
   stepForErrors,
   stepsFor,
   toJourneyInput,
+  toggleLuggage,
   validateStep,
   type CalcState,
   type Draft,
@@ -293,5 +295,42 @@ describe("validateStep", () => {
     expect(validateStep("vehicle", { ...draft, vehicleId: "saloon" }, quote)).toEqual([]);
     expect(validateStep("vehicle", { ...draft, vehicleId: "mpv" }, quote).map((e) => e.code)).toEqual(["VEHICLE_UNAVAILABLE"]);
     expect(selectedOption({ ...draft, vehicleId: "saloon" }, quote)?.total).toBe(4800);
+  });
+});
+
+describe("luggage choice", () => {
+  const start = { luggageCategory: null, handLuggageToo: false } as const;
+  const tap = (...items: Parameters<typeof toggleLuggage>[1][]) =>
+    items.reduce<Pick<Draft, "luggageCategory" | "handLuggageToo">>((d, item) => toggleLuggage(d, item), start);
+
+  it("lets hand luggage and suitcases be chosen together, priced as suitcases", () => {
+    expect(tap("hand_luggage", "suitcases")).toEqual({ luggageCategory: "suitcases", handLuggageToo: true });
+    expect(tap("suitcases", "hand_luggage")).toEqual({ luggageCategory: "suitcases", handLuggageToo: true });
+    expect(chosenLuggage(tap("hand_luggage", "suitcases"))).toEqual({ none: false, hand_luggage: true, suitcases: true });
+  });
+
+  it("chooses one item on its own", () => {
+    expect(tap("hand_luggage")).toEqual({ luggageCategory: "hand_luggage", handLuggageToo: false });
+    expect(tap("suitcases")).toEqual({ luggageCategory: "suitcases", handLuggageToo: false });
+    expect(tap("none")).toEqual({ luggageCategory: "none", handLuggageToo: false });
+  });
+
+  it("unticks items independently, and back to no answer when nothing is left", () => {
+    expect(tap("hand_luggage", "suitcases", "suitcases")).toEqual({ luggageCategory: "hand_luggage", handLuggageToo: false });
+    expect(tap("hand_luggage", "suitcases", "hand_luggage")).toEqual({ luggageCategory: "suitcases", handLuggageToo: false });
+    expect(tap("suitcases", "suitcases")).toEqual({ luggageCategory: null, handLuggageToo: false });
+  });
+
+  it("treats None as its own answer: it clears the others, and picking one clears None", () => {
+    expect(tap("hand_luggage", "suitcases", "none")).toEqual({ luggageCategory: "none", handLuggageToo: false });
+    expect(tap("none", "suitcases")).toEqual({ luggageCategory: "suitcases", handLuggageToo: false });
+    expect(chosenLuggage(tap("none"))).toEqual({ none: true, hand_luggage: false, suitcases: false });
+  });
+
+  it("sends the hand luggage to the server only with suitcases", () => {
+    const both = { ...emptyDraft, ...tap("hand_luggage", "suitcases") };
+    expect(toJourneyInput(both)).toMatchObject({ luggageCategory: "suitcases", handLuggageToo: true });
+    const handOnly = { ...emptyDraft, ...tap("hand_luggage") };
+    expect(toJourneyInput(handOnly).handLuggageToo).toBeUndefined();
   });
 });

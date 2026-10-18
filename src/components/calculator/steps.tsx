@@ -11,11 +11,12 @@ import { describeEnd } from "@/lib/domain/route";
 import { luggageCategories, type AirportCode } from "@/lib/domain/types";
 import { addDays, formatJourneyDate, londonToday } from "@/lib/utils/dates";
 import { formatGBP } from "@/lib/utils/money";
-import { ChoiceCards, Counter, describedBy, Field, FieldError, TextArea, TextInput } from "@/components/ui/form";
+import { ChoiceCards, Counter, describedBy, Field, FieldError, TextArea, TextInput, ToggleCards } from "@/components/ui/form";
 import { Icon } from "@/components/ui/Icon";
 import { AddressSearch } from "./AddressSearch";
 import {
   addressLines,
+  chosenLuggage,
   errorFor,
   fieldId,
   isReturn,
@@ -25,6 +26,7 @@ import {
   returnHasAirport,
   returnPicksUpAtAirport,
   selectedOption,
+  toggleLuggage,
   type CalcState,
   type Draft,
   type StepId,
@@ -344,15 +346,15 @@ export function PartyStep({ state, set }: StepProps) {
         onChange={(passengers) => set({ passengers })}
       />
       <div className="pt-3">
-        <ChoiceCards
+        <ToggleCards
           id={fieldId("luggageCategory")}
           legend="Luggage"
-          name="luggageCategory"
-          value={d.luggageCategory}
+          hint="Choose all that apply."
+          checked={chosenLuggage(d)}
           error={err(state, "luggageCategory")}
           columns="grid-cols-1 sm:grid-cols-3"
           options={luggageCategories.map((c) => ({ value: c, label: luggageCategoryLabels[c] }))}
-          onChange={(luggageCategory) => set({ luggageCategory })}
+          onToggle={(item) => set(toggleLuggage(d, item))}
         />
       </div>
       <div className="pt-3">
@@ -809,7 +811,7 @@ export function ReviewStep({ state, go }: StepProps) {
       step: "party",
       rows: [
         row("Passengers", String(j.passengers)),
-        row("Luggage", describeLuggage(j.luggage, j.luggageCategory)),
+        row("Luggage", describeLuggage(j.luggage, j.luggageCategory, j.handLuggageToo)),
         row("Vehicle", getVehicle(option.vehicleId)!.name),
       ],
     },

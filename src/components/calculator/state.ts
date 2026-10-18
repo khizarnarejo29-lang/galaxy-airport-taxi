@@ -62,8 +62,10 @@ export interface Draft {
   returnDate: string;
   returnTime: string;
   passengers: number | null;
-  /** None, hand luggage or suitcases; null until the customer chooses. */
+  /** None, hand luggage or suitcases; null until the customer chooses. With both, this is "suitcases". */
   luggageCategory: LuggageCategory | null;
+  /** Hand luggage chosen as well as suitcases. */
+  handLuggageToo: boolean;
   /** Large or unusual items (bikes, golf bags…); null until answered. Yes means price on request. */
   largeItems: boolean | null;
   /** Terminal of the outward journey's airport end (a journey never has two airports). */
@@ -117,6 +119,7 @@ export const emptyDraft: Draft = {
   returnTime: "",
   passengers: null,
   luggageCategory: null,
+  handLuggageToo: false,
   largeItems: null,
   terminal: "",
   flightNumber: "",
@@ -151,6 +154,7 @@ const PRICED_FIELDS: (keyof Draft)[] = [
   "returnTime",
   "passengers",
   "luggageCategory",
+  "handLuggageToo",
   "largeItems",
   "terminal",
   "flightNumber",
@@ -300,6 +304,7 @@ export function toJourneyInput(d: Draft): JourneyInput {
         }
       : undefined,
     luggageCategory: d.luggageCategory ?? undefined,
+    handLuggageToo: (d.luggageCategory === "suitcases" && d.handLuggageToo) || undefined,
     largeItems: d.largeItems ?? undefined,
     extras: { meetAndGreet: meetAndGreetAvailable(d) && d.addOns.meetAndGreet, childSeats: d.addOns.childSeats },
   };
@@ -385,4 +390,36 @@ export function errorFor(errors: FieldError[], field: string): string | undefine
 
 export function needsTerminal(airport: AirportCode | null): boolean {
   return airport ? requiresTerminal(airport) : false;
+}
+
+/* ───────────────────────── Luggage choice ───────────────────────── */
+
+export type LuggageItem = "none" | "hand_luggage" | "suitcases";
+
+/** Which luggage cards show as chosen. Hand luggage and suitcases can be chosen together. */
+export function chosenLuggage(d: Pick<Draft, "luggageCategory" | "handLuggageToo">): Record<LuggageItem, boolean> {
+  const suitcases = d.luggageCategory === "suitcases";
+  return {
+    none: d.luggageCategory === "none",
+    hand_luggage: d.luggageCategory === "hand_luggage" || (suitcases && d.handLuggageToo),
+    suitcases,
+  };
+}
+
+/**
+ * Tapping a luggage card. "None" clears the others; hand luggage and suitcases
+ * toggle independently. The price follows the biggest item: suitcases, then
+ * hand luggage, so choosing both is priced exactly as suitcases.
+ */
+export function toggleLuggage(
+  d: Pick<Draft, "luggageCategory" | "handLuggageToo">,
+  item: LuggageItem,
+): Pick<Draft, "luggageCategory" | "handLuggageToo"> {
+  if (item === "none") return { luggageCategory: "none", handLuggageToo: false };
+  const now = chosenLuggage(d);
+  const hand = item === "hand_luggage" ? !now.hand_luggage : now.hand_luggage;
+  const suitcases = item === "suitcases" ? !now.suitcases : now.suitcases;
+  if (suitcases) return { luggageCategory: "suitcases", handLuggageToo: hand };
+  if (hand) return { luggageCategory: "hand_luggage", handLuggageToo: false };
+  return { luggageCategory: null, handLuggageToo: false };
 }
