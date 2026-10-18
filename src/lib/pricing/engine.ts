@@ -3,7 +3,7 @@
  * The same function runs in the browser (live totals) and on the server
  * (authoritative price when a booking is created).
  */
-import type { PricingConfig, TimeSurcharge } from "@/config/pricing";
+import type { EventSurcharge, PricingConfig, TimeSurcharge } from "@/config/pricing";
 import type { AddOns, AirportCode, Direction, PriceLine, VehicleId } from "@/lib/domain/types";
 import { roundTo, type Pence } from "@/lib/utils/money";
 
@@ -14,6 +14,8 @@ export interface PriceInput {
   distanceMiles: number;
   /** London local time, HH:mm. */
   time: string;
+  /** London local date, YYYY-MM-DD. Needed for event surcharges such as Christmas. */
+  date?: string;
   extraStops: number;
   addOns?: AddOns;
 }
@@ -38,6 +40,29 @@ export function surchargeApplies(s: TimeSurcharge, time: string): boolean {
   return from <= to ? t >= from && t < to : t >= from || t < to;
 }
 
+/** Minutes into the year for an MM-DD date and HH:mm time (leap years don't matter at this scale). */
+function yearMinute(mmdd: string, hhmm: string): number {
+  const [m, d] = mmdd.split("-").map(Number);
+  return ((m - 1) * 31 + (d - 1)) * 24 * 60 + toMinutes(hhmm);
+}
+
+/** Whether a London-time pickup falls inside an event window. Both ends are included. */
+export function eventApplies(s: EventSurcharge, date: string, time: string): boolean {
+  if (!s.enabled) return false;
+  const t = yearMinute(date.slice(5), time);
+  const from = yearMinute(s.from.date, s.from.time);
+  const to = yearMinute(s.to.date, s.to.time);
+  return from <= to ? t >= from && t <= to : t >= from || t <= to;
+}
+
+/** The event with the highest multiplier at this pickup, if any. */
+export function activeEvent(config: PricingConfig, date: string | undefined, time: string): EventSurcharge | undefined {
+  if (!date) return undefined;
+  return config.eventSurcharges
+    .filter((s) => s.multiplier > 1 && eventApplies(s, date, time))
+    .sort((a, b) => b.multiplier - a.multiplier)[0];
+}
+
 export function journeyFare(input: PriceInput, config: PricingConfig): Pence {
   const tariff = config.airports[input.airport];
   const chargeableMiles = Math.max(0, input.distanceMiles - tariff.includedMiles);
@@ -50,6 +75,12 @@ export function price(input: PriceInput, config: PricingConfig): PriceResult {
   const addOns = input.addOns ?? NO_ADD_ONS;
   const fare = journeyFare(input, config);
   const lines: PriceLine[] = [{ code: "journey", label: "Journey fare", amount: fare }];
+
+  // Events (Christmas, New Year…) multiply the journey fare only, not extras or airport charges.
+  const event = activeEvent(config, input.date, input.time);
+  if (event) {
+    lines.push({ code: "event_surcharge", label: event.label, amount: roundTo(fare * (event.multiplier - 1), config.roundTo) });
+  }
 
   for (const s of config.timeSurcharges) {
     if (surchargeApplies(s, input.time)) {

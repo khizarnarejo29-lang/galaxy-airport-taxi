@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { activeTariff, type PricingConfig } from "@/config/pricing";
 import { referenceFareRules } from "@/config/reference-vehicles";
 import { fieldError } from "@/lib/domain/errors";
 import { journeyAirport } from "@/lib/domain/route";
@@ -55,6 +56,8 @@ interface Options {
   now?: Date;
   /** Reference fares to re-check against; defaults to the stored, validated fare data. */
   fares?: readonly ReferenceFare[];
+  /** Location tariff to re-check against; defaults to the active one. */
+  tariff?: PricingConfig | null;
 }
 
 const sameAddOns = (a: AddOns, b: AddOns) => a.meetAndGreet === b.meetAndGreet && a.childSeats === b.childSeats;
@@ -69,7 +72,7 @@ const withLine = (end: JourneyEnd, line1: string | undefined): JourneyEnd =>
 export async function createBooking(
   req: BookingRequest,
   services: Services,
-  { now = new Date(), fares }: Options = {},
+  { now = new Date(), fares, tariff = activeTariff() }: Options = {},
 ): Promise<BookingResult> {
   const quote = verifyQuote(req.quoteToken);
   if (!quote) return { ok: false, status: 400, errors: [fieldError("quote", "QUOTE_INVALID")] };
@@ -121,18 +124,18 @@ export async function createBooking(
   }
 
   // Re-run the match now, with the full address, against the fare data as it is now.
-  const current = priceVehicle(journey, req.vehicleId, extras, fares ?? currentReferenceFares(now), now);
-  if (current.pricing.status !== "priced") {
+  const current = priceVehicle(journey, req.vehicleId, extras, fares ?? currentReferenceFares(now), now, tariff);
+  if (current.pricing.status === "price_on_request") {
     console.warn(`[booking] fare no longer available (${current.pricing.reason})`);
     return { ok: false, status: 409, errors: [fieldError("quote", "FARE_UNAVAILABLE")] };
   }
   const p = current.pricing;
-  const sameFare =
-    quoted.status === "priced" &&
-    quoted.fareId === p.fareId &&
-    quoted.referenceTotal === p.referenceTotal &&
-    quoted.checkedAt === p.checkedAt &&
-    option!.total === current.total;
+  // The same source must still give the same total: the same reference fare, or the same tariff version.
+  const samePricing =
+    p.status === "priced"
+      ? quoted.status === "priced" && quoted.fareId === p.fareId && quoted.referenceTotal === p.referenceTotal && quoted.checkedAt === p.checkedAt
+      : quoted.status === "tariff" && quoted.tariffVersion === p.tariffVersion;
+  const sameFare = samePricing && option!.total === current.total;
   if (!sameFare || current.total !== req.expectedTotal) {
     return { ok: false, status: 409, errors: [fieldError("total", "PRICE_CHANGED")], total: current.total };
   }
@@ -156,8 +159,9 @@ export async function createBooking(
       lines: current.lines,
       total: current.total,
       pricingVersion: quote.pricingVersion,
-      referenceFare: { id: p.fareId, referenceTotal: p.referenceTotal, checkedAt: p.checkedAt },
-      reviewFlags: p.flags.length ? p.flags : undefined,
+      referenceFare: p.status === "priced" ? { id: p.fareId, referenceTotal: p.referenceTotal, checkedAt: p.checkedAt } : undefined,
+      tariff: p.status === "tariff" ? { version: p.tariffVersion, events: p.events } : undefined,
+      reviewFlags: p.status === "priced" && p.flags.length ? p.flags : undefined,
       customer: {
         name: req.customer.name.trim(),
         email: req.customer.email.trim(),

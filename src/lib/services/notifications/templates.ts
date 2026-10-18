@@ -91,6 +91,9 @@ function operatorPricingRows(b: Booking): [string, string][] {
       ["Reference checked", b.referenceFare.checkedAt],
     );
   }
+  if (b.tariff) {
+    rows.push(["Priced by", `Location tariff ${b.tariff.version}${b.tariff.events.length ? ` · ${b.tariff.events.join(", ")}` : ""}`]);
+  }
   if (b.reviewFlags?.length) rows.push(["Needs review", b.reviewFlags.join(", ")]);
   return rows;
 }

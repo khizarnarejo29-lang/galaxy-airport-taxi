@@ -3,6 +3,8 @@ import type { Booking, JourneyInput, Quote, ResolvedLocation } from "@/lib/domai
 import { journeySchema } from "@/lib/api/schemas";
 import type { PricedJourney } from "@/lib/domain/types";
 import { priceVehicle } from "@/lib/reference-fares/journey-pricing";
+import { activeTariff, type PricingConfig } from "@/config/pricing";
+import { journeyFare } from "@/lib/pricing/engine";
 import { createQuote } from "@/lib/quote/create-quote";
 import { signQuote, verifyQuote } from "@/lib/quote/token";
 import type { ReferenceFare } from "@/lib/reference-fares";
@@ -877,5 +879,108 @@ describe("point-to-point journeys", () => {
       const b = await book(old, 4300);
       expect(b.ok || b.errors[0].code).toBe("QUOTE_EXPIRED");
     });
+  });
+});
+
+describe("location tariff", () => {
+  // Test figures only: not Galaxy's rates.
+  const flat = { baseFare: 4000, includedMiles: 10, perMile: 200, minimumFare: 4500, dropOffCharge: 0, pickupParking: 0 };
+  const tariff: PricingConfig = {
+    version: "test-tariff-1",
+    isPlaceholder: false,
+    roundTo: 100,
+    airports: { LHR: flat, LGW: flat, STN: flat, LTN: flat, LCY: flat },
+    vehicleMultipliers: { saloon: 1, estate: 1.2, executive: 1.5, mpv: 1.4, minibus: 1.8 },
+    extras: { meetAndGreet: 1500, childSeat: 800, extraStop: 1000 },
+    timeSurcharges: [],
+    eventSurcharges: [{ label: "Christmas rate", from: { date: "12-24", time: "18:00" }, to: { date: "12-26", time: "23:59" }, multiplier: 2, enabled: true }],
+  };
+  const opts = { now, fares, tariff };
+
+  it("prices every vehicle with room where no reference fare matches", async () => {
+    const r = await createQuote({ ...journey, passengers: 2, luggageCategory: "hand_luggage" }, services(), opts);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const saloon = r.quote.options.find((o) => o.vehicleId === "saloon")!;
+    const expected = journeyFare({ direction: "to_airport", airport: "LHR", vehicleId: "saloon", distanceMiles: r.quote.journey.distanceMiles, time: "06:30", extraStops: 0 }, tariff);
+    expect(saloon).toMatchObject({ available: true, total: expected, pricing: { status: "tariff", tariffVersion: "test-tariff-1", events: [] } });
+    expect(r.quote.options.every((o) => o.available)).toBe(true);
+  });
+
+  it("still uses a matching reference fare (minus £2) ahead of the tariff", async () => {
+    const r = await createQuote(journey, services(), opts);
+    const estate = r.ok && r.quote.options.find((o) => o.vehicleId === "estate");
+    expect(estate).toMatchObject({ total: 9800, pricing: { status: "priced", fareId: "test-estate" } });
+  });
+
+  it("refuses vehicles too small for the party", async () => {
+    const r = await createQuote({ ...journey, passengers: 5 }, services(), opts);
+    const byId = r.ok ? Object.fromEntries(r.quote.options.map((o) => [o.vehicleId, o.pricing.status])) : {};
+    expect(byId).toMatchObject({ saloon: "price_on_request", estate: "price_on_request", mpv: "tariff", minibus: "tariff" });
+  });
+
+  it("doubles the fare at Christmas and says so", async () => {
+    const r = await createQuote({ ...journey, date: "2026-12-25", time: "10:00" }, services(), { ...opts, now: new Date("2026-12-20T09:00:00Z") });
+    const saloon = r.ok && r.quote.options.find((o) => o.vehicleId === "saloon");
+    expect(saloon && saloon.pricing).toEqual({ status: "tariff", tariffVersion: "test-tariff-1", events: ["Christmas rate"] });
+    const fare = saloon ? saloon.lines.find((l) => l.code === "journey")!.amount : 0;
+    expect(saloon && saloon.lines.find((l) => l.code === "event_surcharge")?.amount).toBe(fare);
+  });
+
+  it("prices both legs of a return, using the way back's own distance", async () => {
+    const r = await createQuote({ ...returnJourney, passengers: 2 }, services(), opts);
+    expect(r.ok && r.quote.journey.returnJourney?.distanceMiles).toBeGreaterThan(0);
+    const saloon = r.ok && r.quote.options.find((o) => o.vehicleId === "saloon");
+    expect(saloon && saloon.lines.map((l) => l.code)).toEqual(["journey", "return_journey"]);
+    expect(saloon && saloon.lines[1].label).toBe("Return journey fare");
+  });
+
+  it("books at the tariff price and records it", async () => {
+    const svc = services();
+    const q = await createQuote({ ...journey, passengers: 2 }, svc, opts);
+    if (!q.ok) throw new Error("quote failed");
+    const total = q.quote.options.find((o) => o.vehicleId === "saloon")!.total;
+    const req: BookingRequest = {
+      quoteToken: q.token,
+      vehicleId: "saloon",
+      addOns: { meetAndGreet: false, childSeats: 0 },
+      customer: { name: "Sam Taylor", email: "sam@example.com", phone: "07700 900123" },
+      pickupLine1: "1 Example Road",
+      expectedTotal: total,
+    };
+    const r = await createBooking(req, svc, opts);
+    expect(r.ok && r.booking).toMatchObject({ total, tariff: { version: "test-tariff-1", events: [] } });
+    expect(r.ok && r.booking.referenceFare).toBeUndefined();
+
+    // A tariff change between quote and booking is caught, never booked at a stale price.
+    const changed = await createBooking(req, svc, { ...opts, tariff: { ...tariff, version: "test-tariff-2" } });
+    expect(changed.ok || changed.errors.map((e) => e.code)).toEqual(["PRICE_CHANGED"]);
+  });
+
+  it("never prices large or unusual items, even with a tariff", async () => {
+    const r = await createQuote({ ...journey, largeItems: true }, services(), opts);
+    expect(r.ok && r.quote.options.every((o) => o.pricing.status === "price_on_request")).toBe(true);
+  });
+});
+
+describe("activeTariff", () => {
+  const placeholder = { isPlaceholder: true } as PricingConfig;
+  const real = { isPlaceholder: false } as PricingConfig;
+
+  it("never uses placeholder figures in production, even if asked", () => {
+    expect(activeTariff({ NODE_ENV: "production", PLACEHOLDER_TARIFF: "on" }, placeholder)).toBeNull();
+  });
+
+  it("uses placeholder figures outside production only when switched on", () => {
+    expect(activeTariff({ NODE_ENV: "development" }, placeholder)).toBeNull();
+    expect(activeTariff({ NODE_ENV: "development", PLACEHOLDER_TARIFF: "on" }, placeholder)).toBe(placeholder);
+  });
+
+  it("uses real figures everywhere", () => {
+    expect(activeTariff({ NODE_ENV: "production" }, real)).toBe(real);
+  });
+
+  it("ships switched off: the tariff figures are still placeholders", () => {
+    expect(activeTariff({ NODE_ENV: "production" })).toBeNull();
   });
 });

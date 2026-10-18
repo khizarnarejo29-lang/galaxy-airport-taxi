@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PricingConfig } from "@/config/pricing";
-import { journeyFare, price, surchargeApplies } from "./engine";
+import { activeEvent, eventApplies, journeyFare, price, surchargeApplies } from "./engine";
 
 const tariff = { baseFare: 4000, includedMiles: 10, perMile: 200, minimumFare: 4500, dropOffCharge: 700, pickupParking: 800 };
 const config: PricingConfig = {
@@ -11,6 +11,10 @@ const config: PricingConfig = {
   vehicleMultipliers: { saloon: 1, estate: 1.15, executive: 1.5, mpv: 1.35, minibus: 1.8 },
   extras: { meetAndGreet: 1500, childSeat: 800, extraStop: 1000 },
   timeSurcharges: [{ label: "Night", from: "23:00", to: "05:00", percent: 10, enabled: true }],
+  eventSurcharges: [
+    { label: "Christmas rate", from: { date: "12-24", time: "18:00" }, to: { date: "12-26", time: "23:59" }, multiplier: 2, enabled: true },
+    { label: "New Year rate", from: { date: "12-31", time: "18:00" }, to: { date: "01-01", time: "23:59" }, multiplier: 2, enabled: true },
+  ],
 };
 
 const base = {
@@ -86,5 +90,49 @@ describe("surchargeApplies", () => {
 
   it("never applies when disabled", () => {
     expect(surchargeApplies({ ...night, enabled: false }, "01:00")).toBe(false);
+  });
+});
+
+describe("event surcharges", () => {
+  const christmas = config.eventSurcharges[0];
+  const newYear = config.eventSurcharges[1];
+
+  it.each([
+    ["2026-12-24", "17:59", false],
+    ["2026-12-24", "18:00", true],
+    ["2026-12-25", "12:00", true],
+    ["2026-12-26", "23:59", true],
+    ["2026-12-27", "00:00", false],
+  ])("Christmas on %s at %s: %s", (date, time, expected) => {
+    expect(eventApplies(christmas, date, time)).toBe(expected);
+  });
+
+  it("handles a window that crosses the new year", () => {
+    expect(eventApplies(newYear, "2026-12-31", "20:00")).toBe(true);
+    expect(eventApplies(newYear, "2027-01-01", "09:00")).toBe(true);
+    expect(eventApplies(newYear, "2027-01-02", "09:00")).toBe(false);
+  });
+
+  it("doubles the journey fare only, leaving extras and airport charges alone", () => {
+    const r = price({ ...base, date: "2026-12-25", direction: "from_airport", addOns: { meetAndGreet: true, childSeats: 1 } }, config);
+    expect(r.lines.find((l) => l.code === "event_surcharge")).toEqual({ code: "event_surcharge", label: "Christmas rate", amount: 5000 });
+    expect(r.total).toBe(5000 * 2 + 800 + 1500 + 800);
+  });
+
+  it("adds nothing on an ordinary day or without a date", () => {
+    expect(price({ ...base, date: "2026-10-12" }, config).lines.some((l) => l.code === "event_surcharge")).toBe(false);
+    expect(activeEvent(config, undefined, "12:00")).toBeUndefined();
+  });
+
+  it("ignores disabled events and uses the highest multiplier where events overlap", () => {
+    const overlapping = {
+      ...config,
+      eventSurcharges: [
+        { ...christmas, multiplier: 1.5 },
+        { ...christmas, label: "Big event", multiplier: 3 },
+        { ...christmas, label: "Off", multiplier: 5, enabled: false },
+      ],
+    };
+    expect(activeEvent(overlapping, "2026-12-25", "12:00")?.label).toBe("Big event");
   });
 });

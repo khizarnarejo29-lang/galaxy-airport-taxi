@@ -2,7 +2,9 @@
  * Connects the quote/booking flow to reference-fare matching. Server-side
  * only: prices come from stored, approved fares and nothing the browser sends.
  */
+import { activeTariff, type PricingConfig } from "@/config/pricing";
 import { meetAndGreetAllowed } from "@/lib/domain/route";
+import { tariffPrice } from "@/lib/pricing/tariff-pricing";
 import type { AddOns, JourneyEnd, OptionPricing, PriceLine, PricedJourney, VehicleId } from "@/lib/domain/types";
 import type { Pence } from "@/lib/utils/money";
 import { matchReferenceFare, type FareQuery, type QueryEnd } from "./match";
@@ -56,19 +58,36 @@ export function fareQueryFor(journey: PricedJourney, vehicleId: VehicleId, extra
   };
 }
 
-/** The Galaxy price for one vehicle, or price on request. Never falls back to any tariff. */
+/**
+ * The Galaxy price for one vehicle. A matching reference fare always wins (its total minus £2);
+ * otherwise the location tariff prices it when real tariff figures are set; otherwise price on request.
+ */
 export function priceVehicle(
   journey: PricedJourney,
   vehicleId: VehicleId,
   extras: AddOns,
   fares: readonly ReferenceFare[],
   now: Date,
+  tariff: PricingConfig | null = activeTariff(),
 ): OptionPrice {
-  // Large or unusual items (bikes, golf bags…) are never covered by a checked fare. Anything but an
-  // explicit "no" is treated the same way, so a missing answer can never produce a price.
+  // Large or unusual items (bikes, golf bags…) are never covered by a checked fare or the tariff.
+  // Anything but an explicit "no" is treated the same way, so a missing answer can never produce a price.
   if (journey.largeItems !== false) {
     return { pricing: { status: "price_on_request", reason: "LARGE_ITEMS" }, lines: [], total: 0 };
   }
+  const fromReference = priceFromReference(journey, vehicleId, extras, fares, now);
+  if (fromReference.pricing.status !== "price_on_request" || !tariff) return fromReference;
+  const fromTariff = tariffPrice(journey, vehicleId, extras, tariff);
+  return fromTariff.pricing.status === "tariff" ? fromTariff : fromReference;
+}
+
+function priceFromReference(
+  journey: PricedJourney,
+  vehicleId: VehicleId,
+  extras: AddOns,
+  fares: readonly ReferenceFare[],
+  now: Date,
+): OptionPrice {
   const query = fareQueryFor(journey, vehicleId, extras);
   if (!query) {
     const reason = journey.luggageCategory ? "NO_MATCHING_FARE" : "PARTY_UNCONFIRMED";
