@@ -7,6 +7,8 @@ import { exampleFares } from "@/lib/pricing/example-fares";
 import { CalculatorHero } from "@/components/sections/CalculatorHero";
 import { airportContent, airportFaqs } from "@/content/airports";
 import { airports } from "@/lib/domain/airports";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { faqPage, taxiService } from "@/lib/seo/jsonld";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const dynamicParams = false;
@@ -35,9 +37,19 @@ export default async function AirportPage({ params }: PageProps<"/[airport]">) {
   const found = find((await params).airport);
   if (!found) notFound();
   const { airport, content } = found;
+  const faqs = airportFaqs(airport.code, airport.shortName);
 
   return (
     <>
+      <JsonLd
+        data={taxiService({
+          name: `${airport.shortName} airport taxi`,
+          description: content.metaDescription,
+          path: `/${airport.slug}`,
+          airport: { name: airport.name, iataCode: airport.code },
+        })}
+      />
+      <JsonLd data={faqPage(faqs)} />
       <CalculatorHero
         crumbs={[{ label: "Airport Transfers", href: "/airport-transfers" }, { label: airport.shortName, href: `/${airport.slug}` }]}
         title={content.h1}
@@ -106,7 +118,7 @@ export default async function AirportPage({ params }: PageProps<"/[airport]">) {
 
       <Section id="faq" eyebrow="Questions" title={`${airport.shortName} transfer FAQs`}>
         <div className="max-w-3xl">
-          <FaqList items={airportFaqs(airport.code, airport.shortName)} />
+          <FaqList items={faqs} />
         </div>
       </Section>
 

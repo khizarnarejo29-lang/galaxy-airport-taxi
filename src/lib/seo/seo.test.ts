@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { airports } from "@/lib/domain/airports";
-import { breadcrumbList, faqPage, localBusiness, serialiseJsonLd } from "./jsonld";
+import { breadcrumbList, businessId, faqPage, localBusiness, serialiseJsonLd, taxiService, webSite } from "./jsonld";
+import { llmsText } from "./llms";
 import { pageMetadata } from "./metadata";
 
 afterEach(() => {
@@ -70,7 +71,8 @@ describe("structured data", () => {
       name: "Galaxy Airport Taxi",
       telephone: "+447470046660",
       email: "info@galaxyairporttaxi.co.uk",
-      address: "4-6 Greatorex Street, London E1 5NF",
+      "@id": businessId,
+      address: { "@type": "PostalAddress", streetAddress: "4-6 Greatorex Street", addressLocality: "London", postalCode: "E1 5NF", addressCountry: "GB" },
       // 24/7, confirmed by the owner, in schema.org form.
       openingHours: "Mo-Su 00:00-23:59",
     });
@@ -86,5 +88,30 @@ describe("pageMetadata", () => {
     const m = pageMetadata({ title: "Our Fleet", description: "Vehicles.", path: "/fleet" });
     expect(m.alternates?.canonical).toBe("/fleet");
     expect(m.openGraph).toMatchObject({ url: "/fleet", title: "Our Fleet | Galaxy Airport Taxi", description: "Vehicles." });
+  });
+});
+
+describe("linked business data", () => {
+  it("ties the website and each service to the one business", () => {
+    expect(webSite()).toMatchObject({ publisher: { "@id": businessId } });
+    const service = taxiService({ name: "Heathrow airport taxi", description: "D", path: "/heathrow-airport-taxi", airport: { name: "Heathrow Airport", iataCode: "LHR" } });
+    expect(service).toMatchObject({
+      "@type": "TaxiService",
+      provider: { "@id": businessId },
+      url: "https://galaxyairporttaxi.co.uk/heathrow-airport-taxi",
+      areaServed: expect.arrayContaining([{ "@type": "Airport", name: "Heathrow Airport", iataCode: "LHR" }]),
+    });
+    expect(JSON.stringify(service)).not.toMatch(/rating|review|price/i);
+  });
+});
+
+describe("llms.txt", () => {
+  it("summarises the business from the site's own details", () => {
+    const text = llmsText();
+    expect(text.startsWith("# Galaxy Airport Taxi\n")).toBe(true);
+    expect(text).toContain("+44 7470 046660");
+    expect(text).toContain("Child seats: free of charge.");
+    for (const a of airports) expect(text).toContain(`https://galaxyairporttaxi.co.uk/${a.slug}`);
+    expect(text).not.toMatch(/admin|\/api\//);
   });
 });

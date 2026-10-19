@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { taxiService } from "@/lib/seo/jsonld";
 import { pageMetadata } from "@/lib/seo/metadata";
 import Link from "next/link";
 import { CtaBand, PageHero, Section } from "@/components/sections/blocks";
@@ -6,16 +8,19 @@ import { Icon } from "@/components/ui/Icon";
 import { site } from "@/config/site";
 import { corporateTopics } from "@/content/services";
 
+const description =
+  "Airport transfers for businesses in London: staff and client travel, recurring trips and corporate account enquiries.";
+
 export const metadata: Metadata = pageMetadata({
   title: "Corporate Airport Transfers",
-  description:
-    "Airport transfers for businesses in London: staff and client travel, recurring trips and corporate account enquiries.",
+  description,
   path: "/services/corporate-travel",
 });
 
 export default function CorporateTravelPage() {
   return (
     <>
+      <JsonLd data={taxiService({ name: "Corporate airport transfers", description, path: "/services/corporate-travel" })} />
       <PageHero
         crumbs={[{ label: "Services", href: "/services" }, { label: "Corporate Travel", href: "/services/corporate-travel" }]}
         eyebrow="Corporate travel"

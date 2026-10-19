@@ -42,8 +42,20 @@ export function faqPage(items: { q: string; a: string }[]): JsonLdObject {
   };
 }
 
+/** Stable ids, so every page's structured data points at the same business. */
+export const businessId = absolute("/#business");
+const websiteId = absolute("/#website");
+
 export function webSite(): JsonLdObject {
-  return { "@context": "https://schema.org", "@type": "WebSite", name: site.name, url: absolute("/") };
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": websiteId,
+    name: site.name,
+    url: absolute("/"),
+    inLanguage: "en-GB",
+    ...(site.isPlaceholder ? {} : { publisher: { "@id": businessId } }),
+  };
 }
 
 /**
@@ -55,13 +67,48 @@ export function localBusiness(): JsonLdObject | null {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    "@id": businessId,
     name: site.name,
     url: absolute("/"),
+    logo: absolute("/brand/logo.png"),
+    image: absolute("/opengraph-image"),
     telephone: site.phone.href.replace(/^tel:/, ""),
     email: site.email,
     areaServed: { "@type": "Country", name: "United Kingdom" },
-    ...(site.address ? { address: site.address } : {}),
+    ...(site.postalAddress
+      ? { address: { "@type": "PostalAddress", ...site.postalAddress } }
+      : site.address
+        ? { address: site.address }
+        : {}),
     ...(site.openingHoursSchema ? { openingHours: site.openingHoursSchema } : {}),
+  };
+}
+
+interface TaxiServiceInput {
+  name: string;
+  description: string;
+  /** Path of the page describing the service. */
+  path: string;
+  /** For an airport page: the airport served. */
+  airport?: { name: string; iataCode: string };
+}
+
+/**
+ * One service the business offers, as described on its page. Linked to the
+ * business by id; no prices or ratings are included.
+ */
+export function taxiService({ name, description, path, airport }: TaxiServiceInput): JsonLdObject | null {
+  if (site.isPlaceholder) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "TaxiService",
+    name,
+    description,
+    url: absolute(path),
+    provider: { "@id": businessId },
+    areaServed: airport
+      ? [{ "@type": "Airport", name: airport.name, iataCode: airport.iataCode }, { "@type": "Country", name: "United Kingdom" }]
+      : { "@type": "Country", name: "United Kingdom" },
   };
 }
 
