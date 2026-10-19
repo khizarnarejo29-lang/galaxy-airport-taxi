@@ -213,6 +213,15 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
       if (fresh && !selectedOption(draft, fresh)?.available) go("vehicle");
       return;
     }
+    // Bookings can't be saved right now (or the quote predates WhatsApp booking): switch to it.
+    if (code === "BOOKING_UNAVAILABLE" && site.whatsapp) {
+      dispatch({
+        type: "quoted",
+        quote: { ...quote, onlineBooking: false },
+        notice: "Online booking isn't available right now. Tap “Book on WhatsApp” to send us your booking.",
+      });
+      return;
+    }
     if (stepForErrors(res.errors)) fail(res.errors);
     else dispatch({ type: "errors", errors: res.errors });
   }
