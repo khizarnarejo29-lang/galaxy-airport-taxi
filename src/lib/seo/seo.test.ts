@@ -18,7 +18,7 @@ describe("indexing switch", () => {
   it("allows crawling, hides private routes and lists the sitemap when on", async () => {
     vi.stubEnv("SITE_INDEXING", "on");
     const robots = (await import("@/app/robots")).default();
-    expect(robots.rules).toMatchObject({ allow: "/", disallow: ["/api/", "/booking/"] });
+    expect(robots.rules).toMatchObject({ allow: "/", disallow: ["/api/", "/booking/", "/admin"] });
     expect(robots.sitemap).toMatch(/\/sitemap\.xml$/);
   });
 });

@@ -105,6 +105,15 @@ export function mysqlBookingRepository(pool: Pool): BookingRepository {
       }
       if (!affected) throw new BookingStorageError("Booking update failed");
     },
+    async list(limit) {
+      const n = Math.max(1, Math.min(500, Math.floor(limit)));
+      try {
+        const [rows] = await pool.execute<RowDataPacket[]>(`SELECT booking FROM bookings ORDER BY created_at DESC LIMIT ${n}`);
+        return rows.map((r) => parse<Booking>(r.booking));
+      } catch (err) {
+        throw failed("lookup", err);
+      }
+    },
   };
 }
 

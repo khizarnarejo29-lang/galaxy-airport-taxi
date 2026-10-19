@@ -14,7 +14,8 @@ import { estimatedDistance, type DistanceProvider } from "./distance";
 import { unverifiedFlights, type FlightInfoProvider } from "./flights";
 import { postcodesIo } from "./location/postcodes-io";
 import type { LocationProvider } from "./location/types";
-import { emailNotifier, logEmailSender, type Notifier } from "./notifications";
+import { emailNotifier, logEmailSender, type EmailSender, type Notifier } from "./notifications";
+import { smtpConfigFromEnv, smtpEmailSender } from "./notifications/smtp";
 import { paymentLater, type PaymentProvider } from "./payments";
 import { stripeConfigFromEnv, stripePayments } from "./stripe";
 import {
@@ -81,6 +82,12 @@ export function choosePayments(storage: Pick<Storage, "kind">, env: Env = proces
   return paymentLater;
 }
 
+/** Real email when an SMTP mailbox is set (SMTP_HOST, SMTP_USER, SMTP_PASSWORD); otherwise emails are only logged. */
+export function chooseEmailSender(env: Env = process.env): EmailSender {
+  const smtp = smtpConfigFromEnv(env);
+  return smtp ? smtpEmailSender(smtp) : logEmailSender;
+}
+
 let services: Services | undefined;
 
 export function getServices(): Services {
@@ -91,7 +98,7 @@ export function getServices(): Services {
       distance: estimatedDistance(),
       flights: unverifiedFlights,
       payments: choosePayments(storage),
-      notifier: emailNotifier(logEmailSender, process.env.BOOKINGS_NOTIFY_EMAIL || site.email),
+      notifier: emailNotifier(chooseEmailSender(), process.env.BOOKINGS_NOTIFY_EMAIL || site.email),
       bookings: storage.bookings,
       quoteRequests: storage.quoteRequests,
       onlineBooking: storage.kind !== "unavailable",
