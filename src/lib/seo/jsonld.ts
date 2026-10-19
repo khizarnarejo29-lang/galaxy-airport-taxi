@@ -61,7 +61,7 @@ export function localBusiness(): JsonLdObject | null {
     email: site.email,
     areaServed: { "@type": "Country", name: "United Kingdom" },
     ...(site.address ? { address: site.address } : {}),
-    ...(site.openingHours ? { openingHours: site.openingHours } : {}),
+    ...(site.openingHoursSchema ? { openingHours: site.openingHoursSchema } : {}),
   };
 }
 

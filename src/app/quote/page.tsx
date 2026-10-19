@@ -27,7 +27,7 @@ export default async function QuotePage({ searchParams }: PageProps<"/quote">) {
       <div className="mx-auto grid max-w-6xl gap-x-14 gap-y-5 px-4 pt-6 pb-16 sm:px-6 sm:pt-10 lg:grid-cols-[1fr_minmax(0,30rem)] lg:pt-14 lg:pb-28">
         <div className="lg:pt-6">
           <h1 className="font-display text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl lg:text-5xl">Get a quote</h1>
-          <p className="mt-2 max-w-md leading-relaxed text-white/75 sm:mt-4 sm:text-lg">London to the airport, or the airport to London. Where we can price your journey online you&apos;ll see a fixed total; otherwise please call us for a price.</p>
+          <p className="mt-2 max-w-md leading-relaxed text-white/75 sm:mt-4 sm:text-lg">From any UK address to the airport, or the airport to your door. Enter your journey to see a fixed total for each vehicle, then book online.</p>
         </div>
         <div>
           <Calculator variant="hero" initialAirport={airport} initialDirection={direction} />

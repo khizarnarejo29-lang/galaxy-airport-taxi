@@ -5,7 +5,7 @@ import { CtaBand, FaqList, FeatureCard, Section } from "@/components/sections/bl
 import { AirportGrid, ExampleFaresTable } from "@/components/sections/cards";
 import { exampleFares } from "@/lib/pricing/example-fares";
 import { CalculatorHero } from "@/components/sections/CalculatorHero";
-import { airportContent } from "@/content/airports";
+import { airportContent, airportFaqs } from "@/content/airports";
 import { airports } from "@/lib/domain/airports";
 import { pageMetadata } from "@/lib/seo/metadata";
 
@@ -106,7 +106,7 @@ export default async function AirportPage({ params }: PageProps<"/[airport]">) {
 
       <Section id="faq" eyebrow="Questions" title={`${airport.shortName} transfer FAQs`}>
         <div className="max-w-3xl">
-          <FaqList items={content.faqs} />
+          <FaqList items={airportFaqs(airport.code, airport.shortName)} />
         </div>
       </Section>
 

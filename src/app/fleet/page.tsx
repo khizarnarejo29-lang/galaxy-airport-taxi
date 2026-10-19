@@ -6,7 +6,7 @@ import { FleetGrid } from "@/components/sections/cards";
 export const metadata: Metadata = pageMetadata({
   title: "Our Fleet",
   description:
-    "Saloon, estate, executive, MPV and 8-seater vehicles for London airport transfers. Call us if you are unsure which vehicle fits your luggage.",
+    "Saloon, estate, executive, MPV and 8-seater vehicles for airport transfers across London and the UK. Fixed prices for each vehicle, with free child seats.",
   path: "/fleet",
 });
 
@@ -41,7 +41,7 @@ export default function FleetPage() {
             we&apos;ll find the right vehicle.
           </FeatureCard>
           <FeatureCard icon="user" title="Travelling with children">
-            Count children and infants as passengers. Child seats can be added as an extra when you book.
+            Count children and infants as passengers. Child seats are free: tell us how many you need when you book.
           </FeatureCard>
         </div>
       </Section>

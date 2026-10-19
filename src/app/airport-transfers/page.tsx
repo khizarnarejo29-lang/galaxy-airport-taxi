@@ -6,7 +6,7 @@ import { AirportGrid } from "@/components/sections/cards";
 export const metadata: Metadata = pageMetadata({
   title: "London Airport Transfers",
   description:
-    "Taxi transfers between anywhere in the UK and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Online quotes, or call us for a price.",
+    "Fixed-price taxis between any UK address and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Book online 24/7.",
   path: "/airport-transfers",
 });
 
@@ -45,12 +45,12 @@ export default function AirportTransfersPage() {
             An online price is a single fixed total for your booking, covering both journeys if you book a return.
           </FeatureCard>
           <FeatureCard icon="sparkle" title="Stops and extras">
-            Tell us about any stops, child seats or Meet &amp; Greet before you see prices. Some journeys with extras
-            can&apos;t be priced online and show &ldquo;Price on request&rdquo;.
+            Tell us about any stops, child seats or Meet &amp; Greet before you see prices. Stops and Meet &amp; Greet are
+            added to your total, and child seats are free.
           </FeatureCard>
           <FeatureCard icon="phone" title="Price on request">
-            If a journey can&apos;t be priced online, please call us. Phone is currently the most reliable way to get a
-            quote.
+            If a journey can&apos;t be priced online, it shows &ldquo;Price on request&rdquo;. Call or WhatsApp us and
+            we&apos;ll give you a fixed price.
           </FeatureCard>
         </div>
       </Section>

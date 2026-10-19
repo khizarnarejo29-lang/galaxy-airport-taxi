@@ -30,7 +30,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
         eyebrow="Contact"
         illustration="contact"
         title="Get in touch"
-        lead={`To get a price, change a booking or ask anything else, please call us on ${site.phone.display}. Phone is currently the most reliable way to reach us.`}
+        lead={`To change a booking or ask anything else, call or WhatsApp us on ${site.phone.display}, 24 hours a day, or email ${site.email}.`}
       />
       <div className="bg-surface">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.4fr]">

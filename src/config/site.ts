@@ -16,8 +16,10 @@ export const site = {
     href: `https://wa.me/447470046660?text=${encodeURIComponent("Hello Galaxy Airport Taxi, I would like a quote.")}`,
   } as { display: string; href: string } | null,
   email: "info@galaxyairporttaxi.co.uk",
-  /** e.g. "Mon–Sun, 24 hours". Not shown until set. */
-  openingHours: null as string | null,
+  /** Confirmed by the owner: 24/7. Shown in the footer and on the contact page. */
+  openingHours: "Open 24 hours, 7 days a week" as string | null,
+  /** The same hours in schema.org form, for structured data. */
+  openingHoursSchema: "Mo-Su 00:00-23:59" as string | null,
   address: "4-6 Greatorex Street, London E1 5NF" as string | null,
   /** None provided. e.g. "Company no. …, registered in England and Wales". */
   companyDetails: null as string | null,

@@ -1,4 +1,6 @@
+import { bookingRules } from "@/config/booking-rules";
 import type { AirportCode } from "@/lib/domain/types";
+import { policies } from "./policies";
 
 export interface Faq {
   q: string;
@@ -28,7 +30,7 @@ export const airportContent: Record<AirportCode, AirportContent> = {
   LHR: {
     metaTitle: "Heathrow Airport Taxi to and from London",
     metaDescription:
-      "Book a taxi between any UK address and Heathrow Terminals 2, 3, 4 or 5. Get a fixed price online where available, or call us.",
+      "Fixed-price taxi between any UK address and Heathrow Terminals 2, 3, 4 and 5. Book online 24/7, with 60 minutes' free waiting after you land.",
     h1: "Heathrow airport taxi",
     lead: "Transfers between your address, in London or anywhere in the UK, and any of Heathrow's four terminals, with a fixed price agreed before you book.",
     location:
@@ -46,7 +48,7 @@ export const airportContent: Record<AirportCode, AirportContent> = {
       },
       {
         q: "What does the price include?",
-        a: "An online price is one fixed total for your booking. If your journey can't be priced online, it shows “Price on request”. Please call us and we'll confirm a price.",
+        a: "One fixed total for the whole vehicle, with airport charges included. Child seats are free. Meet & Greet in the arrivals hall is an optional extra, shown in your price before you book.",
       },
       {
         q: "What do I need to book a Heathrow pickup?",
@@ -57,7 +59,7 @@ export const airportContent: Record<AirportCode, AirportContent> = {
   LGW: {
     metaTitle: "Gatwick Airport Taxi to and from London",
     metaDescription:
-      "Taxi transfers between London, anywhere in the UK, and Gatwick North or South Terminal. Fixed prices online where available, or call us for a price.",
+      "Fixed-price taxi between any UK address and Gatwick North or South Terminal. Book online 24/7, with 60 minutes' free waiting after you land.",
     h1: "Gatwick airport taxi",
     lead: "Door-to-door transfers between London and Gatwick's North and South terminals, with a fixed price agreed before you book.",
     location:
@@ -75,18 +77,18 @@ export const airportContent: Record<AirportCode, AirportContent> = {
       },
       {
         q: "Do you cover the whole of London for Gatwick transfers?",
-        a: "Online quotes cover addresses within our current service area. If your address is outside it, the calculator will tell you, and you can call us to ask.",
+        a: "Yes, and the rest of the UK too. Enter any UK postcode or address in the calculator to see a fixed price for your Gatwick transfer.",
       },
       {
         q: "What if I'm travelling with lots of luggage?",
-        a: "Enter your suitcases and bags in the calculator. If we can't confirm a vehicle for your luggage online, you'll see “Price on request”. Please call us and we'll find the right vehicle.",
+        a: "Enter how many suitcases and bags you have in the calculator and choose a vehicle with room for them, such as an estate or MPV. For large items like bikes or golf bags, please call or WhatsApp us before booking.",
       },
     ],
   },
   STN: {
     metaTitle: "Stansted Airport Taxi to and from London",
     metaDescription:
-      "Book a Stansted Airport taxi from any UK address, or from Stansted to your door. Saloons through to 8-seaters.",
+      "Fixed-price taxi between any UK address and Stansted Airport, from saloons to 8-seaters. Book online 24/7, with 60 minutes' free waiting after you land.",
     h1: "Stansted airport taxi",
     lead: "Transfers between London and Stansted's single terminal, with a fixed price agreed before you book.",
     location: "Stansted is in Essex, roughly 35 miles north-east of central London by road.",
@@ -103,14 +105,14 @@ export const airportContent: Record<AirportCode, AirportContent> = {
       },
       {
         q: "Can I add a stop on the way to Stansted?",
-        a: "Yes. You can add up to two extra stops in the first step of the calculator. Journeys with stops may show “Price on request”. If so, please call us for a price.",
+        a: "Yes. You can add up to two extra stops in the first step of the calculator. Each stop is added to your fixed price, so you see the full total before you book.",
       },
     ],
   },
   LTN: {
     metaTitle: "Luton Airport Taxi to and from London",
     metaDescription:
-      "Taxi transfers between London, anywhere in the UK, and London Luton Airport. Fixed prices online where available, or call us.",
+      "Fixed-price taxi between any UK address and London Luton Airport. Book online 24/7, with 60 minutes' free waiting after you land.",
     h1: "Luton airport taxi",
     lead: "Transfers between your address, in London or anywhere in the UK, and London Luton Airport, with a fixed price agreed before you book.",
     location: "London Luton Airport is in Bedfordshire, roughly 30 miles north of central London by road.",
@@ -123,20 +125,20 @@ export const airportContent: Record<AirportCode, AirportContent> = {
     faqs: [
       {
         q: "Is Luton Airport inside London?",
-        a: "No. Despite its name, it's in Bedfordshire, north of the M25. Online quotes cover journeys between the airport and addresses in our London service area.",
+        a: "No. Despite its name, it's in Bedfordshire, north of the M25. We cover journeys between Luton Airport and any address in London or elsewhere in the UK.",
       },
       {
         q: "Which vehicle should I choose for a family trip to Luton?",
-        a: "Enter your passengers and luggage in the calculator. If we can't confirm a vehicle online, you'll see “Price on request”. Please call us and we'll help you choose.",
+        a: "Enter your passengers and luggage in the calculator, and it shows the vehicles that fit with a fixed price for each. Families often choose an estate or MPV, and child seats are free.",
       },
     ],
   },
   LCY: {
     metaTitle: "London City Airport Taxi",
     metaDescription:
-      "Book a taxi to or from London City Airport from any UK address. Online booking where available, or call us.",
+      "Fixed-price taxi between any UK address and London City Airport. Book online 24/7, with 60 minutes' free waiting after you land.",
     h1: "London City Airport taxi",
-    lead: "Transfers between London City Airport and addresses across London, with a fixed price agreed before you book.",
+    lead: "Transfers between London City Airport and addresses across London and the rest of the UK, with a fixed price agreed before you book.",
     location:
       "London City Airport is in the Royal Docks in east London, roughly 7 miles east of the City of London.",
     terminalsIntro: "London City has a single terminal, so there's no terminal to pick.",
@@ -151,8 +153,21 @@ export const airportContent: Record<AirportCode, AirportContent> = {
       },
       {
         q: "Can I book a London City transfer for a short-notice flight?",
-        a: "Online bookings need a minimum amount of notice. For anything sooner, please call us and we'll tell you what's possible.",
+        a: `Online bookings need at least ${bookingRules.minNoticeMinutes / 60} hours' notice. For anything sooner, please call or WhatsApp us and we'll tell you what's possible.`,
       },
     ],
   },
 };
+
+/**
+ * The airport's own questions, then the confirmed policies every airport shares
+ * (waiting time, flight delays, child seats). Policies not yet written are skipped.
+ */
+export function airportFaqs(code: AirportCode, shortName: string): Faq[] {
+  const shared: (Faq | null)[] = [
+    policies.waitingTime ? { q: `How long will the driver wait at ${shortName}?`, a: policies.waitingTime } : null,
+    policies.flightDelays ? { q: "What if my flight is delayed?", a: policies.flightDelays } : null,
+    { q: "Are child seats free?", a: "Yes. Child seats are free of charge. Tell us how many you need in the extras step when you book." },
+  ];
+  return [...airportContent[code].faqs, ...shared.filter((f): f is Faq => f !== null)];
+}
