@@ -27,6 +27,7 @@ export function postcodeArea(outcode: string): string {
 export function isInServiceArea(loc: ResolvedLocation, area: ServiceAreaConfig): boolean {
   const outcode = loc.outcode?.toUpperCase();
   if (outcode && area.excludedPostcodeDistricts.includes(outcode)) return false;
+  if (area.wholeUk) return true;
 
   if (loc.region && area.regions.includes(loc.region)) return true;
   if (outcode && area.extraPostcodeDistricts.includes(outcode)) return true;

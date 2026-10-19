@@ -6,7 +6,7 @@ import { site } from "@/config/site";
 export const metadata: Metadata = pageMetadata({
   title: "About Us",
   description:
-    "Galaxy Airport Taxi arranges transfers between Greater London and the five London airports, with fixed prices agreed before you book.",
+    "Galaxy Airport Taxi arranges transfers between anywhere in the UK and the five London airports, with fixed prices agreed before you book.",
   path: "/about",
 });
 
@@ -21,7 +21,7 @@ export default function AboutPage() {
         eyebrow="About us"
         illustration="london"
         title="Airport transfers, kept simple"
-        lead={`${site.name} focuses on one thing: getting you between your London address and Heathrow, Gatwick, Stansted, Luton or London City airport.`}
+        lead={`${site.name} focuses on one thing: getting you between your address and Heathrow, Gatwick, Stansted, Luton or London City airport.`}
       />
 
       <Section id="approach" eyebrow="How we work" title="Fixed prices, straightforward booking">

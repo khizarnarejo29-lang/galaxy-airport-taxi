@@ -36,6 +36,8 @@ const legInput = (leg: Leg, config: PricingConfig, returnBooking: boolean) => ({
   terminal: leg.terminal,
   central: inCentralLondon(leg, config),
   returnBooking,
+  // Addresses without a region (as in some tests) count as London.
+  outsideLondon: leg.address.region !== undefined && leg.address.region !== "London",
 });
 
 const onRequest = (reason: string): OptionPrice => ({ pricing: { status: "price_on_request", reason }, lines: [], total: 0 });

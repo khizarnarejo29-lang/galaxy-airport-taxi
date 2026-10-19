@@ -48,7 +48,7 @@ export function faqGroups(): FaqGroup[] {
       items: [
         {
           q: "Which areas do you cover?",
-          a: `Online quotes cover journeys between addresses in ${serviceArea.label} and Heathrow, Gatwick, Stansted, Luton and London City airports. If your address is outside this area, the calculator will say so and you're welcome to call us.`,
+          a: `Journeys between any address in ${serviceArea.label}, London included, and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Enter your postcode in the calculator for a fixed price.`,
         },
         {
           q: "How far in advance do I need to book?",

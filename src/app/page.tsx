@@ -24,7 +24,7 @@ const points: { icon: IconName; text: string }[] = [
 const steps = [
   {
     title: "Tell us the journey",
-    text: "Choose to or from the airport, find your London address and add the date, time and who's travelling.",
+    text: "Choose to or from the airport, find your address and add the date, time and who's travelling.",
   },
   {
     title: "See your options",
@@ -52,7 +52,7 @@ export default function HomePage() {
             Your airport run, <span className="text-accent">made simple.</span>
           </>
         }
-        lead="Door-to-door journeys between any Greater London address and all five London airports. Tell us the route and see a fixed price for every vehicle in seconds."
+        lead="Door-to-door journeys between any address in London or across the UK and all five London airports. Tell us the route and see a fixed price for every vehicle in seconds."
       >
         <ul className="space-y-3">
           {points.map((p) => (
@@ -87,7 +87,7 @@ export default function HomePage() {
         tone="surface"
         eyebrow="Airport transfers"
         title="All five London airports"
-        intro="Transfers in both directions between Greater London and each airport, with terminal selection where the airport has more than one."
+        intro="Transfers in both directions between anywhere in the UK and each airport, with terminal selection where the airport has more than one."
       >
         <AirportGrid />
       </Section>
