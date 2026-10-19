@@ -41,8 +41,8 @@ describe("sitemap", () => {
   it("lists every public page and nothing private", async () => {
     const urls = (await import("@/app/sitemap")).default().map((e) => new URL(e.url).pathname);
     for (const a of airports) expect(urls).toContain(`/${a.slug}`);
-    expect(urls).toEqual(expect.arrayContaining(["/", "/quote", "/fleet", "/faq", "/contact", "/about", "/services/meet-and-greet"]));
-    expect(urls.some((u) => u.startsWith("/booking") || u.startsWith("/api") || u === "/privacy" || u === "/terms")).toBe(false);
+    expect(urls).toEqual(expect.arrayContaining(["/", "/quote", "/fleet", "/faq", "/contact", "/about", "/services/meet-and-greet", "/privacy", "/terms"]));
+    expect(urls.some((u) => u.startsWith("/booking") || u.startsWith("/api") || u.startsWith("/admin"))).toBe(false);
     expect(new Set(urls).size).toBe(urls.length);
   });
 });

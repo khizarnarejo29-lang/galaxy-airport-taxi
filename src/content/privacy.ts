@@ -19,7 +19,7 @@ export interface PrivacySection {
 }
 
 /** Date this version of the policy was written. Update whenever the policy changes. */
-export const privacyLastUpdated = "6 October 2026";
+export const privacyLastUpdated = "20 October 2026";
 
 export function privacySections(): PrivacySection[] {
   return [
@@ -42,7 +42,7 @@ export function privacySections(): PrivacySection[] {
             "Your pickup location and destination, including any extra stops you add",
             "Your travel date and time",
             "The number of passengers travelling",
-            "Your luggage (number of large cases and small bags)",
+            "Your luggage (hand luggage and suitcases, and how many of each)",
             "The airport and, where relevant, the terminal",
             "Your flight number, where you provide it",
             "Extras you choose, such as Meet & Greet or child seats",
@@ -99,6 +99,8 @@ export function privacySections(): PrivacySection[] {
           ],
         },
         "Our address search sends the postcode or area name you type to a postcode lookup service so it can suggest matching locations. Your name and contact details are not sent with these searches.",
+        "If you pay online by card, the payment is handled by our payment provider on its own secure page. We don't see or keep your card details.",
+        "If you book or message us on WhatsApp, the message is carried by WhatsApp under its own privacy policy, and we use it to arrange your journey.",
       ],
     },
     {
@@ -106,6 +108,7 @@ export function privacySections(): PrivacySection[] {
       title: "Cookies and your browser",
       blocks: [
         "Our website does not currently use analytics, advertising or tracking cookies.",
+        "We use one small security cookie after you book, so that only the browser that made the booking can see its full confirmation page. It lasts 60 minutes. It is needed for the service you asked for, so it doesn't need your consent.",
         "Our quote calculator saves your progress in your browser's session storage, so you don't lose your details if you refresh the page. This information stays in your browser, is removed once your booking is complete, and is cleared when you close the browser tab.",
         "If we introduce other cookies or similar technologies in the future, we will update this policy first.",
       ],
