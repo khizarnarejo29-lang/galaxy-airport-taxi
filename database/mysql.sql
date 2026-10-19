@@ -1,4 +1,5 @@
--- Galaxy Airport Taxi: bookings and quote requests, for MySQL 8 / MariaDB 10.5+ (e.g. Hostinger).
+-- Galaxy Airport Taxi: bookings and quote requests, for MySQL / MariaDB (e.g. Hostinger).
+-- Plain column types only, so it runs on any version; the website checks the values.
 --
 -- Run once, by hand: Hostinger hPanel -> Databases -> phpMyAdmin -> choose the database ->
 -- SQL tab -> paste this whole file -> Go. It only creates the two tables; it changes nothing else.
@@ -19,17 +20,11 @@ CREATE TABLE IF NOT EXISTS bookings (
   customer_name          VARCHAR(100) NOT NULL,
   customer_email         VARCHAR(200) NOT NULL,
   customer_phone         VARCHAR(30)  NOT NULL,
-  review_flags           JSON         NOT NULL,
+  review_flags           LONGTEXT     NOT NULL,
   -- The full booking as the website created it. Never contains card details.
-  booking                JSON         NOT NULL,
+  booking                LONGTEXT     NOT NULL,
   created_at             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT bookings_status CHECK (status IN ('received', 'confirmed', 'completed', 'cancelled')),
-  CONSTRAINT bookings_trip_type CHECK (trip_type IN ('one_way', 'return')),
-  CONSTRAINT bookings_payment CHECK (payment_status IN ('unpaid', 'paid', 'invoiced')),
-  CONSTRAINT bookings_total CHECK (total_pence > 0),
-  INDEX bookings_created_at_idx (created_at),
-  INDEX bookings_pickup_at_idx (pickup_at)
+  updated_at             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS quote_requests (
@@ -45,8 +40,7 @@ CREATE TABLE IF NOT EXISTS quote_requests (
   pickup_postcode  VARCHAR(10)  NULL,
   dropoff_postcode VARCHAR(10)  NULL,
   reason           VARCHAR(60)  NOT NULL,
-  journey          JSON         NOT NULL,
+  journey          LONGTEXT     NOT NULL,
   message          TEXT         NULL,
-  created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX quote_requests_created_at_idx (created_at)
+  created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) DEFAULT CHARSET = utf8mb4;
