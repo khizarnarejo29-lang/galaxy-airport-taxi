@@ -15,7 +15,8 @@ export const metadata: Metadata = {
 };
 
 const points: { icon: IconName; text: string }[] = [
-  { icon: "check", text: "Where we can price your journey online, you see the fixed total before you book" },
+  { icon: "check", text: "A fixed price for every vehicle, shown before you book" },
+  { icon: "terminal", text: "Airport drop-off and parking charges included" },
   { icon: "plane", text: "Flight number recorded for every airport pickup" },
   { icon: "user", text: "Saloons through to 8-seaters" },
 ];
@@ -27,11 +28,11 @@ const steps = [
   },
   {
     title: "See your options",
-    text: "Each vehicle shows a fixed total for your booking, or “Price on request” if we need to confirm it. For a price on request, call us.",
+    text: "Each vehicle shows one fixed total for your whole booking, airport charges included. A few journeys, such as those with large items, are priced by phone.",
   },
   {
     title: "Book and keep your reference",
-    text: "Add your contact details, check the summary and book. You'll get a booking reference straight away.",
+    text: "Add your contact details, check the summary and book online, or call us to book by phone.",
   },
 ];
 
@@ -51,7 +52,7 @@ export default function HomePage() {
             Your airport run, <span className="text-accent">made simple.</span>
           </>
         }
-        lead="Door-to-door journeys between any Greater London address and all five London airports. Tell us the route and see the vehicles we can offer, then book online or call us for a price."
+        lead="Door-to-door journeys between any Greater London address and all five London airports. Tell us the route and see a fixed price for every vehicle in seconds."
       >
         <ul className="space-y-3">
           {points.map((p) => (

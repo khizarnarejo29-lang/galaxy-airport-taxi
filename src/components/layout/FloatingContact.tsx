@@ -16,7 +16,8 @@ export function FloatingContact() {
   const pricesInView = usePricesInView();
   if (!site.whatsapp) return null;
   return (
-    <div
+    <aside
+      aria-label="Contact us"
       className={
         "fixed right-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-30 flex flex-col items-end gap-3 transition-opacity print:hidden " +
         "lg:visible lg:right-6 lg:bottom-6 lg:opacity-100 " +
@@ -43,7 +44,7 @@ export function FloatingContact() {
           <path d={WHATSAPP_GLYPH} fill="currentColor" />
         </svg>
       </a>
-    </div>
+    </aside>
   );
 }
 

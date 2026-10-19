@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { CtaBand, FaqList, FeatureCard, Section } from "@/components/sections/blocks";
-import { AirportGrid } from "@/components/sections/cards";
+import { AirportGrid, ExampleFaresTable } from "@/components/sections/cards";
+import { exampleFares } from "@/lib/pricing/example-fares";
 import { CalculatorHero } from "@/components/sections/CalculatorHero";
 import { airportContent } from "@/content/airports";
 import { airports } from "@/lib/domain/airports";
@@ -50,6 +51,23 @@ export default async function AirportPage({ params }: PageProps<"/[airport]">) {
           {content.location}
         </p>
       </CalculatorHero>
+
+      {exampleFares(airport.code).length > 0 && (
+        <Section
+          id="prices"
+          eyebrow="Fixed prices"
+          title={`Example prices to and from ${airport.shortName}`}
+          intro={
+            <>
+              One way, for the whole vehicle, airport charges included
+              {airport.terminals.length > 1 ? ", from the lowest-priced terminal" : ""}. A return costs less than two
+              one-way trips. Enter your address above for your exact price.
+            </>
+          }
+        >
+          <ExampleFaresTable airport={airport.code} />
+        </Section>
+      )}
 
       <Section id="terminals" eyebrow="Terminals" title={`${airport.name} terminals`} intro={content.terminalsIntro}>
         {airport.terminals.length > 1 ? (
