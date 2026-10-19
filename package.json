@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "fares:import": "node --disable-warning=ExperimentalWarning scripts/fares-import.mjs",
     "fares:report": "node --disable-warning=ExperimentalWarning scripts/fares-report.mjs",
-    "tariff:check": "node --disable-warning=ExperimentalWarning scripts/tariff-check.mjs"
+    "tariff:check": "node --disable-warning=ExperimentalWarning scripts/tariff-check.mjs",
+    "road-miles": "node --disable-warning=ExperimentalWarning scripts/road-miles.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.3",

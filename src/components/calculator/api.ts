@@ -1,5 +1,5 @@
 import { fieldError } from "@/lib/domain/errors";
-import type { FieldError, JourneyInput, Quote, ResolvedLocation } from "@/lib/domain/types";
+import type { FieldError, JourneyInput, LocationSearchResult, Quote, ResolvedLocation } from "@/lib/domain/types";
 import type { BookingRequest } from "@/lib/booking/create-booking";
 
 export type ApiResult<T> = ({ ok: true } & T) | { ok: false; status: number; errors: FieldError[]; total?: number };
@@ -21,8 +21,18 @@ async function call<T>(url: string, init?: RequestInit): Promise<ApiResult<T>> {
   }
 }
 
-export function searchLocations(q: string, signal: AbortSignal) {
-  return call<{ results: ResolvedLocation[] }>(`/api/locations/search?q=${encodeURIComponent(q)}`, { signal });
+export function searchLocations(q: string, session: string, signal: AbortSignal) {
+  return call<{ results: LocationSearchResult[] }>(
+    `/api/locations/search?q=${encodeURIComponent(q)}&session=${encodeURIComponent(session)}`,
+    { signal },
+  );
+}
+
+/** The full location for a suggestion the customer chose. */
+export function resolveLocation(id: string, session: string) {
+  return call<{ location: ResolvedLocation }>(
+    `/api/locations/resolve?id=${encodeURIComponent(id)}&session=${encodeURIComponent(session)}`,
+  );
 }
 
 export function requestQuote(journey: JourneyInput) {

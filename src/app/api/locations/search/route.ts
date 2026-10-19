@@ -3,11 +3,12 @@ import { getServices } from "@/lib/services";
 import { LocationLookupError } from "@/lib/services/location/types";
 
 export async function GET(request: Request) {
-  const q = new URL(request.url).searchParams.get("q")?.trim().slice(0, 60) ?? "";
+  const params = new URL(request.url).searchParams;
+  const q = params.get("q")?.trim().slice(0, 100) ?? "";
   if (q.length < 2) return Response.json({ ok: true, results: [] });
 
   try {
-    const results = await getServices().locations.search(q);
+    const results = await getServices().locations.search(q, params.get("session") ?? undefined);
     return Response.json(
       { ok: true, results },
       { headers: { "Cache-Control": "public, max-age=300, s-maxage=86400" } },

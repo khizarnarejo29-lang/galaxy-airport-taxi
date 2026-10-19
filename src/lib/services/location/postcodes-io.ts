@@ -17,6 +17,8 @@ interface PostcodeResult {
   latitude: number | null;
   longitude: number | null;
   region: string | null;
+  /** England, Scotland, Wales or Northern Ireland. postcodes.io gives a region only in England. */
+  country: string | null;
   admin_district: string | null;
 }
 
@@ -26,6 +28,7 @@ interface PlaceResult {
   local_type: string;
   outcode: string | null;
   region: string | null;
+  country: string | null;
   district_borough: string | null;
   county_unitary: string | null;
   latitude: number;
@@ -60,7 +63,8 @@ function fromPostcode(p: PostcodeResult): ResolvedLocation | null {
     postcode: p.postcode,
     outcode: p.outcode,
     district: p.admin_district ?? undefined,
-    region: p.region ?? undefined,
+    // Outside England there is no region; the country stands in, so pricing never mistakes it for London.
+    region: p.region ?? p.country ?? undefined,
     lat: p.latitude,
     lng: p.longitude,
   };
@@ -74,7 +78,7 @@ function fromPlace(p: PlaceResult): ResolvedLocation {
     label: [p.name_1, area && area !== p.name_1 ? area : null].filter(Boolean).join(", "),
     outcode: p.outcode ?? undefined,
     district: area ?? undefined,
-    region: p.region ?? undefined,
+    region: p.region ?? p.country ?? undefined,
     lat: p.latitude,
     lng: p.longitude,
   };

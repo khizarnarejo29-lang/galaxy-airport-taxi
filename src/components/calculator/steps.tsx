@@ -22,6 +22,7 @@ import {
   isReturn,
   meetAndGreetAvailable,
   needsTerminal,
+  nextLine1,
   outwardAirport,
   returnHasAirport,
   returnPicksUpAtAirport,
@@ -134,7 +135,9 @@ function EndPicker({ state, set, end }: Pick<StepProps, "state" | "set"> & { end
           label={`${name} address`}
           value={d[`${end}Address`]}
           error={err(state, end)}
-          onChange={(address) => set({ [`${end}Address`]: address })}
+          onChange={(address) =>
+            set({ [`${end}Address`]: address, [`${end}Line1`]: nextLine1(d[`${end}Line1`], d[`${end}Address`], address) })
+          }
         />
       )}
     </section>
@@ -224,7 +227,12 @@ export function JourneyStep({ state, set }: StepProps) {
               label="Return pickup address"
               value={d.returnPickupAddress}
               error={err(state, "returnJourney.pickup")}
-              onChange={(returnPickupAddress) => set({ returnPickupAddress })}
+              onChange={(returnPickupAddress) =>
+                set({
+                  returnPickupAddress,
+                  returnPickupLine1: nextLine1(d.returnPickupLine1, d.returnPickupAddress, returnPickupAddress),
+                })
+              }
             />
           )}
           <FieldError

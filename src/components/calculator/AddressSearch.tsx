@@ -7,8 +7,8 @@ import { serviceArea } from "@/config/service-area";
 import { site } from "@/config/site";
 import { errorMessages } from "@/lib/domain/errors";
 import { isInServiceArea } from "@/lib/domain/geo";
-import type { ResolvedLocation } from "@/lib/domain/types";
-import { searchLocations } from "./api";
+import type { LocationSearchResult, ResolvedLocation } from "@/lib/domain/types";
+import { resolveLocation, searchLocations } from "./api";
 
 interface Props {
   id: string;
@@ -21,15 +21,21 @@ interface Props {
 
 type Status = "idle" | "loading" | "done" | "failed";
 
+/** Groups one search (typing and the final choice), as Google bills them together. */
+const newSession = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
 /**
- * Accessible combobox (WAI-ARIA 1.2 pattern) for postcodes and London areas.
+ * Accessible combobox (WAI-ARIA 1.2 pattern) for addresses, postcodes and places.
  * Selecting a result stores the resolved location; the server re-resolves it by id.
+ * A Google suggestion is resolved first, to get its exact point and postcode.
  */
 export function AddressSearch({ id, label, placeholder, value, error, onChange }: Props) {
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<ResolvedLocation[]>([]);
+  const [results, setResults] = useState<LocationSearchResult[]>([]);
+  const session = useRef("");
   const [status, setStatus] = useState<Status>("idle");
   const [active, setActive] = useState(-1);
   const [open, setOpen] = useState(false);
@@ -41,8 +47,9 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       setStatus("loading");
+      if (!session.current) session.current = newSession();
       try {
-        const res = await searchLocations(q, controller.signal);
+        const res = await searchLocations(q, session.current, controller.signal);
         if (res.ok) {
           setResults(res.results);
           setStatus("done");
@@ -61,12 +68,21 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
     };
   }, [query, attempt]);
 
-  function choose(loc: ResolvedLocation) {
+  function chosen(loc: ResolvedLocation) {
     onChange(loc);
     setOpen(false);
     setQuery("");
     setResults([]);
     setStatus("idle");
+    session.current = "";
+  }
+
+  async function choose(result: LocationSearchResult) {
+    if (result.kind !== "suggestion") return chosen(result);
+    setStatus("loading");
+    const res = await resolveLocation(result.id, session.current);
+    if (res.ok) chosen(res.location);
+    else setStatus("failed");
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -149,10 +165,10 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
           aria-invalid={shownError ? true : undefined}
           aria-describedby={shownError ? `${id}-error` : `${id}-hint`}
           autoComplete="off"
-          autoCapitalize="characters"
+          autoCapitalize="words"
           spellCheck={false}
           enterKeyHint="search"
-          placeholder={placeholder ?? "Postcode or area, e.g. SW1A 1AA"}
+          placeholder={placeholder ?? "Address, postcode, hotel or station"}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -173,7 +189,7 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
       </div>
       {!shownError && (
         <p id={`${id}-hint`} className="mt-2 text-sm leading-relaxed text-ink-soft">
-          Search by postcode or area. You&apos;ll add your house number later.
+          Start typing a street, postcode or place, then choose it from the list.
         </p>
       )}
       <FieldError id={`${id}-error`} message={shownError} />
@@ -199,7 +215,7 @@ export function AddressSearch({ id, label, placeholder, value, error, onChange }
           {status === "done" && results.length === 0 && (
             <p className="flex items-center gap-2.5 px-4 py-3.5 text-sm text-ink-soft" role="status">
               <Icon name="search" className="size-4 shrink-0" />
-              No matches. Try your full postcode.
+              No matches. Try the street name or full postcode.
             </p>
           )}
           {status === "loading" && results.length === 0 && (

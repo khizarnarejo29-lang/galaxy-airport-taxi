@@ -10,8 +10,9 @@ import {
   unavailableBookingRepository,
   type BookingRepository,
 } from "./bookings";
-import { estimatedDistance, type DistanceProvider } from "./distance";
+import { estimatedDistance, googleRoutesDistance, type DistanceProvider } from "./distance";
 import { unverifiedFlights, type FlightInfoProvider } from "./flights";
+import { googlePlaces } from "./location/google-places";
 import { postcodesIo } from "./location/postcodes-io";
 import type { LocationProvider } from "./location/types";
 import { emailNotifier, logEmailSender, type EmailSender, type Notifier } from "./notifications";
@@ -88,14 +89,30 @@ export function chooseEmailSender(env: Env = process.env): EmailSender {
   return smtp ? smtpEmailSender(smtp) : logEmailSender;
 }
 
+/** Google address search when GOOGLE_MAPS_API_KEY is set; otherwise postcode and area search (postcodes.io). */
+export function chooseLocations(env: Env = process.env): LocationProvider {
+  const key = env.GOOGLE_MAPS_API_KEY?.trim();
+  return key ? googlePlaces(key) : postcodesIo;
+}
+
+/**
+ * Real road miles from Google only when ROAD_DISTANCE=google is also set: the
+ * tariff's per-mile figures were set against the estimate, so switching changes
+ * prices and must follow a tariff check (see docs/TARIFF.md).
+ */
+export function chooseDistance(env: Env = process.env): DistanceProvider {
+  const key = env.GOOGLE_MAPS_API_KEY?.trim();
+  return key && env.ROAD_DISTANCE === "google" ? googleRoutesDistance(key) : estimatedDistance();
+}
+
 let services: Services | undefined;
 
 export function getServices(): Services {
   if (!services) {
     const storage = chooseStorage();
     services = {
-      locations: postcodesIo,
-      distance: estimatedDistance(),
+      locations: chooseLocations(),
+      distance: chooseDistance(),
       flights: unverifiedFlights,
       payments: choosePayments(storage),
       notifier: emailNotifier(chooseEmailSender(), process.env.BOOKINGS_NOTIFY_EMAIL || site.email),

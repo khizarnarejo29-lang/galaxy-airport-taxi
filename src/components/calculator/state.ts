@@ -330,6 +330,17 @@ export function selectedOption(d: Draft, quote: QuoteState | null): QuoteOption 
 const returnErrors = (d: Draft, fields: RegExp) =>
   isReturn(d) ? validateReturnJourney(toJourneyInput(d)).filter((e) => fields.test(e.field)) : [];
 
+/**
+ * The house number and street to show after a new address is chosen: the
+ * search result's own street when it has one (Google addresses), otherwise
+ * what the customer typed, unless that was only the previous result's street.
+ */
+export function nextLine1(current: string, previous: ResolvedLocation | null, next: ResolvedLocation | null): string {
+  if (next?.line1) return next.line1;
+  if (previous?.line1 && current === previous.line1) return "";
+  return current;
+}
+
 /** House number and street for every address end. A return from the outward drop-off reuses its address. */
 export function addressLines(d: Draft): { field: "pickupLine1" | "dropoffLine1" | "returnPickupLine1"; location: ResolvedLocation | null }[] {
   return [

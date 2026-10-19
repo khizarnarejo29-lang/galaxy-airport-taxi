@@ -3,6 +3,7 @@ import { fieldError } from "@/lib/domain/errors";
 import type { ResolvedLocation } from "@/lib/domain/types";
 import {
   chosenLuggage,
+  nextLine1,
   emptyDraft,
   meetAndGreetAvailable,
   reducer,
@@ -343,3 +344,17 @@ describe("luggage choice", () => {
   });
 });
 
+
+describe("nextLine1", () => {
+  const google = { id: "gp:a", kind: "address" as const, label: "4-6 Greatorex St, London E1 5NF", line1: "4-6 Greatorex Street", lat: 51.5, lng: -0.06 };
+  const postcode = { id: "pc:E1 5NF", kind: "postcode" as const, label: "E1 5NF", lat: 51.5, lng: -0.06 };
+
+  it("fills in the street from a Google address", () => {
+    expect(nextLine1("", null, google)).toBe("4-6 Greatorex Street");
+  });
+
+  it("clears a street that only came from the previous result, but keeps what the customer typed", () => {
+    expect(nextLine1("4-6 Greatorex Street", google, postcode)).toBe("");
+    expect(nextLine1("Flat 2, 10 High Street", google, postcode)).toBe("Flat 2, 10 High Street");
+  });
+});
