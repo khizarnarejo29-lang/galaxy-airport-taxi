@@ -96,11 +96,37 @@ describe("Galaxy tariff against the reference website", () => {
     }
   });
 
-  it("keeps extras it has no price for as price on request", async () => {
+  it("keeps child seats, which have no price yet, as price on request", async () => {
     const j = await journey(samples[0], "one_way");
     expect(tariffPrice(j, "saloon", { meetAndGreet: false, childSeats: 1 }, pricing).pricing).toEqual({ status: "price_on_request", reason: "EXTRA_NOT_PRICED" });
-    const withStop = { ...j, extraStops: [j.pickup.kind === "address" ? j.pickup.address : (undefined as never)] };
-    expect(tariffPrice(withStop, "saloon", { meetAndGreet: false, childSeats: 0 }, pricing).pricing.status).toBe("price_on_request");
+  });
+
+  // Reference prices with Meet & Greet (+£6 there), seen on 2026-10-19.
+  it.each([
+    ["SW1A 1AA", "LHR", "T5", 84 + 6],
+    ["E1 5NF", "STN", null, 89 + 6],
+  ] as const)("stays £2 under with Meet & Greet: %s from %s", async (postcode, airport, terminal, reference) => {
+    const j = await journey([postcode, airport, terminal, "from", {}], "one_way");
+    const priced = tariffPrice(j, "saloon", { meetAndGreet: true, childSeats: 0 }, pricing);
+    expect(priced.lines.map((l) => l.code)).toContain("meet_and_greet");
+    expect(priced.total).toBeLessThanOrEqual(reference * 100 - 200);
+  });
+
+  it("stays £2 under with a stop on the way (E1 5NF via SW1A 1AA to Heathrow T5)", async () => {
+    // Reference prices for that route, one way.
+    const reference: Fares = { saloon: [100, 0], executive: [126, 0], estate: [111, 0], mpv: [126, 0], minibus: [152, 0] };
+    const direct = await journey(["E1 5NF", "LHR", "T5", "to", {}], "one_way");
+    const stop = { id: "pc:SW1A 1AA", kind: "postcode" as const, label: "SW1A 1AA", postcode: "SW1A 1AA", ...postcodes["SW1A 1AA"] };
+    const airport = getAirport("LHR")!;
+    const via: PricedJourney = {
+      ...direct,
+      extraStops: [stop],
+      distanceMiles: await distance.routeMiles([postcodes["E1 5NF"], stop, airport]),
+    };
+    for (const [vehicleId, [price]] of Object.entries(reference) as [VehicleId, [number, number]][]) {
+      const priced = tariffPrice(via, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
+      expect(priced.total, vehicleId).toBeLessThanOrEqual(price * 100 - 200);
+    }
   });
 
   it("shows no discount line on a return: both legs are simply lower", async () => {

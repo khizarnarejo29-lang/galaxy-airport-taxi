@@ -12,7 +12,7 @@ For each vehicle, in this order:
 2. **Location tariff**: if no fare matches, the price comes from the distance between the address and the airport, using the figures in `src/config/pricing.ts`.
 3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a journey with no airport.
 
-The tariff is **switched on** (version `galaxy-2026-10-19`). Its figures were set from 32 quotes on the
+The tariff is **switched on** (version `galaxy-2026-10-19b`). Its figures were set from 32 quotes on the
 reference website on 2026-10-19: six London postcodes (SW1A 1AA, E1 5NF, HA9 0WS, CR0 1LF, RM1 1AU, W5 2NU)
 to each airport, every vehicle, one way and return. At every one of them the tariff is at least £3 under the
 reference price: the £2 rule plus £1 to spare for the places in between. `src/lib/pricing/galaxy-tariff.test.ts`
@@ -26,8 +26,11 @@ What the reference site does, and the tariff copies:
 - Heathrow Terminal 5 costs more than Terminal 2 (£8 more for E1 5NF), so T2, T3 and T4 are £8 less (`terminalAdjustments`).
 
 Still to confirm: Gatwick North Terminal (priced as South), Heathrow T3 and T4 (assumed like T2), and
-places far from the six samples. Extras (Meet & Greet, child seats, extra stops) have no price yet, so
-journeys with them stay price on request until their prices are set in `extras`.
+places far from the six samples.
+
+Extras: Meet & Greet is £6, as on the reference site. A stop is £10 plus the extra miles (the reference
+charged £16 more for a stop on one checked route). The reference site has no child seats, so child seats
+stay price on request until a price is set in `extras.childSeat`.
 
 ## The figures to set
 
