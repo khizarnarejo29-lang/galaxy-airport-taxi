@@ -263,6 +263,7 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
     <div
       ref={rootRef}
       data-calculator
+      data-step={state.step}
       className={
         "scroll-mt-20 overflow-clip rounded-2xl bg-white text-ink shadow-card ring-1 ring-navy-900/5 sm:rounded-3xl " +
         // Focused fields keep room below them for their error message and the sticky action bar,
