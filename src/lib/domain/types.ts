@@ -30,8 +30,11 @@ export interface Airport extends LatLng {
 export interface ResolvedLocation extends LatLng {
   /** Provider-scoped id the server can resolve again, e.g. "pc:SW1A1AA". */
   id: string;
-  kind: "postcode" | "place";
+  /** "address": a street address or named place from Google, with an exact point. */
+  kind: "postcode" | "place" | "address";
   label: string;
+  /** House number and street, or the building's name, when the search result includes it. */
+  line1?: string;
   /** Full postcode when known (always for kind "postcode"). */
   postcode?: string;
   /** Postcode district, e.g. "SW1A". */
@@ -39,6 +42,15 @@ export interface ResolvedLocation extends LatLng {
   district?: string;
   region?: string;
 }
+
+/** A search result still to be resolved (by id) into a location with coordinates. */
+export interface LocationSuggestion {
+  id: string;
+  kind: "suggestion";
+  label: string;
+}
+
+export type LocationSearchResult = ResolvedLocation | LocationSuggestion;
 
 /** Customer-supplied address detail layered on a resolved location. */
 export interface AddressDetail {

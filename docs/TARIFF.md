@@ -50,7 +50,16 @@ All amounts are in pence (`4500` = £45.00).
 | `timeSurcharges` | Optional night-time extra, as a percentage |
 | `eventSurcharges` | Dates when the journey fare is multiplied (see below) |
 
-Distance is estimated from the postcodes (straight line × 1.3 for London roads).
+Distance is estimated from the postcodes (straight line × 1.3 for London roads), unless real road miles are switched on.
+
+### Google address search and real road miles
+
+- `GOOGLE_MAPS_API_KEY` (server only, never shown to the browser) turns on Google address search: streets, house numbers, hotels and stations, as on the reference website. Needs **Places API (New)** enabled on the key.
+- Real driving miles also need `ROAD_DISTANCE=google` and the **Routes API**. The tariff figures were set against the estimate, so before switching it on:
+  1. Put the key in `.env.local` and run `npm run road-miles`. It saves the real miles for the six sample postcodes to `src/config/road-miles.json` (the key is never printed or saved).
+  2. Re-check the tariff against the reference prices with those miles, and adjust the figures if any price is no longer at least £2 under.
+  3. Then set `ROAD_DISTANCE=google` in Hostinger and rebuild.
+- If Google can't be reached, search falls back to postcodes and the distance to the estimate, so quotes keep working.
 
 ## Keeping prices £2 under the reference website
 

@@ -98,7 +98,7 @@ export function privacySections(): PrivacySection[] {
             "Authorities or other organisations, where we are required to by law or need to in order to protect our legal rights",
           ],
         },
-        "Our address search sends the postcode or area name you type to a postcode lookup service so it can suggest matching locations. Your name and contact details are not sent with these searches.",
+        "Our address search sends the address, postcode or place name you type to Google Maps and to a postcode lookup service so they can suggest matching locations, and the points of your journey to Google Maps to measure the driving distance. Your name and contact details are not sent with these searches.",
         "If you pay online by card, the payment is handled by our payment provider on its own secure page. We don't see or keep your card details.",
         "If you book or message us on WhatsApp, the message is carried by WhatsApp under its own privacy policy, and we use it to arrange your journey.",
       ],
