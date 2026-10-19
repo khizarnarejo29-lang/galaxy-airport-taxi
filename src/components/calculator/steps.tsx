@@ -8,7 +8,7 @@ import { site } from "@/config/site";
 import { airports, getAirport } from "@/lib/domain/airports";
 import { describeLuggage, luggageCategoryLabels } from "@/lib/domain/luggage";
 import { describeEnd } from "@/lib/domain/route";
-import { luggageCategories, type AirportCode } from "@/lib/domain/types";
+import { luggageCategories, type AirportCode, type QuoteOption } from "@/lib/domain/types";
 import { addDays, formatJourneyDate, londonToday } from "@/lib/utils/dates";
 import { formatGBP } from "@/lib/utils/money";
 import { ChoiceCards, Counter, describedBy, Field, FieldError, TextArea, TextInput, ToggleCards } from "@/components/ui/form";
@@ -793,11 +793,8 @@ export function DetailsStep({ state, set }: StepProps) {
 
 /* ───────────────────────── 8. Review ───────────────────────── */
 
-export function ReviewStep({ state, go }: StepProps) {
-  const d = state.draft;
-  const q = state.quote;
-  const option = selectedOption(d, q);
-  if (!q || !option) return <QuoteLoading />;
+/** The review's sections: what the customer checks before booking (also sent in a WhatsApp booking). */
+export function reviewSections(d: CalcState["draft"], q: NonNullable<CalcState["quote"]>, option: QuoteOption) {
   const j = q.quote.journey;
   const r = j.returnJourney;
   // House details typed after the quote are shown with the quoted places.
@@ -866,6 +863,15 @@ export function ReviewStep({ state, go }: StepProps) {
       ],
     },
   ];
+  return sections;
+}
+
+export function ReviewStep({ state, go }: StepProps) {
+  const d = state.draft;
+  const q = state.quote;
+  const option = selectedOption(d, q);
+  if (!q || !option) return <QuoteLoading />;
+  const sections = reviewSections(d, q, option);
 
   return (
     <div className="space-y-4">
@@ -907,7 +913,14 @@ export function ReviewStep({ state, go }: StepProps) {
           </div>
         </dl>
       </section>
-      {q.cardPayments && (
+      {q.onlineBooking === false && (
+        <p className="flex items-start gap-2 text-sm text-ink-soft">
+          <Icon name="chat" className="mt-0.5 size-4 shrink-0 text-success" />
+          Tap &ldquo;Book on WhatsApp&rdquo; and your booking opens in WhatsApp, ready to send. We&apos;ll reply there to
+          confirm it. You can also call us on {site.phone.display}.
+        </p>
+      )}
+      {q.onlineBooking !== false && q.cardPayments && (
         <p className="flex items-start gap-2 text-sm text-ink-soft">
           <Icon name="check" className="mt-0.5 size-4 shrink-0 text-success" />
           Next you pay by card on Stripe&apos;s secure payment page. Your card details never reach this website.

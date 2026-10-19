@@ -92,6 +92,8 @@ export interface QuoteState {
   token: string;
   /** Booking is followed by the card payment page. */
   cardPayments?: boolean;
+  /** False: bookings can't be saved right now, so the booking is sent on WhatsApp instead. */
+  onlineBooking?: boolean;
 }
 
 export interface CalcState {

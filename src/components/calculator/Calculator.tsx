@@ -33,8 +33,10 @@ import {
   ReviewStep,
   VehicleStep,
   WhenStep,
+  reviewSections,
   type StepProps,
 } from "./steps";
+import { whatsappBookingLink } from "./whatsapp-booking";
 
 // v4: pickup and drop-off, each an address or an airport.
 const STORAGE_KEY = "gat:calculator:v4";
@@ -162,7 +164,7 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
         fail(res.errors);
         return null;
       }
-      const quote = { quote: res.quote, token: res.token, cardPayments: res.cardPayments };
+      const quote = { quote: res.quote, token: res.token, cardPayments: res.cardPayments, onlineBooking: res.onlineBooking };
       dispatch({ type: "quoted", quote, notice });
       return quote;
     },
@@ -228,6 +230,11 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
       return;
     }
     if (state.step === "review") {
+      // While bookings can't be saved, the booking goes to the office on WhatsApp instead.
+      if (whatsappLink) {
+        window.open(whatsappLink, "_blank", "noopener");
+        return;
+      }
       await submit();
       return;
     }
@@ -244,6 +251,10 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
   // Shown only from the server's quote, never worked out in the browser.
   const chosen = selectedOption(state.draft, state.quote);
   const runningTotal = chosen?.available && NEEDS_QUOTE.includes(state.step) ? chosen.total : null;
+  const whatsappLink =
+    state.step === "review" && state.quote?.onlineBooking === false && chosen?.available
+      ? whatsappBookingLink(reviewSections(state.draft, state.quote, chosen), chosen)
+      : null;
   const nothingPriced =
     state.step === "vehicle" && state.quote !== null && !state.quote.quote.options.some((o) => o.available);
 
@@ -251,7 +262,9 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
     state.step === "extras"
       ? "Get my prices"
       : state.step === "review"
-        ? state.quote?.cardPayments && runningTotal !== null
+        ? whatsappLink
+          ? "Book on WhatsApp"
+          : state.quote?.cardPayments && runningTotal !== null
           ? `Confirm and pay ${formatGBP(runningTotal)}`
           : "Confirm booking"
         : "Continue";
@@ -338,7 +351,7 @@ export function Calculator({ initialAirport, initialDirection, variant = "page" 
                 {generalErrors.map((e) => (
                   <p key={e.code}>{e.message}</p>
                 ))}
-                {generalErrors.some((e) => ["LOCATION_LOOKUP_FAILED", "SERVER_ERROR", "BOOKING_UNAVAILABLE"].includes(e.code)) && (
+                {generalErrors.some((e) => ["LOCATION_LOOKUP_FAILED", "SERVER_ERROR"].includes(e.code)) && (
                   <p>
                     You can also book by phone on{" "}
                     <a className="font-semibold underline underline-offset-2" href={site.phone.href}>
