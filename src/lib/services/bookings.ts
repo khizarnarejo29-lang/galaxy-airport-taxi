@@ -8,6 +8,8 @@ export interface BookingRepository {
   exists(reference: string): Promise<boolean>;
   /** Replaces a saved booking (e.g. once it is paid). Throws if it was never saved. */
   update(booking: Booking): Promise<void>;
+  /** Newest first, for the admin page. */
+  list?(limit: number): Promise<Booking[]>;
 }
 
 /**
@@ -58,6 +60,12 @@ export function memoryBookingRepository(): BookingRepository {
       const key = normaliseReference(booking.reference);
       if (!store.has(key)) throw new BookingStorageError("Booking update failed");
       store.set(key, structuredClone(booking));
+    },
+    async list(limit) {
+      return [...store.values()]
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, limit)
+        .map((b) => structuredClone(b));
     },
   };
 }
@@ -121,6 +129,11 @@ export function supabaseBookingRepository(client: SupabaseClient): BookingReposi
       const { data, error } = await table().update(row).eq("reference", reference).select("reference");
       if (error) throw failed("update", error);
       if (!data?.length) throw new BookingStorageError("Booking update failed");
+    },
+    async list(limit) {
+      const { data, error } = await table().select("booking").order("created_at", { ascending: false }).limit(limit);
+      if (error) throw failed("lookup", error);
+      return (data ?? []).map((r) => r.booking as Booking);
     },
   };
 }

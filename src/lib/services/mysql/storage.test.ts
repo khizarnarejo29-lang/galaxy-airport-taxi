@@ -47,6 +47,7 @@ describe.skipIf(!config)("MySQL storage (real database)", () => {
     expect((await repo.findByReference(reference))?.total).toBe(7100);
     await repo.update({ ...booking, payment: { status: "paid", method: "Card (online)" } });
     expect((await repo.findByReference(reference))?.payment.status).toBe("paid");
+    expect((await repo.list!(500)).some((b) => b.reference === reference)).toBe(true);
     expect(await repo.findByReference("GAT-NONE22")).toBeNull();
     await pool.end();
   });

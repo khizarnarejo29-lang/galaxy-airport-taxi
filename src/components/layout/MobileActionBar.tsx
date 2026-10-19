@@ -12,7 +12,7 @@ const HIDDEN = new Set(["/", "/quote", ...airports.map((a) => `/${a.slug}`)]);
 /** Fixed Call / Get a Quote bar for phones; sits after the footer so it never hides content. */
 export function MobileActionBar() {
   const pathname = usePathname();
-  if (HIDDEN.has(pathname) || pathname.startsWith("/booking/")) return null;
+  if (HIDDEN.has(pathname) || pathname.startsWith("/booking/") || pathname.startsWith("/admin")) return null;
 
   return (
     <>

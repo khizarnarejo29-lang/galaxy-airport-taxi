@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
   if (!indexingEnabled) return { rules: { userAgent: "*", disallow: "/" } };
 
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/booking/"] },
+    rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/booking/", "/admin"] },
     sitemap: new URL("/sitemap.xml", site.url).toString(),
   };
 }
