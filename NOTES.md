@@ -13,18 +13,14 @@ Anything marked **not yet received** must not be filled in or guessed.
 - **Company registration number:** none provided. Do not add one.
 - **Licence number/details:** none provided. Do not add any.
 
-## Policies Still Pending
+## Customer Policies (set by the owner, 2026-10-20)
 
-All of the following are pending and not confirmed. Do NOT invent final policies for:
+- Cancellation: free up to 24 hours before pickup (full refund); later, or a no-show: no refund. Refunds processed within 7 business days.
+- Waiting: airport pickups 60 minutes free from actual landing; address pickups 15 minutes free; then £20/hour pro rata.
+- Flight delays: never charged; free waiting starts from the actual landing time.
+- Child seats: free (up to 3).
 
-- Waiting time
-- Flight delays
-- Payment methods beyond card payment online (card via Stripe Checkout confirmed by the owner, 2026-10-18)
-- Additional cancellation conditions
-- Cancellation fees
-- Refund percentages
-- Other service-specific restrictions
-- Placeholder/configurable service policies
+Still pending (do not invent): payment methods beyond online card payment, any other cancellation fees, service-specific restrictions.
 
 ## Development / Launch Status
 

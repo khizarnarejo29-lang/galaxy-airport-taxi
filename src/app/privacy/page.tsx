@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/sections/blocks";
 import { privacyLastUpdated, privacySections } from "@/content/privacy";
+import { pageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = { title: "Privacy Policy", robots: { index: false } };
+export const metadata: Metadata = pageMetadata({
+  title: "Privacy Policy",
+  description: "How Galaxy Airport Taxi collects, uses and protects your personal information when you get a quote or book.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   const sections = privacySections();

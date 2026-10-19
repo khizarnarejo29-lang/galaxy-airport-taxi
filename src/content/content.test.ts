@@ -6,13 +6,20 @@ import { faqGroups } from "./faqs";
 import { policies } from "./policies";
 
 describe("faqGroups", () => {
+  const set = policies.cancellation;
   afterEach(() => {
-    policies.cancellation = null;
+    policies.cancellation = set;
   });
 
   it("hides policy questions until the policy is written", () => {
+    policies.cancellation = null;
     const questions = faqGroups().flatMap((g) => g.items.map((i) => i.q));
     expect(questions).not.toContain("Can I cancel or change my booking?");
+  });
+
+  it("shows the owner's waiting, delay and cancellation answers", () => {
+    const questions = faqGroups().flatMap((g) => g.items.map((i) => i.q));
+    expect(questions).toEqual(expect.arrayContaining(["How long will the driver wait?", "What happens if my flight is delayed or early?", "Can I cancel or change my booking?"]));
   });
 
   it("shows a policy question once it is set", () => {
@@ -65,6 +72,16 @@ describe("terms: cancellation and refunds", () => {
     expect(section.paragraphs[0]).toContain("within 7 business days");
     expect(section.paragraphs[1]).toMatch(/bank or card provider may need additional time/);
     expect(section.paragraphs.join(" ")).not.toMatch(/%|£|fee/i);
+    expect(section.paragraphs.join(" ")).toContain("24 hours or more before your pickup time: full refund");
+  });
+
+  it("states the owner's rules and the live prices", async () => {
+    const { termsSections } = await import("./terms");
+    const text = termsSections().flatMap((s) => s.paragraphs).join(" ");
+    for (const required of ["60 minutes free of charge", "£20 an hour", "a delay is never charged", "Meet & Greet", "£6", "£10", "Child seats are free", "24 December, 6pm", "England and Wales"]) {
+      expect(text).toContain(required);
+    }
+    expect(text).not.toMatch(/being prepared|will be published here/i);
   });
 });
 

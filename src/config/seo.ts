@@ -1,4 +1,4 @@
-import { mainNav, isGroup } from "@/config/navigation";
+import { legalNav, mainNav, isGroup } from "@/config/navigation";
 
 /**
  * Search-engine visibility. OFF unless SITE_INDEXING=on is set, so previews and
@@ -6,8 +6,9 @@ import { mainNav, isGroup } from "@/config/navigation";
  */
 export const indexingEnabled = process.env.SITE_INDEXING === "on";
 
-/** Pages listed in the sitemap: the homepage, the quote page and everything in the main navigation. */
+/** Pages listed in the sitemap: the homepage, the quote page, the main navigation and the legal pages. */
 export function indexablePaths(): string[] {
   const navPaths = mainNav.flatMap((item) => (isGroup(item) ? item.children.map((c) => c.href) : [item.href]));
-  return [...new Set(["/", "/quote", ...navPaths])];
+  // The privacy policy and terms are real pages now, so they are listed too.
+  return [...new Set(["/", "/quote", ...navPaths, ...legalNav.map((l) => l.href)])];
 }
