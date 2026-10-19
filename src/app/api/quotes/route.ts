@@ -10,5 +10,12 @@ export async function POST(request: Request) {
   const result = await createQuote(parsed.data, services);
   if (!result.ok) return Response.json({ ok: false, errors: result.errors }, { status: result.status });
   // Lets the calculator say "Confirm and pay" when the card page follows the booking.
-  return Response.json({ ok: true, quote: result.quote, token: result.token, cardPayments: Boolean(services.payments.checkout) });
+  // Lets the calculator offer WhatsApp booking while online bookings can't be saved.
+  return Response.json({
+    ok: true,
+    quote: result.quote,
+    token: result.token,
+    cardPayments: Boolean(services.payments.checkout),
+    onlineBooking: services.onlineBooking !== false,
+  });
 }

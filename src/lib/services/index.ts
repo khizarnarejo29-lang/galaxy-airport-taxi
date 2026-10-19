@@ -23,6 +23,7 @@ import {
   unavailableQuoteRequestRepository,
   type QuoteRequestRepository,
 } from "./quote-requests";
+import { createMysqlPool, mysqlBookingRepository, mysqlConfigFromEnv, mysqlQuoteRequestRepository } from "./mysql/storage";
 import { createSupabaseServerClient, supabaseConfigFromEnv } from "./supabase/server-client";
 import { site } from "@/config/site";
 
@@ -35,10 +36,12 @@ export interface Services {
   bookings: BookingRepository;
   /** Storage only for now: nothing on the website creates quote requests yet. */
   quoteRequests: QuoteRequestRepository;
+  /** False when bookings can't be saved (no storage in production): customers book by WhatsApp or phone. */
+  onlineBooking?: boolean;
 }
 
 export interface Storage {
-  kind: "supabase" | "memory" | "unavailable";
+  kind: "supabase" | "mysql" | "memory" | "unavailable";
   bookings: BookingRepository;
   quoteRequests: QuoteRequestRepository;
 }
@@ -46,7 +49,7 @@ export interface Storage {
 type Env = Partial<Record<string, string | undefined>>;
 
 /**
- * Supabase when configured. Without it: in-memory storage in development,
+ * Supabase or MySQL (e.g. Hostinger's database) when configured. Without either: in-memory storage in development,
  * and in production no storage at all, so bookings are refused rather than lost.
  */
 export function chooseStorage(env: Env = process.env): Storage {
@@ -55,8 +58,13 @@ export function chooseStorage(env: Env = process.env): Storage {
     const client = createSupabaseServerClient(config);
     return { kind: "supabase", bookings: supabaseBookingRepository(client), quoteRequests: supabaseQuoteRequestRepository(client) };
   }
+  const mysql = mysqlConfigFromEnv(env);
+  if (mysql) {
+    const pool = createMysqlPool(mysql);
+    return { kind: "mysql", bookings: mysqlBookingRepository(pool), quoteRequests: mysqlQuoteRequestRepository(pool) };
+  }
   if (env.NODE_ENV === "production") {
-    console.error("[storage] SUPABASE_URL / SUPABASE_SECRET_KEY are not set: online bookings are refused.");
+    console.error("[storage] No database is set (MYSQL_* or SUPABASE_*): online bookings are refused.");
     return { kind: "unavailable", bookings: unavailableBookingRepository(), quoteRequests: unavailableQuoteRequestRepository() };
   }
   console.warn("[storage] Supabase is not configured: using in-memory storage (lost on restart).");
@@ -86,6 +94,7 @@ export function getServices(): Services {
       notifier: emailNotifier(logEmailSender, process.env.BOOKINGS_NOTIFY_EMAIL || site.email),
       bookings: storage.bookings,
       quoteRequests: storage.quoteRequests,
+      onlineBooking: storage.kind !== "unavailable",
     };
   }
   return services;
