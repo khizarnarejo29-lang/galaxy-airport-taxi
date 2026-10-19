@@ -7,14 +7,38 @@ import type { PricingConfig } from "@/config/pricing";
 import { getVehicle } from "@/config/fleet";
 import type { AddOns, AirportCode, Direction, JourneyEnd, PriceLine, PricedJourney, VehicleId } from "@/lib/domain/types";
 import type { OptionPrice } from "@/lib/reference-fares/journey-pricing";
+import { haversineMiles } from "@/lib/domain/geo";
 import { activeEvent, price } from "./engine";
 
-/** The airport and direction of a leg, or null when neither end (or both) is an airport. */
-function legOf(start: JourneyEnd, finish: JourneyEnd): { airport: AirportCode; direction: Direction } | null {
-  if (finish.kind === "airport" && start.kind !== "airport") return { airport: finish.airport, direction: "to_airport" };
-  if (start.kind === "airport" && finish.kind !== "airport") return { airport: start.airport, direction: "from_airport" };
+interface Leg {
+  airport: AirportCode;
+  direction: Direction;
+  terminal?: string;
+  /** The London end of the leg. */
+  address: Extract<JourneyEnd, { kind: "address" }>["address"];
+}
+
+/** The airport, direction and London end of a leg, or null when neither end (or both) is an airport. */
+function legOf(start: JourneyEnd, finish: JourneyEnd): Leg | null {
+  if (finish.kind === "airport" && start.kind === "address")
+    return { airport: finish.airport, direction: "to_airport", terminal: finish.terminal, address: start.address };
+  if (start.kind === "airport" && finish.kind === "address")
+    return { airport: start.airport, direction: "from_airport", terminal: start.terminal, address: finish.address };
   return null;
 }
+
+const inCentralLondon = (leg: Leg, config: PricingConfig) =>
+  Boolean(config.centralZone && haversineMiles(leg.address, config.centralZone.centre) <= config.centralZone.radiusMiles);
+
+const legInput = (leg: Leg, config: PricingConfig, returnBooking: boolean) => ({
+  airport: leg.airport,
+  direction: leg.direction,
+  terminal: leg.terminal,
+  central: inCentralLondon(leg, config),
+  returnBooking,
+});
+
+const onRequest = (reason: string): OptionPrice => ({ pricing: { status: "price_on_request", reason }, lines: [], total: 0 });
 
 const prefixed = (lines: PriceLine[], prefix: string) =>
   lines.map((l) => ({ ...l, code: `return_${l.code}`, label: `${prefix}${l.label.charAt(0).toLowerCase()}${l.label.slice(1)}` }));
@@ -34,11 +58,21 @@ export function tariffPrice(
     return { pricing: { status: "price_on_request", reason: "TOO_MANY_PASSENGERS" }, lines: [], total: 0 };
   }
   const outward = legOf(journey.pickup, journey.dropoff);
-  if (!outward) return { pricing: { status: "price_on_request", reason: "NO_AIRPORT" }, lines: [], total: 0 };
+  if (!outward) return onRequest("NO_AIRPORT");
+  // An extra the tariff has no price for is never guessed.
+  const stops = journey.extraStops.length + (journey.returnJourney?.extraStops.length ?? 0);
+  if (
+    (extras.meetAndGreet && config.extras.meetAndGreet === null) ||
+    (extras.childSeats > 0 && config.extras.childSeat === null) ||
+    (stops > 0 && config.extras.extraStop === null)
+  ) {
+    return onRequest("EXTRA_NOT_PRICED");
+  }
+  const isReturn = journey.tripType === "return";
 
   const out = price(
     {
-      ...outward,
+      ...legInput(outward, config, isReturn),
       vehicleId,
       distanceMiles: journey.distanceMiles,
       date: journey.date,
@@ -54,12 +88,12 @@ export function tariffPrice(
   if (outEvent) events.add(outEvent.label);
 
   const r = journey.returnJourney;
-  if (journey.tripType === "return") {
+  if (isReturn) {
     const back = r && legOf(r.pickup, journey.pickup);
-    if (!r || !back) return { pricing: { status: "price_on_request", reason: "NO_AIRPORT" }, lines: [], total: 0 };
+    if (!r || !back) return onRequest("NO_AIRPORT");
     const ret = price(
       {
-        ...back,
+        ...legInput(back, config, true),
         vehicleId,
         distanceMiles: r.distanceMiles ?? journey.distanceMiles,
         date: r.date,

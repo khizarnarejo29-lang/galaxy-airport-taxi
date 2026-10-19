@@ -12,7 +12,22 @@ For each vehicle, in this order:
 2. **Location tariff**: if no fare matches, the price comes from the distance between the address and the airport, using the figures in `src/config/pricing.ts`.
 3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a journey with no airport.
 
-The tariff is **switched off** until real figures are entered. While `isPlaceholder` is `true` in `src/config/pricing.ts`, the live website never uses it.
+The tariff is **switched on** (version `galaxy-2026-10-19`). Its figures were set from 32 quotes on the
+reference website on 2026-10-19: six London postcodes (SW1A 1AA, E1 5NF, HA9 0WS, CR0 1LF, RM1 1AU, W5 2NU)
+to each airport, every vehicle, one way and return. At every one of them the tariff is at least £3 under the
+reference price: the £2 rule plus £1 to spare for the places in between. `src/lib/pricing/galaxy-tariff.test.ts`
+holds those quotes and fails if a change takes any price above reference − £2.
+
+What the reference site does, and the tariff copies:
+
+- Prices include airport drop-off and parking, so `dropOffCharge` and `pickupParking` are `0`.
+- A return is 5% off both journeys (`returnDiscountPercent`). Customers see two lower leg fares, no discount line.
+- Central London costs more (`centralZone`, `centralSupplement`).
+- Heathrow Terminal 5 costs more than Terminal 2 (£8 more for E1 5NF), so T2, T3 and T4 are £8 less (`terminalAdjustments`).
+
+Still to confirm: Gatwick North Terminal (priced as South), Heathrow T3 and T4 (assumed like T2), and
+places far from the six samples. Extras (Meet & Greet, child seats, extra stops) have no price yet, so
+journeys with them stay price on request until their prices are set in `extras`.
 
 ## The figures to set
 
@@ -26,7 +41,10 @@ All amounts are in pence (`4500` = £45.00).
 | `minimumFare` | Lowest saloon fare for that airport |
 | `dropOffCharge` / `pickupParking` | Airport drop-off charge or parking, added on top. Use `0` if your fares already include them |
 | `vehicleMultipliers` | Estate, Executive, MPV and 8-Seater as a multiple of the saloon fare (`1.2` = 20% more) |
-| `extras` | Meet & Greet, each child seat (charged once per booking), each extra stop |
+| `extras` | Meet & Greet, each child seat (charged once per booking), each extra stop. `null`: not priced, so price on request |
+| `centralZone` / `centralSupplement` | Centre and radius of central London, and the extra per airport for it |
+| `terminalAdjustments` | Extra (or less, if negative) for a terminal, e.g. Heathrow `T2: -800` |
+| `returnDiscountPercent` | Taken off both journeys of a return |
 | `timeSurcharges` | Optional night-time extra, as a percentage |
 | `eventSurcharges` | Dates when the journey fare is multiplied (see below) |
 

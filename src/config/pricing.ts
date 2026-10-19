@@ -1,4 +1,4 @@
-import type { AirportCode, VehicleId } from "@/lib/domain/types";
+import type { AirportCode, LatLng, VehicleId } from "@/lib/domain/types";
 import type { Pence } from "@/lib/utils/money";
 
 export interface AirportTariff {
@@ -12,6 +12,10 @@ export interface AirportTariff {
   dropOffCharge: Pence;
   /** Short-stay parking while the driver waits (from_airport). */
   pickupParking: Pence;
+  /** Added to the saloon fare when the London end is inside `centralZone`. */
+  centralSupplement?: Pence;
+  /** Added to the saloon fare for a terminal (negative for a cheaper one), keyed by terminal id. */
+  terminalAdjustments?: Partial<Record<string, Pence>>;
 }
 
 export interface TimeSurcharge {
@@ -45,35 +49,56 @@ export interface PricingConfig {
   roundTo: Pence;
   airports: Record<AirportCode, AirportTariff>;
   vehicleMultipliers: Record<VehicleId, number>;
-  extras: { meetAndGreet: Pence; childSeat: Pence; extraStop: Pence };
+  /** Each extra's price. Null: not priced by the tariff, so a journey with it is price on request. */
+  extras: { meetAndGreet: Pence | null; childSeat: Pence | null; extraStop: Pence | null };
+  /** Central London, where `centralSupplement` applies: within this many miles of the centre. */
+  centralZone?: { centre: LatLng; radiusMiles: number };
+  /** Both legs of a return booking are charged this much less. Shown only as lower leg fares. */
+  returnDiscountPercent?: number;
   timeSurcharges: TimeSurcharge[];
   eventSurcharges: EventSurcharge[];
 }
 
 /**
- * PLACEHOLDER FIGURES — for building and testing only.
- * Replace every amount with Galaxy Airport Taxi's real tariff before launch,
- * and confirm current airport drop-off and parking charges.
+ * Galaxy's location tariff, set from 32 quotes on the reference website
+ * (2026-10-19): six London postcodes to each airport, every vehicle. At each of
+ * them this tariff is at least £3 under the reference price (the £2 rule plus a
+ * £1 cushion for the places in between). Re-check with `npm run tariff:check`
+ * whenever a figure changes. Prices include airport drop-off and parking, as the
+ * reference prices do. Extras aren't priced: journeys with them are price on request.
  */
 export const pricing: PricingConfig = {
-  version: "placeholder-2026-10-05",
-  isPlaceholder: true,
+  version: "galaxy-2026-10-19",
+  isPlaceholder: false,
   roundTo: 100,
   airports: {
-    LHR: { baseFare: 4000, includedMiles: 12, perMile: 220, minimumFare: 4500, dropOffCharge: 700, pickupParking: 800 },
-    LGW: { baseFare: 5500, includedMiles: 20, perMile: 210, minimumFare: 6000, dropOffCharge: 1000, pickupParking: 800 },
-    STN: { baseFare: 5500, includedMiles: 20, perMile: 210, minimumFare: 6000, dropOffCharge: 1000, pickupParking: 800 },
-    LTN: { baseFare: 5000, includedMiles: 18, perMile: 210, minimumFare: 5500, dropOffCharge: 700, pickupParking: 800 },
-    LCY: { baseFare: 3000, includedMiles: 6, perMile: 230, minimumFare: 3500, dropOffCharge: 0, pickupParking: 600 },
+    // Fitted to Terminal 5; Terminals 2, 3 and 4 are cheaper on the reference site (T2 £8 less).
+    LHR: {
+      baseFare: 5300,
+      includedMiles: 10,
+      perMile: 230,
+      minimumFare: 5300,
+      dropOffCharge: 0,
+      pickupParking: 0,
+      terminalAdjustments: { T2: -800, T3: -800, T4: -800 },
+    },
+    LGW: { baseFare: 4200, includedMiles: 9, perMile: 170, minimumFare: 4200, dropOffCharge: 0, pickupParking: 0, centralSupplement: 2400 },
+    STN: { baseFare: 1900, includedMiles: 0, perMile: 180, minimumFare: 1900, dropOffCharge: 0, pickupParking: 0 },
+    LTN: { baseFare: 3900, includedMiles: 17, perMile: 255, minimumFare: 3900, dropOffCharge: 0, pickupParking: 0 },
+    LCY: { baseFare: 2000, includedMiles: 1, perMile: 295, minimumFare: 2000, dropOffCharge: 0, pickupParking: 0, centralSupplement: 700 },
   },
   vehicleMultipliers: {
     saloon: 1,
-    estate: 1.15,
-    executive: 1.5,
-    mpv: 1.35,
-    minibus: 1.8,
+    estate: 1.12,
+    executive: 1.29,
+    mpv: 1.29,
+    minibus: 1.49,
   },
-  extras: { meetAndGreet: 1500, childSeat: 800, extraStop: 1000 },
+  extras: { meetAndGreet: null, childSeat: null, extraStop: null },
+  // Within 3 miles of Charing Cross: the reference site charges more for central London.
+  centralZone: { centre: { lat: 51.5073, lng: -0.1276 }, radiusMiles: 3 },
+  // The reference site takes 5% off both journeys of a return.
+  returnDiscountPercent: 5,
   timeSurcharges: [{ label: "Late-night surcharge", from: "23:00", to: "05:00", percent: 10, enabled: false }],
   // Owner's decision: double fares at Christmas and New Year. The windows are the ones the
   // reference site publishes for its own holiday surcharge (see holidayWindows).

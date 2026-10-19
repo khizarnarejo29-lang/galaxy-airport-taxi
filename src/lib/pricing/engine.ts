@@ -18,6 +18,12 @@ export interface PriceInput {
   date?: string;
   extraStops: number;
   addOns?: AddOns;
+  /** The London end is in central London (`centralZone`). */
+  central?: boolean;
+  /** Terminal id at the airport end, for `terminalAdjustments`. */
+  terminal?: string;
+  /** Part of a return booking: `returnDiscountPercent` comes off the journey fare. */
+  returnBooking?: boolean;
 }
 
 export interface PriceResult {
@@ -66,8 +72,11 @@ export function activeEvent(config: PricingConfig, date: string | undefined, tim
 export function journeyFare(input: PriceInput, config: PricingConfig): Pence {
   const tariff = config.airports[input.airport];
   const chargeableMiles = Math.max(0, input.distanceMiles - tariff.includedMiles);
-  const saloonFare = Math.max(tariff.minimumFare, tariff.baseFare + chargeableMiles * tariff.perMile);
-  return roundTo(saloonFare * config.vehicleMultipliers[input.vehicleId], config.roundTo);
+  const adjustments =
+    (input.central ? (tariff.centralSupplement ?? 0) : 0) + ((input.terminal && tariff.terminalAdjustments?.[input.terminal]) || 0);
+  const saloonFare = Math.max(tariff.minimumFare, tariff.baseFare + chargeableMiles * tariff.perMile + adjustments);
+  const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
+  return roundTo(saloonFare * (1 - discount) * config.vehicleMultipliers[input.vehicleId], config.roundTo);
 }
 
 export function price(input: PriceInput, config: PricingConfig): PriceResult {
@@ -92,7 +101,7 @@ export function price(input: PriceInput, config: PricingConfig): PriceResult {
     lines.push({
       code: "extra_stops",
       label: input.extraStops === 1 ? "Extra stop" : `Extra stops × ${input.extraStops}`,
-      amount: input.extraStops * config.extras.extraStop,
+      amount: input.extraStops * (config.extras.extraStop ?? 0),
     });
   }
 
@@ -107,14 +116,14 @@ export function price(input: PriceInput, config: PricingConfig): PriceResult {
 
   // Meet & Greet only applies when we collect from arrivals.
   if (addOns.meetAndGreet && input.direction === "from_airport") {
-    lines.push({ code: "meet_and_greet", label: "Meet & Greet", amount: config.extras.meetAndGreet });
+    lines.push({ code: "meet_and_greet", label: "Meet & Greet", amount: config.extras.meetAndGreet ?? 0 });
   }
 
   if (addOns.childSeats > 0) {
     lines.push({
       code: "child_seats",
       label: addOns.childSeats === 1 ? "Child seat" : `Child seats × ${addOns.childSeats}`,
-      amount: addOns.childSeats * config.extras.childSeat,
+      amount: addOns.childSeats * (config.extras.childSeat ?? 0),
     });
   }
 
