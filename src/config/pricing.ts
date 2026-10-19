@@ -65,10 +65,15 @@ export interface PricingConfig {
  * them this tariff is at least £3 under the reference price (the £2 rule plus a
  * £1 cushion for the places in between). Re-check with `npm run tariff:check`
  * whenever a figure changes. Prices include airport drop-off and parking, as the
- * reference prices do. Extras aren't priced: journeys with them are price on request.
+ * reference prices do.
+ *
+ * Extras, also from the reference website: Meet & Greet is +£6 there (Heathrow and
+ * Stansted). A stop on the way cost £16 more there (E1 5NF via SW1A 1AA to Heathrow T5);
+ * here a stop is £10 plus the extra miles. The reference site offers no child seats,
+ * so those stay price on request until the owner sets a price.
  */
 export const pricing: PricingConfig = {
-  version: "galaxy-2026-10-19",
+  version: "galaxy-2026-10-19b",
   isPlaceholder: false,
   roundTo: 100,
   airports: {
@@ -94,7 +99,7 @@ export const pricing: PricingConfig = {
     mpv: 1.29,
     minibus: 1.49,
   },
-  extras: { meetAndGreet: null, childSeat: null, extraStop: null },
+  extras: { meetAndGreet: 600, childSeat: null, extraStop: 1000 },
   // Within 3 miles of Charing Cross: the reference site charges more for central London.
   centralZone: { centre: { lat: 51.5073, lng: -0.1276 }, radiusMiles: 3 },
   // The reference site takes 5% off both journeys of a return.
