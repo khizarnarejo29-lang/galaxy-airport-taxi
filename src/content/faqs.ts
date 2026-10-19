@@ -27,11 +27,11 @@ export function faqGroups(): FaqGroup[] {
       items: [
         {
           q: "How is my price shown?",
-          a: "Where we can price your journey online, each vehicle shows one fixed total for the whole booking, including both journeys of a return. If we can't, it shows “Price on request”.",
+          a: "Each vehicle shows one fixed total for the whole booking, including both journeys of a return, any stops and extras. The price you see is the price you pay.",
         },
         {
           q: "What does “Price on request” mean?",
-          a: `We can't confirm an instant price for that journey online, for example because of the exact address, date, luggage, stops or extras. Please call us on ${site.phone.display} and we'll give you a fixed price. Phone is currently the most reliable way to get a quote.`,
+          a: `Most journeys get an instant fixed price. A few can't be priced online, for example a journey that doesn't start or end at an airport, more passengers than the vehicle holds, or large items such as bikes. Call or WhatsApp us on ${site.phone.display} and we'll give you a fixed price.`,
         },
         {
           q: "How long is my quote valid?",
@@ -39,7 +39,7 @@ export function faqGroups(): FaqGroup[] {
         },
         {
           q: "Why can't I choose some vehicles?",
-          a: `You can only book a vehicle online when it has a confirmed price for your journey. Others show “Price on request”. Call us on ${site.phone.display} and we'll help.`,
+          a: `A vehicle can be booked online when it fits your group and has a confirmed price for your journey. If none fits, call or WhatsApp us on ${site.phone.display} and we'll help.`,
         },
       ],
     },
@@ -60,7 +60,7 @@ export function faqGroups(): FaqGroup[] {
         },
         {
           q: "Can I add stops along the way?",
-          a: `Yes. You can add up to ${bookingRules.maxExtraStops} extra stops when you enter your journey. Journeys with stops may show “Price on request”. If so, please call us for a price.`,
+          a: `Yes. You can add up to ${bookingRules.maxExtraStops} extra stops when you enter your journey. Each stop is included in your fixed price, so you see the full total before you book.`,
         },
         {
           q: "Can I request a child seat?",

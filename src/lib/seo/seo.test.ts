@@ -71,8 +71,9 @@ describe("structured data", () => {
       telephone: "+447470046660",
       email: "info@galaxyairporttaxi.co.uk",
       address: "4-6 Greatorex Street, London E1 5NF",
+      // 24/7, confirmed by the owner, in schema.org form.
+      openingHours: "Mo-Su 00:00-23:59",
     });
-    expect(Object.keys(localBusiness()!)).not.toEqual(expect.arrayContaining(["openingHours"]));
   });
 
   it("escapes < so content can't break out of the script tag", () => {

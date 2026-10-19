@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { airports } from "@/lib/domain/airports";
 import { validateContact } from "@/lib/domain/contact";
-import { airportContent } from "./airports";
+import { airportContent, airportFaqs } from "./airports";
 import { faqGroups } from "./faqs";
 import { policies } from "./policies";
 
@@ -43,6 +43,20 @@ describe("airport content", () => {
 
   it("keeps meta descriptions within search-result length", () => {
     for (const a of airports) expect(airportContent[a.code].metaDescription.length).toBeLessThanOrEqual(160);
+  });
+
+  it("adds the shared waiting, delay and child seat answers to every airport's FAQs", () => {
+    for (const a of airports) {
+      const questions = airportFaqs(a.code, a.shortName).map((f) => f.q);
+      expect(questions).toEqual(
+        expect.arrayContaining([`How long will the driver wait at ${a.shortName}?`, "What if my flight is delayed?", "Are child seats free?"]),
+      );
+    }
+  });
+
+  it("no longer limits coverage to a London service area", () => {
+    const text = JSON.stringify(airportContent);
+    expect(text).not.toMatch(/service area/i);
   });
 });
 

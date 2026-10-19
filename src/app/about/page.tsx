@@ -27,8 +27,8 @@ export default function AboutPage() {
       <Section id="approach" eyebrow="How we work" title="Fixed prices, straightforward booking">
         <div className="grid gap-4 md:grid-cols-3">
           <FeatureCard icon="check" title="Price before you book">
-            Where we can price your journey online, you see one fixed total for the booking before you confirm. If not,
-            it shows &ldquo;Price on request&rdquo; and we&apos;ll give you a price by phone.
+            You see one fixed total for the booking before you confirm. If a journey can&apos;t be priced online, it
+            shows &ldquo;Price on request&rdquo; and we&apos;ll give you a price by phone or WhatsApp.
           </FeatureCard>
           <FeatureCard icon="suitcase" title="The right vehicle">
             You tell us how many people and bags are travelling. Where we can&apos;t confirm a vehicle for your luggage
