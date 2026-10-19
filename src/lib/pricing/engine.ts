@@ -122,7 +122,8 @@ export function price(input: PriceInput, config: PricingConfig): PriceResult {
     lines.push({ code: "meet_and_greet", label: "Meet & Greet", amount: config.extras.meetAndGreet ?? 0 });
   }
 
-  if (addOns.childSeats > 0) {
+  // Free child seats add no line; the booking still records how many.
+  if (addOns.childSeats > 0 && (config.extras.childSeat ?? 0) > 0) {
     lines.push({
       code: "child_seats",
       label: addOns.childSeats === 1 ? "Child seat" : `Child seats × ${addOns.childSeats}`,

@@ -1019,7 +1019,7 @@ describe("activeTariff", () => {
   });
 
   it("ships switched on, with real figures", () => {
-    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-19c" });
+    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-20" });
   });
 });
 

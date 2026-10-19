@@ -71,11 +71,11 @@ export interface PricingConfig {
  *
  * Extras, also from the reference website: Meet & Greet is +£6 there (Heathrow and
  * Stansted). A stop on the way cost £16 more there (E1 5NF via SW1A 1AA to Heathrow T5);
- * here a stop is £10 plus the extra miles. The reference site offers no child seats,
- * so those stay price on request until the owner sets a price.
+ * here a stop is £10 plus the extra miles. The reference site offers no child seats;
+ * Galaxy's are free.
  */
 export const pricing: PricingConfig = {
-  version: "galaxy-2026-10-19c",
+  version: "galaxy-2026-10-20",
   isPlaceholder: false,
   roundTo: 100,
   airports: {
@@ -101,7 +101,8 @@ export const pricing: PricingConfig = {
     mpv: 1.29,
     minibus: 1.49,
   },
-  extras: { meetAndGreet: 600, childSeat: null, extraStop: 1000 },
+  // Owner's decision (2026-10-20): child seats are free.
+  extras: { meetAndGreet: 600, childSeat: 0, extraStop: 1000 },
   // Within 3 miles of Charing Cross: the reference site charges more for central London.
   centralZone: { centre: { lat: 51.5073, lng: -0.1276 }, radiusMiles: 3 },
   // The reference site takes 5% off both journeys of a return.
