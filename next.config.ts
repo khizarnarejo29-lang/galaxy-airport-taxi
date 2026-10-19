@@ -18,6 +18,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // One address for search engines: www. goes to the bare domain.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.galaxyairporttaxi.co.uk" }],
+        destination: "https://galaxyairporttaxi.co.uk/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

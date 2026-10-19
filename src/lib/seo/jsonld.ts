@@ -59,7 +59,7 @@ export function localBusiness(): JsonLdObject | null {
     url: absolute("/"),
     telephone: site.phone.href.replace(/^tel:/, ""),
     email: site.email,
-    areaServed: { "@type": "City", name: "London" },
+    areaServed: { "@type": "Country", name: "United Kingdom" },
     ...(site.address ? { address: site.address } : {}),
     ...(site.openingHours ? { openingHours: site.openingHours } : {}),
   };
