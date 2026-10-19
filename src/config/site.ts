@@ -21,6 +21,13 @@ export const site = {
   /** The same hours in schema.org form, for structured data. */
   openingHoursSchema: "Mo-Su 00:00-23:59" as string | null,
   address: "4-6 Greatorex Street, London E1 5NF" as string | null,
+  /** The same address split into parts, for structured data. */
+  postalAddress: { streetAddress: "4-6 Greatorex Street", addressLocality: "London", postalCode: "E1 5NF", addressCountry: "GB" } as {
+    streetAddress: string;
+    addressLocality: string;
+    postalCode: string;
+    addressCountry: string;
+  } | null,
   /** None provided. e.g. "Company no. …, registered in England and Wales". */
   companyDetails: null as string | null,
   /** None provided. e.g. "Licensed by Transport for London, operator licence no. …". */

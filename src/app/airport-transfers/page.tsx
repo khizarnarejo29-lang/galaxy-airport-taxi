@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { taxiService } from "@/lib/seo/jsonld";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { CtaBand, FeatureCard, PageHero, Section } from "@/components/sections/blocks";
 import { AirportGrid } from "@/components/sections/cards";
 
-export const metadata: Metadata = pageMetadata({
-  title: "London Airport Transfers",
-  description:
-    "Fixed-price taxis between any UK address and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Book online 24/7.",
-  path: "/airport-transfers",
-});
+const description =
+  "Fixed-price taxis between any UK address and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Book online 24/7.";
+
+export const metadata: Metadata = pageMetadata({ title: "London Airport Transfers", description, path: "/airport-transfers" });
 
 export default function AirportTransfersPage() {
   return (
     <>
+      <JsonLd data={taxiService({ name: "Airport transfers", description, path: "/airport-transfers" })} />
       <PageHero
         crumbs={[{ label: "Airport Transfers", href: "/airport-transfers" }]}
         eyebrow="Airport transfers"

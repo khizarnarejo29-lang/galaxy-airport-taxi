@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { faqPage, taxiService } from "@/lib/seo/jsonld";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { CtaBand, FaqList, NumberedSteps, PageHero, Section } from "@/components/sections/blocks";
 import { meetAndGreet } from "@/content/services";
 
+const description =
+  "Add Meet & Greet to your London airport pickup and find your driver waiting in the arrivals hall with your name. Book online.";
+
 export const metadata: Metadata = pageMetadata({
   title: "Meet and Greet Airport Transfers",
-  description:
-    "Add Meet & Greet to your London airport pickup and find your driver waiting in the arrivals hall with your name. Book online.",
+  description,
   path: "/services/meet-and-greet",
 });
 
@@ -28,6 +32,8 @@ const faqs = [
 export default function MeetAndGreetPage() {
   return (
     <>
+      <JsonLd data={taxiService({ name: "Meet and Greet airport transfers", description, path: "/services/meet-and-greet" })} />
+      <JsonLd data={faqPage(faqs)} />
       <PageHero
         crumbs={[{ label: "Services", href: "/services" }, { label: "Meet & Greet", href: "/services/meet-and-greet" }]}
         eyebrow="Meet & Greet"
