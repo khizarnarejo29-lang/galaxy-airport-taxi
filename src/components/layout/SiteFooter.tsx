@@ -15,7 +15,7 @@ export function SiteFooter() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed">
-            Transfers between Greater London and Heathrow, Gatwick, Stansted, Luton and London City airports.
+            Transfers between London, anywhere in the UK, and Heathrow, Gatwick, Stansted, Luton and London City airports.
           </p>
           <ul className="mt-5 space-y-0.5 text-sm">
             <li>

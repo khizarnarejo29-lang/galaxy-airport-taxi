@@ -6,7 +6,7 @@ import { AirportGrid } from "@/components/sections/cards";
 export const metadata: Metadata = pageMetadata({
   title: "London Airport Transfers",
   description:
-    "Taxi transfers between Greater London and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Online quotes, or call us for a price.",
+    "Taxi transfers between anywhere in the UK and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Online quotes, or call us for a price.",
   path: "/airport-transfers",
 });
 
@@ -19,7 +19,7 @@ export default function AirportTransfersPage() {
         illustration="airport"
         scene="takeoff"
         title="Transfers between London and its five airports"
-        lead="Whether you're heading to departures or landing back home, book a door-to-door transfer between your Greater London address and any London airport."
+        lead="Whether you're heading to departures or landing back home, book a door-to-door transfer between your address, in London or anywhere in the UK, and any London airport."
       />
 
       <Section id="airports" eyebrow="Choose your airport" title="Where are you flying from?">
@@ -29,11 +29,11 @@ export default function AirportTransfersPage() {
       <Section id="directions" tone="surface" eyebrow="Both directions" title="Drop-offs and pickups">
         <div className="grid gap-4 md:grid-cols-2">
           <FeatureCard icon="plane" title="To the airport">
-            We collect you from your London address and take you to the departures drop-off for your terminal. Add up
+            We collect you from your address and take you to the departures drop-off for your terminal. Add up
             to two stops on the way if you need to collect someone.
           </FeatureCard>
           <FeatureCard icon="pin" title="From the airport">
-            Book with your flight number and landing time, and we take you from the airport to your London address.
+            Book with your flight number and landing time, and we take you from the airport to your address.
             Meet &amp; Greet in the arrivals hall is available as an extra.
           </FeatureCard>
         </div>

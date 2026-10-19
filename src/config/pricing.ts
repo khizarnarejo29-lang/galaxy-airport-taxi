@@ -55,6 +55,8 @@ export interface PricingConfig {
   centralZone?: { centre: LatLng; radiusMiles: number };
   /** Both legs of a return booking are charged this much less. Shown only as lower leg fares. */
   returnDiscountPercent?: number;
+  /** For an address outside Greater London: this rate per mile instead of the airport's `perMile`. */
+  outsideLondon?: { perMile: Pence };
   timeSurcharges: TimeSurcharge[];
   eventSurcharges: EventSurcharge[];
 }
@@ -73,7 +75,7 @@ export interface PricingConfig {
  * so those stay price on request until the owner sets a price.
  */
 export const pricing: PricingConfig = {
-  version: "galaxy-2026-10-19b",
+  version: "galaxy-2026-10-19c",
   isPlaceholder: false,
   roundTo: 100,
   airports: {
@@ -104,6 +106,9 @@ export const pricing: PricingConfig = {
   centralZone: { centre: { lat: 51.5073, lng: -0.1276 }, radiusMiles: 3 },
   // The reference site takes 5% off both journeys of a return.
   returnDiscountPercent: 5,
+  // Outside London the reference site charges much less per mile: B1 1BB to Heathrow T5 £183,
+  // M1 1AE to Heathrow T5 £287, BN1 1AA to Gatwick South £71, MK9 1AA to Luton £65 (2026-10-19).
+  outsideLondon: { perMile: 110 },
   timeSurcharges: [{ label: "Late-night surcharge", from: "23:00", to: "05:00", percent: 10, enabled: false }],
   // Owner's decision: double fares at Christmas and New Year. The windows are the ones the
   // reference site publishes for its own holiday surcharge (see holidayWindows).

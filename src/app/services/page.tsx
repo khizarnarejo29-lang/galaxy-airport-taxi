@@ -21,7 +21,7 @@ export default function ServicesPage() {
         illustration="services"
         scene="takeoff"
         title="Airport transfers, plus the extras that make them easier"
-        lead="Every journey runs between a Greater London address and one of the five London airports. Here's what you can book."
+        lead="Every journey runs between your address, in London or anywhere in the UK, and one of the five London airports. Here's what you can book."
       />
 
       <Section id="services" title="What you can book">

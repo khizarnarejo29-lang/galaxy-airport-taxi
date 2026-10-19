@@ -22,6 +22,12 @@ vi.mock("@/config/pricing", async (importOriginal) => {
   return { ...real, activeTariff: (...args: Parameters<typeof real.activeTariff>) => (args.length ? real.activeTariff(...args) : null) };
 });
 
+// The area rules are tested on Greater London alone; the shipped area (the whole UK) is checked below.
+vi.mock("@/config/service-area", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/config/service-area")>();
+  return { ...real, serviceArea: { ...real.serviceArea, label: "Greater London", wholeUk: false } };
+});
+
 const now = new Date("2026-10-05T09:00:00Z");
 
 const places: Record<string, ResolvedLocation> = {
@@ -1013,6 +1019,17 @@ describe("activeTariff", () => {
   });
 
   it("ships switched on, with real figures", () => {
-    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-19b" });
+    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-19c" });
   });
 });
+
+describe("shipped service area", () => {
+  it("covers the whole UK", async () => {
+    const { serviceArea } = await vi.importActual<typeof import("@/config/service-area")>("@/config/service-area");
+    const { isInServiceArea } = await import("@/lib/domain/geo");
+    expect(serviceArea.wholeUk).toBe(true);
+    expect(isInServiceArea(places["pc:OX1 1AA"], serviceArea)).toBe(true);
+    expect(isInServiceArea(places["pc:SW1A 1AA"], serviceArea)).toBe(true);
+  });
+});
+

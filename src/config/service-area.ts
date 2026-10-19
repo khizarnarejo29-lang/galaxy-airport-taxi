@@ -17,10 +17,14 @@ export interface ServiceAreaConfig {
   excludedPostcodeDistricts: string[];
   /** Optional radius rule; null disables it. */
   radius: { centre: { lat: number; lng: number }; miles: number } | null;
+  /** Every UK address is covered (still subject to `excludedPostcodeDistricts`). */
+  wholeUk?: boolean;
 }
 
 export const serviceArea: ServiceAreaConfig = {
-  label: "Greater London",
+  // Owner's decision (2026-10-19): the whole UK, to and from the five London airports.
+  label: "the UK",
+  wholeUk: true,
   regions: ["London"],
   extraPostcodeAreas: [],
   extraPostcodeDistricts: [],

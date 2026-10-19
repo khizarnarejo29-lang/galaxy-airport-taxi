@@ -12,7 +12,7 @@ For each vehicle, in this order:
 2. **Location tariff**: if no fare matches, the price comes from the distance between the address and the airport, using the figures in `src/config/pricing.ts`.
 3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a journey with no airport.
 
-The tariff is **switched on** (version `galaxy-2026-10-19b`). Its figures were set from 32 quotes on the
+The tariff is **switched on** (version `galaxy-2026-10-19c`). Its figures were set from 32 quotes on the
 reference website on 2026-10-19: six London postcodes (SW1A 1AA, E1 5NF, HA9 0WS, CR0 1LF, RM1 1AU, W5 2NU)
 to each airport, every vehicle, one way and return. At every one of them the tariff is at least £3 under the
 reference price: the £2 rule plus £1 to spare for the places in between. `src/lib/pricing/galaxy-tariff.test.ts`

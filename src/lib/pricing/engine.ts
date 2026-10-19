@@ -24,6 +24,8 @@ export interface PriceInput {
   terminal?: string;
   /** Part of a return booking: `returnDiscountPercent` comes off the journey fare. */
   returnBooking?: boolean;
+  /** The address is outside Greater London: `outsideLondon.perMile` applies. */
+  outsideLondon?: boolean;
 }
 
 export interface PriceResult {
@@ -72,9 +74,10 @@ export function activeEvent(config: PricingConfig, date: string | undefined, tim
 export function journeyFare(input: PriceInput, config: PricingConfig): Pence {
   const tariff = config.airports[input.airport];
   const chargeableMiles = Math.max(0, input.distanceMiles - tariff.includedMiles);
+  const perMile = (input.outsideLondon && config.outsideLondon?.perMile) || tariff.perMile;
   const adjustments =
     (input.central ? (tariff.centralSupplement ?? 0) : 0) + ((input.terminal && tariff.terminalAdjustments?.[input.terminal]) || 0);
-  const saloonFare = Math.max(tariff.minimumFare, tariff.baseFare + chargeableMiles * tariff.perMile + adjustments);
+  const saloonFare = Math.max(tariff.minimumFare, tariff.baseFare + chargeableMiles * perMile + adjustments);
   const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
   return roundTo(saloonFare * (1 - discount) * config.vehicleMultipliers[input.vehicleId], config.roundTo);
 }

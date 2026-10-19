@@ -28,9 +28,9 @@ export const airportContent: Record<AirportCode, AirportContent> = {
   LHR: {
     metaTitle: "Heathrow Airport Taxi to and from London",
     metaDescription:
-      "Book a taxi between any Greater London address and Heathrow Terminals 2, 3, 4 or 5. Get a fixed price online where available, or call us.",
+      "Book a taxi between any UK address and Heathrow Terminals 2, 3, 4 or 5. Get a fixed price online where available, or call us.",
     h1: "Heathrow airport taxi",
-    lead: "Transfers between your London address and any of Heathrow's four terminals, with a fixed price agreed before you book.",
+    lead: "Transfers between your address, in London or anywhere in the UK, and any of Heathrow's four terminals, with a fixed price agreed before you book.",
     location:
       "Heathrow sits on the western edge of Greater London in the borough of Hillingdon, roughly 15 miles from central London by road.",
     terminalsIntro:
@@ -50,14 +50,14 @@ export const airportContent: Record<AirportCode, AirportContent> = {
       },
       {
         q: "What do I need to book a Heathrow pickup?",
-        a: "Your terminal, flight number, scheduled landing time, the London address you are going to, and how many passengers and bags are travelling.",
+        a: "Your terminal, flight number, scheduled landing time, the address you are going to, and how many passengers and bags are travelling.",
       },
     ],
   },
   LGW: {
     metaTitle: "Gatwick Airport Taxi to and from London",
     metaDescription:
-      "Taxi transfers between Greater London and Gatwick North or South Terminal. Fixed prices online where available, or call us for a price.",
+      "Taxi transfers between London, anywhere in the UK, and Gatwick North or South Terminal. Fixed prices online where available, or call us for a price.",
     h1: "Gatwick airport taxi",
     lead: "Door-to-door transfers between London and Gatwick's North and South terminals, with a fixed price agreed before you book.",
     location:
@@ -86,7 +86,7 @@ export const airportContent: Record<AirportCode, AirportContent> = {
   STN: {
     metaTitle: "Stansted Airport Taxi to and from London",
     metaDescription:
-      "Book a Stansted Airport taxi from any Greater London address, or from Stansted into London. Saloons through to 8-seaters.",
+      "Book a Stansted Airport taxi from any UK address, or from Stansted to your door. Saloons through to 8-seaters.",
     h1: "Stansted airport taxi",
     lead: "Transfers between London and Stansted's single terminal, with a fixed price agreed before you book.",
     location: "Stansted is in Essex, roughly 35 miles north-east of central London by road.",
@@ -110,9 +110,9 @@ export const airportContent: Record<AirportCode, AirportContent> = {
   LTN: {
     metaTitle: "Luton Airport Taxi to and from London",
     metaDescription:
-      "Taxi transfers between Greater London and London Luton Airport. Fixed prices online where available, or call us.",
+      "Taxi transfers between London, anywhere in the UK, and London Luton Airport. Fixed prices online where available, or call us.",
     h1: "Luton airport taxi",
-    lead: "Transfers between your London address and London Luton Airport, with a fixed price agreed before you book.",
+    lead: "Transfers between your address, in London or anywhere in the UK, and London Luton Airport, with a fixed price agreed before you book.",
     location: "London Luton Airport is in Bedfordshire, roughly 30 miles north of central London by road.",
     terminalsIntro:
       "Luton has a single passenger terminal, so you won't be asked to choose one when you book.",
@@ -134,7 +134,7 @@ export const airportContent: Record<AirportCode, AirportContent> = {
   LCY: {
     metaTitle: "London City Airport Taxi",
     metaDescription:
-      "Book a taxi to or from London City Airport from any Greater London address. Online booking where available, or call us.",
+      "Book a taxi to or from London City Airport from any UK address. Online booking where available, or call us.",
     h1: "London City Airport taxi",
     lead: "Transfers between London City Airport and addresses across London, with a fixed price agreed before you book.",
     location:

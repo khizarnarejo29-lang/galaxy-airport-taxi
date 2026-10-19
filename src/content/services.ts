@@ -15,14 +15,14 @@ export const services: ServiceSummary[] = [
     href: "/airport-transfers",
     icon: "plane",
     title: "Airport drop-offs",
-    summary: "From your London address to the departures area at any of the five London airports.",
+    summary: "From your address anywhere in the UK to the departures area at any of the five London airports.",
   },
   {
     slug: null,
     href: "/airport-transfers",
     icon: "pin",
     title: "Airport pickups",
-    summary: "From arrivals back to your London address, with your flight number saved to the booking.",
+    summary: "From arrivals back to your address anywhere in the UK, with your flight number saved to the booking.",
   },
   {
     slug: "meet-and-greet",

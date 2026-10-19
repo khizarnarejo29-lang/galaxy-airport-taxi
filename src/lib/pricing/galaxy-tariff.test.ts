@@ -59,9 +59,16 @@ const samples: [postcode: string, airport: AirportCode, terminal: string | null,
 
 const distance = estimatedDistance();
 
-async function journey([postcode, airport, terminal, direction]: (typeof samples)[number], tripType: "one_way" | "return"): Promise<PricedJourney> {
-  const at = postcodes[postcode];
-  const address: JourneyEnd = { kind: "address", address: { id: `pc:${postcode}`, kind: "postcode", label: postcode, postcode, ...at } };
+async function journey(
+  [postcode, airport, terminal, direction]: (typeof samples)[number],
+  tripType: "one_way" | "return",
+  place?: { region: string; lat: number; lng: number },
+): Promise<PricedJourney> {
+  const at = place ? { lat: place.lat, lng: place.lng } : postcodes[postcode];
+  const address: JourneyEnd = {
+    kind: "address",
+    address: { id: `pc:${postcode}`, kind: "postcode", label: postcode, postcode, ...at, ...(place ? { region: place.region } : {}) },
+  };
   const air: JourneyEnd = { kind: "airport", airport, ...(terminal ? { terminal } : {}) };
   const miles = await distance.routeMiles([at, getAirport(airport)!]);
   const [pickup, dropoff] = direction === "to" ? [address, air] : [air, address];
@@ -133,4 +140,24 @@ describe("Galaxy tariff against the reference website", () => {
     const priced = tariffPrice(await journey(samples[0], "return"), "saloon", { meetAndGreet: false, childSeats: 0 }, pricing);
     expect(priced.lines.map((l) => l.code)).toEqual(["journey", "return_journey"]);
   });
+
+  // Outside London, seen on the reference website on 2026-10-19 (one way, and return with its offer).
+  const outside: [postcode: string, region: string, at: { lat: number; lng: number }, airport: AirportCode, terminal: string | null, fares: Fares][] = [
+    ["B1 1BB", "West Midlands", { lat: 52.4796, lng: -1.9026 }, "LHR", "T5", { saloon: [183, 346], executive: [247, 468], estate: [211, 400], mpv: [247, 468], minibus: [275, 522] }],
+    ["M1 1AE", "North West", { lat: 53.4794, lng: -2.2453 }, "LHR", "T5", { saloon: [287, 544], executive: [387, 734], estate: [330, 626], mpv: [387, 734], minibus: [430, 816] }],
+    ["BN1 1AA", "South East", { lat: 50.8279, lng: -0.1395 }, "LGW", "S", { saloon: [71, 134], executive: [96, 182], estate: [82, 154], mpv: [96, 182], minibus: [121, 228] }],
+    ["MK9 1AA", "South East", { lat: 52.0423, lng: -0.7583 }, "LTN", null, { saloon: [65, 122], executive: [88, 166], estate: [75, 142], mpv: [88, 166], minibus: [111, 210] }],
+  ];
+
+  it.each(outside)("is at least £2 under the reference outside London: %s", async (postcode, region, at, airport, terminal, fares) => {
+    for (const tripType of ["one_way", "return"] as const) {
+      const j = await journey([postcode, airport, terminal, "to", fares], tripType, { region, ...at });
+      for (const [vehicleId, [oneWay, ret]] of Object.entries(fares) as [VehicleId, [number, number]][]) {
+        const reference = tripType === "one_way" ? oneWay : ret;
+        const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
+        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs £${reference}`).toBeLessThanOrEqual(reference * 100 - 200);
+      }
+    }
+  });
 });
+
