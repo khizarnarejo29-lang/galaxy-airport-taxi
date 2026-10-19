@@ -64,7 +64,7 @@ export function faqGroups(): FaqGroup[] {
         },
         {
           q: "Can I request a child seat?",
-          a: `Yes. You can request up to ${bookingRules.maxChildSeats} child seats in the extras step, before you see prices. Some journeys with child seats may show “Price on request”. If so, please call us.`,
+          a: `Yes, and child seats are free. You can request up to ${bookingRules.maxChildSeats} in the extras step of the calculator.`,
         },
         {
           q: "What happens after I book?",

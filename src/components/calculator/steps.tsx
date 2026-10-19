@@ -542,7 +542,7 @@ export function ExtrasStep({ state, set }: StepProps) {
       <Counter
         id={fieldId("addOns.childSeats")}
         label="Child seats"
-        hint="Tell us how many you need"
+        hint="Free. Tell us how many you need"
         icon="sparkle"
         value={d.addOns.childSeats}
         max={bookingRules.maxChildSeats}

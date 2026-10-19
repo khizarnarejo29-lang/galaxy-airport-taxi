@@ -103,9 +103,13 @@ describe("Galaxy tariff against the reference website", () => {
     }
   });
 
-  it("keeps child seats, which have no price yet, as price on request", async () => {
+  it("gives child seats free: the price is the same with or without them", async () => {
     const j = await journey(samples[0], "one_way");
-    expect(tariffPrice(j, "saloon", { meetAndGreet: false, childSeats: 1 }, pricing).pricing).toEqual({ status: "price_on_request", reason: "EXTRA_NOT_PRICED" });
+    const without = tariffPrice(j, "saloon", { meetAndGreet: false, childSeats: 0 }, pricing);
+    const withSeats = tariffPrice(j, "saloon", { meetAndGreet: false, childSeats: 2 }, pricing);
+    expect(withSeats.pricing.status).toBe("tariff");
+    expect(withSeats.total).toBe(without.total);
+    expect(withSeats.lines.map((l) => l.code)).not.toContain("child_seats");
   });
 
   // Reference prices with Meet & Greet (+£6 there), seen on 2026-10-19.
