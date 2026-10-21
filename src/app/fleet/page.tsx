@@ -24,8 +24,8 @@ export default function FleetPage() {
       <Section
         id="vehicles"
         eyebrow="Vehicle classes"
-        title="Vehicle classes at a glance"
-        intro="Passenger numbers are a typical maximum for each class. Luggage space varies by vehicle, so we confirm it for your journey rather than list it here."
+        title="Our vehicles"
+        intro="Passenger numbers are the most each vehicle takes. Boot space differs from car to car, so if you're unsure about your luggage, ask us before you book."
       >
         <FleetGrid />
       </Section>
@@ -36,9 +36,9 @@ export default function FleetPage() {
             In the calculator, choose none, hand luggage or suitcases. For large or unusual items, such as bikes or
             golf bags, please call us before booking.
           </FeatureCard>
-          <FeatureCard icon="phone" title="Not sure it will fit?">
-            If we can&apos;t confirm a vehicle for your luggage online, it shows &ldquo;Price on request&rdquo;. Call us and
-            we&apos;ll find the right vehicle.
+          <FeatureCard icon="phone" title="Lots of luggage?">
+            An estate has room for an extra suitcase, and an MPV or 8-seater takes more. Not sure? Call or WhatsApp us
+            and we&apos;ll suggest one.
           </FeatureCard>
           <FeatureCard icon="user" title="Travelling with children">
             Count children and infants as passengers. Child seats are free: tell us how many you need when you book.

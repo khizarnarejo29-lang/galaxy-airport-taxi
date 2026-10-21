@@ -26,7 +26,7 @@ export default function CorporateTravelPage() {
         eyebrow="Corporate travel"
         illustration="corporate"
         title="Airport transfers for your business"
-        lead="Book transfers for yourself, your colleagues or visiting clients between London and the five London airports, or talk to us about how we can support your organisation's travel."
+        lead="Book airport transfers and other journeys for yourself, colleagues or visiting clients, or ask us about an account for your company."
         actions={false}
       >
         <div className="mt-8 flex flex-wrap gap-3">

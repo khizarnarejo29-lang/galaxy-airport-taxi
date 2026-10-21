@@ -43,7 +43,7 @@ export default function MeetAndGreetPage() {
         lead={meetAndGreet.description}
       />
 
-      <Section id="how" eyebrow="How it works" title="Three simple steps">
+      <Section id="how" eyebrow="Meet & Greet" title="How it works">
         <NumberedSteps steps={meetAndGreet.steps} />
       </Section>
 

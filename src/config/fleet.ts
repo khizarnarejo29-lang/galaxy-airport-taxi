@@ -11,7 +11,7 @@ export const fleet: Vehicle[] = [
     maxPassengers: 4,
     maxLargeCases: 2,
     maxSmallCases: 2,
-    summary: "Everyday choice for solo travellers and couples.",
+    summary: "For one to four passengers with normal luggage.",
   },
   {
     id: "estate",
@@ -19,7 +19,7 @@ export const fleet: Vehicle[] = [
     maxPassengers: 4,
     maxLargeCases: 3,
     maxSmallCases: 3,
-    summary: "Saloon comfort with room for an extra suitcase.",
+    summary: "Like a saloon, with a bigger boot for an extra suitcase.",
   },
   {
     id: "executive",
@@ -27,7 +27,7 @@ export const fleet: Vehicle[] = [
     maxPassengers: 3,
     maxLargeCases: 2,
     maxSmallCases: 2,
-    summary: "Premium car for business travel and special trips.",
+    summary: "A higher-end car for business trips and special occasions.",
   },
   {
     id: "mpv",
@@ -43,7 +43,7 @@ export const fleet: Vehicle[] = [
     maxPassengers: 8,
     maxLargeCases: 8,
     maxSmallCases: 8,
-    summary: "For larger groups travelling together with luggage.",
+    summary: "For groups of up to eight, with room for their luggage.",
   },
 ];
 

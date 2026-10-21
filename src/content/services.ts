@@ -56,9 +56,9 @@ export const meetAndGreet = {
 
 /** Corporate topics the business has asked to cover. Phrased as enquiries, not commitments. */
 export const corporateTopics: { title: string; text: string }[] = [
-  { title: "Business airport transfers", text: "Transfers between offices, hotels or homes in London and the five London airports." },
+  { title: "Business airport transfers", text: "Between offices, hotels or homes and the five London airports, and between offices and meetings." },
   { title: "Corporate account enquiries", text: "Talk to us about setting up an account for your organisation." },
-  { title: "Recurring travel", text: "Tell us about regular trips, such as weekly flights, and we can discuss how to arrange them." },
+  { title: "Regular trips", text: "Flying every week or sending staff to the same office? Tell us and we'll talk it through." },
   { title: "Employee and client transfers", text: "Book on behalf of staff or visiting clients, with their details as the lead passenger." },
   { title: "Business booking support", text: "Contact us for help with group bookings, multiple journeys or changing plans." },
   { title: "Invoicing and account management", text: "Ask about invoicing and how bookings can be managed for your team." },

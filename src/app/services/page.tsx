@@ -20,8 +20,8 @@ export default function ServicesPage() {
         eyebrow="Services"
         illustration="services"
         scene="takeoff"
-        title="Airport transfers, plus the extras that make them easier"
-        lead="Every journey runs between your address, in London or anywhere in the UK, and one of the five London airports. Here's what you can book."
+        title="Our services"
+        lead="Airport transfers from anywhere in the UK, local rides between any two addresses, and extras such as Meet & Greet."
       />
 
       <Section id="services" title="What you can book">
