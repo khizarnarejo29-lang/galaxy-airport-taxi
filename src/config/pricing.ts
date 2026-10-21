@@ -76,6 +76,12 @@ export interface PricingConfig {
   outsideLondon?: { perMile: Pence };
   /** Address-to-address journeys. Without it they are price on request. */
   local?: LocalTariff;
+  /**
+   * One-way fares between two airports, per vehicle, keyed by the two codes in
+   * alphabetical order (e.g. "LGW-LHR"); the same in both directions. A pair or
+   * vehicle not listed is price on request.
+   */
+  betweenAirports?: Partial<Record<string, Partial<Record<VehicleId, Pence>>>>;
   timeSurcharges: TimeSurcharge[];
   eventSurcharges: EventSurcharge[];
 }
@@ -94,7 +100,7 @@ export interface PricingConfig {
  * Galaxy's are free.
  */
 export const pricing: PricingConfig = {
-  version: "galaxy-2026-10-21",
+  version: "galaxy-2026-10-21-2",
   isPlaceholder: false,
   roundTo: 100,
   airports: {
@@ -143,6 +149,21 @@ export const pricing: PricingConfig = {
     centralRadiusMiles: 1.5,
     // The reference 8-seater costs relatively less on local journeys than on airport ones.
     vehicleMultipliers: { minibus: 1.43 },
+  },
+  // Owner's rule, at least £2 under the reference site: its one-way prices between airports on
+  // 2026-10-21, both directions (they match), less £3. Where its terminals differed (Heathrow T2 to
+  // Gatwick North against T5 to South), the lower price per vehicle was used.
+  betweenAirports: {
+    "LGW-LHR": { saloon: 8200, estate: 9500, executive: 11200, mpv: 11200, minibus: 12800 },
+    "LHR-STN": { saloon: 10500, estate: 12100, executive: 14200, mpv: 14200, minibus: 15900 },
+    "LHR-LTN": { saloon: 7400, estate: 8700, executive: 10200, mpv: 10200, minibus: 12200 },
+    "LCY-LHR": { saloon: 11400, estate: 13100, executive: 15500, mpv: 15500, minibus: 17200 },
+    "LGW-STN": { saloon: 12100, estate: 13900, executive: 16400, mpv: 16400, minibus: 18300 },
+    "LGW-LTN": { saloon: 12600, estate: 14600, executive: 17200, mpv: 17200, minibus: 19100 },
+    "LCY-LGW": { saloon: 9300, estate: 10700, executive: 12600, mpv: 12600, minibus: 14100 },
+    "LTN-STN": { saloon: 9900, estate: 11400, executive: 13400, mpv: 13400, minibus: 14900 },
+    "LCY-STN": { saloon: 7500, estate: 8600, executive: 10200, mpv: 10200, minibus: 12100 },
+    "LCY-LTN": { saloon: 9500, estate: 11000, executive: 13000, mpv: 13000, minibus: 14400 },
   },
   timeSurcharges: [{ label: "Late-night surcharge", from: "23:00", to: "05:00", percent: 10, enabled: false }],
   // Owner's decision: double fares at Christmas and New Year. The windows are the ones the

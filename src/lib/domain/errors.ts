@@ -7,7 +7,7 @@ export const errorMessages = {
   ADDRESS_REQUIRED: "Search for the address or postcode and pick it from the list.",
   ADDRESS_OUTSIDE_AREA: "This address is outside the area we currently cover online.",
   ADDRESS_LINE_REQUIRED: "Add your house number and street so the driver can find you.",
-  ROUTE_UNSUPPORTED: "We can't quote journeys between two airports online. Please call us.",
+  ROUTE_UNSUPPORTED: "Pickup and drop-off are the same airport. For a transfer between terminals, please call us.",
   SAME_LOCATION: "Your pickup and drop-off are the same place. Please check both.",
   STOP_SAME_LOCATION: "This stop is the same place as your pickup or drop-off.",
   STOP_DUPLICATE: "You've already added this stop. Please choose a different one.",

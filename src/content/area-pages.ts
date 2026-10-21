@@ -1,7 +1,9 @@
 import { bookingRules } from "@/config/booking-rules";
 import { site } from "@/config/site";
-import { getAirport } from "@/lib/domain/airports";
-import type { VehicleId } from "@/lib/domain/types";
+import { activeTariff } from "@/config/pricing";
+import { airports, getAirport } from "@/lib/domain/airports";
+import type { AirportCode, VehicleId } from "@/lib/domain/types";
+import { betweenAirportsFare } from "@/lib/pricing/engine";
 import { exampleVehicles } from "@/lib/pricing/example-fares";
 import { airportFareFrom, localFare, type NamedPoint } from "@/lib/pricing/route-fares";
 import { formatGBP, type Pence } from "@/lib/utils/money";
@@ -23,6 +25,16 @@ export function airportRows(area: Area) {
     const airport = getAirport(code)!;
     return { label: airport.name, sub: code, prices: pricesFor((v) => airportFareFrom(area, code, v)) };
   });
+}
+
+/** One way from an airport to each of the others, from the listed fares between airports. */
+export function otherAirportRows(from: AirportCode) {
+  const tariff = activeTariff();
+  if (!tariff) return [];
+  return airports
+    .filter((a) => a.code !== from)
+    .map((a) => ({ label: a.name, sub: a.code, prices: pricesFor((v) => betweenAirportsFare({ from, to: a.code, vehicleId: v }, tariff)) }))
+    .filter((r) => Object.keys(r.prices).length > 0);
 }
 
 /** One way from the area to central London and the nearest areas with a page. */

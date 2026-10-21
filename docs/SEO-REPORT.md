@@ -71,7 +71,7 @@ business, a fixed-price taxi service: no web-development, portfolio or case-stud
   area pages (Croydon, Wembley, Ealing, Romford, Stratford, Canary Wharf, Wimbledon, Harrow, Kingston,
   Enfield, Bromley, Hounslow). Each area page has its own prices to every airport and to nearby places,
   computed from the tariff; no invented local facts.
-- Not made: airport-to-airport pages (those journeys can't be priced online), or pages for every
+- Airport to airport: each airport page lists fixed prices to the other four. Not made: pages for every
   borough or town (thin near-duplicates risk being treated as doorway pages).
 - Local rides: priced by a new local tariff set from 18 reference-site quotes, at least £2 under each
   (tests hold the quotes).

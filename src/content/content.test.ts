@@ -160,3 +160,14 @@ describe("page titles and descriptions", () => {
     for (const a of areas) expect(`${a.shortName ?? a.name} Taxi and Airport Transfers | Galaxy Airport Taxi`.length, a.name).toBeLessThanOrEqual(65);
   });
 });
+
+describe("airport to airport prices on airport pages", () => {
+  it("lists the four other airports for each airport, priced for every vehicle", async () => {
+    const { otherAirportRows } = await import("./area-pages");
+    for (const a of airports) {
+      const rows = otherAirportRows(a.code);
+      expect(rows.map((r) => r.sub).sort()).toEqual(airports.filter((o) => o.code !== a.code).map((o) => o.code).sort());
+      for (const r of rows) expect(Object.keys(r.prices)).toHaveLength(5);
+    }
+  });
+});

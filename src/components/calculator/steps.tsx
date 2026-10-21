@@ -23,6 +23,7 @@ import {
   meetAndGreetAvailable,
   needsTerminal,
   nextLine1,
+  betweenAirports,
   outwardAirport,
   returnHasAirport,
   returnPicksUpAtAirport,
@@ -427,14 +428,14 @@ function TerminalPicker({
   legend,
 }: Pick<StepProps, "state" | "set"> & {
   airportCode: AirportCode | null;
-  field: "terminal" | "returnTerminal";
+  field: "terminal" | "dropoffTerminal" | "returnTerminal";
   errorField: string;
   legend: string;
 }) {
   const airport = airportCode ? getAirport(airportCode) : undefined;
   if (!airport) return null;
   if (!needsTerminal(airport.code)) {
-    return field === "terminal" ? (
+    return field !== "returnTerminal" ? (
       <p className="flex items-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm text-ink-soft">
         <Icon name="terminal" className="size-4 shrink-0" />
         {airport.name} has a single passenger terminal, so there&apos;s nothing to choose.
@@ -494,6 +495,8 @@ export function AirportStep(props: StepProps) {
   const airport = code ? getAirport(code) : undefined;
   const fromAirport = d.pickupKind === "airport";
   const outwardEnd = fromAirport ? "pickup" : "dropoff";
+  const twoAirports = betweenAirports(d);
+  const dropoffAirport = d.dropoffAirport ? getAirport(d.dropoffAirport) : undefined;
   return (
     <div className="space-y-8">
       <div className="space-y-6">
@@ -503,8 +506,23 @@ export function AirportStep(props: StepProps) {
           airportCode={code}
           field="terminal"
           errorField={`${outwardEnd}.terminal`}
-          legend={fromAirport ? "Terminal you'll arrive at" : "Terminal you're flying from"}
+          legend={
+            twoAirports
+              ? `${airport?.shortName} terminal you'll arrive at`
+              : fromAirport
+                ? "Terminal you'll arrive at"
+                : "Terminal you're flying from"
+          }
         />
+        {twoAirports && (
+          <TerminalPicker
+            {...props}
+            airportCode={d.dropoffAirport}
+            field="dropoffTerminal"
+            errorField="dropoff.terminal"
+            legend={`${dropoffAirport?.shortName} terminal you're flying from`}
+          />
+        )}
         <FlightField {...props} field="flightNumber" required={fromAirport} />
       </div>
       {isReturn(d) && returnHasAirport(d) && (
@@ -513,7 +531,7 @@ export function AirportStep(props: StepProps) {
           {returnPicksUpAtAirport(d) ? (
             <TerminalPicker
               {...props}
-              airportCode={code}
+              airportCode={d.dropoffAirport}
               field="returnTerminal"
               errorField="returnJourney.pickup.terminal"
               legend="Terminal you'll arrive at"

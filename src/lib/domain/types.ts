@@ -2,7 +2,7 @@ import type { Pence } from "@/lib/utils/money";
 
 /** Kept for the airport landing pages, which pre-select an airport as the pickup or the drop-off. */
 export type Direction = "to_airport" | "from_airport";
-/** Worked out from a journey's two ends; never chosen by the customer. Airport to airport is never allowed. */
+/** Worked out from a journey's two ends; never chosen by the customer. Between two airports has no kind. */
 export type JourneyKind = "to_airport" | "from_airport" | "address_to_address";
 export type TripType = "one_way" | "return";
 export type AirportCode = "LHR" | "LGW" | "STN" | "LTN" | "LCY";

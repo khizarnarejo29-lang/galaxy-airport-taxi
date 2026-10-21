@@ -212,7 +212,8 @@ describe("validateStep", () => {
   it("checks both ends and the stops on the journey step", () => {
     const codes = (d: Draft) => validateStep("journey", d, null).map((e) => `${e.field}:${e.code}`);
     expect(codes({ ...draft, pickupAddress: null, dropoffAirport: null })).toEqual(["pickup:ADDRESS_REQUIRED", "dropoff:AIRPORT_REQUIRED"]);
-    expect(codes({ ...draft, pickupKind: "airport", pickupAirport: "LGW" })).toEqual(["dropoff:ROUTE_UNSUPPORTED"]);
+    expect(codes({ ...draft, pickupKind: "airport", pickupAirport: "LGW" })).toEqual([]);
+    expect(codes({ ...draft, pickupKind: "airport", pickupAirport: draft.dropoffAirport })).toEqual(["dropoff:ROUTE_UNSUPPORTED"]);
     expect(codes({ ...draft, dropoffKind: "address", dropoffAddress: home })).toEqual(["dropoff:SAME_LOCATION"]);
     expect(codes({ ...draft, extraStops: [office, office, null] })).toEqual([
       "extraStops:STOP_LIMIT",
@@ -356,5 +357,14 @@ describe("nextLine1", () => {
   it("clears a street that only came from the previous result, but keeps what the customer typed", () => {
     expect(nextLine1("4-6 Greatorex Street", google, postcode)).toBe("");
     expect(nextLine1("Flat 2, 10 High Street", google, postcode)).toBe("Flat 2, 10 High Street");
+  });
+});
+
+describe("between two airports", () => {
+  it("sends each airport its own terminal", () => {
+    const d: Draft = { ...emptyDraft, pickupKind: "airport", pickupAirport: "LHR", terminal: "T5", dropoffKind: "airport", dropoffAirport: "LGW", dropoffTerminal: "N" };
+    const input = toJourneyInput(d);
+    expect(input.pickup).toEqual({ kind: "airport", airport: "LHR", terminal: "T5" });
+    expect(input.dropoff).toEqual({ kind: "airport", airport: "LGW", terminal: "N" });
   });
 });

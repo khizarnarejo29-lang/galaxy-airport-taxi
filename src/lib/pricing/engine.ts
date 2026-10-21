@@ -164,3 +164,28 @@ export function localPrice(input: LocalPriceInput, config: PricingConfig): Price
   if (fare === null) return null;
   return withTotal([...fareLines(fare, input, config), ...childSeatLines(input.addOns ?? NO_ADD_ONS, config)]);
 }
+
+export interface BetweenAirportsInput extends Pick<PriceInput, "date" | "time" | "extraStops" | "addOns" | "returnBooking"> {
+  from: AirportCode;
+  to: AirportCode;
+  vehicleId: VehicleId;
+}
+
+/** The listed fare between two airports, the same both ways, or null if that pair or vehicle isn't listed. */
+export function betweenAirportsFare(input: Pick<BetweenAirportsInput, "from" | "to" | "vehicleId" | "returnBooking">, config: PricingConfig): Pence | null {
+  const key = [input.from, input.to].sort().join("-");
+  const fare = config.betweenAirports?.[key]?.[input.vehicleId];
+  if (fare === undefined || input.from === input.to) return null;
+  const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
+  return roundTo(fare * (1 - discount), config.roundTo);
+}
+
+/** A transfer from one airport to another. Meet & Greet applies: the driver collects from arrivals. */
+export function betweenAirportsPrice(input: BetweenAirportsInput, config: PricingConfig): PriceResult | null {
+  const fare = betweenAirportsFare(input, config);
+  if (fare === null) return null;
+  const addOns = input.addOns ?? NO_ADD_ONS;
+  const lines = fareLines(fare, input, config);
+  if (addOns.meetAndGreet) lines.push({ code: "meet_and_greet", label: "Meet & Greet", amount: config.extras.meetAndGreet ?? 0 });
+  return withTotal([...lines, ...childSeatLines(addOns, config)]);
+}

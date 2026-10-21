@@ -257,9 +257,62 @@ describe("local tariff against the reference website", () => {
     expect(ret.total).toBeLessThan(one.total * 2);
   });
 
-  it("still can't price airport to airport", async () => {
-    const j = await localJourney("E1 5NF", "E1 1FR", "one_way");
-    const priced = tariffPrice({ ...j, pickup: { kind: "airport", airport: "LHR", terminal: "T5" }, dropoff: { kind: "airport", airport: "LGW", terminal: "S" } }, "saloon", { meetAndGreet: false, childSeats: 0 }, pricing);
-    expect(priced.pricing.status).toBe("price_on_request");
+});
+
+/** Between two airports, seen on the reference website on 2026-10-21 (one way; return with its offer). */
+describe("airport-to-airport fares against the reference website", () => {
+  // Saloon, estate, executive, MPV, 8-seater: [one way, return].
+  const pairs: [from: AirportCode, fromT: string | null, to: AirportCode, toT: string | null, fares: [number, number][]][] = [
+    ["LHR", "T5", "LGW", "S", [[85, 160], [98, 186], [115, 218], [115, 218], [136, 258]]],
+    ["LHR", "T2", "LGW", "N", [[87, 164], [100, 190], [117, 222], [117, 222], [131, 248]]],
+    ["LHR", "T5", "STN", null, [[108, 204], [124, 234], [145, 274], [145, 274], [162, 306]]],
+    ["LHR", "T5", "LTN", null, [[77, 146], [90, 170], [105, 198], [105, 198], [125, 236]]],
+    ["LHR", "T5", "LCY", null, [[117, 222], [134, 254], [158, 300], [158, 300], [175, 332]]],
+    ["LGW", "S", "STN", null, [[124, 234], [142, 268], [167, 316], [167, 316], [186, 352]]],
+    ["LGW", "S", "LTN", null, [[129, 244], [149, 282], [175, 332], [175, 332], [194, 368]]],
+    ["LGW", "S", "LCY", null, [[96, 182], [110, 208], [129, 244], [129, 244], [144, 272]]],
+    ["STN", null, "LTN", null, [[102, 192], [117, 222], [137, 260], [137, 260], [152, 288]]],
+    ["STN", null, "LCY", null, [[78, 148], [89, 168], [105, 198], [105, 198], [124, 234]]],
+    ["LTN", null, "LCY", null, [[98, 186], [113, 214], [133, 252], [133, 252], [147, 278]]],
+  ];
+  const vehicles: VehicleId[] = ["saloon", "estate", "executive", "mpv", "minibus"];
+  const end = (airport: AirportCode, terminal: string | null): JourneyEnd => ({ kind: "airport", airport, ...(terminal ? { terminal } : {}) });
+
+  function pairJourney(from: JourneyEnd, to: JourneyEnd, tripType: "one_way" | "return"): PricedJourney {
+    return {
+      pickup: from,
+      dropoff: to,
+      extraStops: [],
+      date: "2026-11-20",
+      time: "12:00",
+      pickupAtUtc: "2026-11-20T12:00:00Z",
+      passengers: 1,
+      luggage: { large: 0, small: 0 },
+      distanceMiles: 40,
+      tripType,
+      largeItems: false,
+      extras: { meetAndGreet: false, childSeats: 0 },
+      returnJourney:
+        tripType === "return" ? { pickup: to, extraStops: [], date: "2026-11-27", time: "12:00", pickupAtUtc: "2026-11-27T12:00:00Z", distanceMiles: 40 } : undefined,
+    };
+  }
+
+  it.each(pairs)("is at least £2 under the reference both ways: %s %s to %s %s", (from, fromT, to, toT, fares) => {
+    for (const [a, b] of [[end(from, fromT), end(to, toT)], [end(to, toT), end(from, fromT)]]) {
+      vehicles.forEach((vehicleId, i) => {
+        const [oneWay, ret] = fares[i];
+        const one = tariffPrice(pairJourney(a, b, "one_way"), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
+        const back = tariffPrice(pairJourney(a, b, "return"), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
+        expect(one.pricing.status, vehicleId).toBe("tariff");
+        expect(one.total, `${vehicleId} one way`).toBeLessThanOrEqual(oneWay * 100 - 200);
+        expect(back.total, `${vehicleId} return`).toBeLessThanOrEqual(ret * 100 - 200);
+      });
+    }
+  });
+
+  it("adds Meet & Greet when collecting from the first airport", () => {
+    const priced = tariffPrice(pairJourney(end("LHR", "T5"), end("LGW", "S"), "one_way"), "saloon", { meetAndGreet: true, childSeats: 1 }, pricing);
+    expect(priced.lines.map((l) => l.code)).toEqual(["journey", "meet_and_greet"]);
+    expect(priced.total).toBe(8200 + 600);
   });
 });
