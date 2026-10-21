@@ -22,7 +22,11 @@ const describe = (name: string) =>
 export async function generateMetadata({ params }: PageProps<"/taxi/[area]">): Promise<Metadata> {
   const area = getArea((await params).area);
   if (!area) return {};
-  return pageMetadata({ title: `${area.name} Taxi and Airport Transfers`, description: describe(area.name), path: `/taxi/${area.slug}` });
+  return pageMetadata({
+    title: `${area.shortName ?? area.name} Taxi and Airport Transfers`,
+    description: describe(area.name),
+    path: `/taxi/${area.slug}`,
+  });
 }
 
 export default async function AreaPage({ params }: PageProps<"/taxi/[area]">) {

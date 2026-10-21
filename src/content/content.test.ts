@@ -153,3 +153,10 @@ describe("area pages", () => {
     for (const r of exampleRouteRows()) expect(r.prices.saloon, r.label).toBeGreaterThan(0);
   });
 });
+
+describe("page titles and descriptions", () => {
+  it("keeps area page titles and the site description within search-result length", async () => {
+    const { areas } = await import("./areas");
+    for (const a of areas) expect(`${a.shortName ?? a.name} Taxi and Airport Transfers | Galaxy Airport Taxi`.length, a.name).toBeLessThanOrEqual(65);
+  });
+});
