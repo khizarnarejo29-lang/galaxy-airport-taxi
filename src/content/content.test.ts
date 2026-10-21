@@ -113,3 +113,17 @@ describe("privacy policy", () => {
     }
   });
 });
+
+describe("prices page questions", () => {
+  it("quotes each airport's central London price from the live tariff", async () => {
+    const { priceFaqs } = await import("./prices");
+    const { centralLondonFrom } = await import("@/lib/pricing/example-fares");
+    const { formatGBP } = await import("@/lib/utils/money");
+    const faqs = priceFaqs();
+    for (const a of airports) {
+      const faq = faqs.find((f) => f.q === `How much is a taxi from central London to ${a.shortName}?`);
+      expect(faq?.a).toContain(`From ${formatGBP(centralLondonFrom(a.code)!)} one way`);
+    }
+    expect(faqs.find((f) => f.q === "Are there any extra charges?")?.a).toMatch(/child seats are free/);
+  });
+});

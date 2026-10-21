@@ -24,6 +24,7 @@ export const mainNav: NavItem[] = [
     children: [
       { label: "All London airports", href: "/airport-transfers" },
       ...airports.map((a) => ({ label: `${a.shortName} Airport Taxi`, href: `/${a.slug}` })),
+      { label: "Prices", href: "/prices" },
     ],
   },
   { label: "Fleet", href: "/fleet" },

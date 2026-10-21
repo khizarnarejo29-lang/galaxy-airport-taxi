@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { fleet } from "@/config/fleet";
 import { airportContent } from "@/content/airports";
-import { airports } from "@/lib/domain/airports";
+import { airports, getAirport } from "@/lib/domain/airports";
 import type { AirportCode } from "@/lib/domain/types";
 import { centralLondonFrom, exampleFares, exampleVehicles } from "@/lib/pricing/example-fares";
 import { formatGBP } from "@/lib/utils/money";
@@ -72,7 +72,13 @@ export function ExampleFaresTable({ airport }: { airport: AirportCode }) {
   if (!rows.length) return null;
   const vehicles = exampleVehicles.map((id) => fleet.find((v) => v.id === id)!);
   return (
-    <div className="overflow-x-auto rounded-3xl border border-line bg-white">
+    // Focusable so keyboard users can scroll the table sideways on small screens.
+    <div
+      className="overflow-x-auto rounded-3xl border border-line bg-white focus-visible:outline-2 focus-visible:outline-offset-2"
+      role="region"
+      aria-label={`${getAirport(airport)?.name ?? airport} prices`}
+      tabIndex={0}
+    >
       <table className="w-full min-w-[36rem] text-left text-sm">
         <caption className="sr-only">One-way prices by area and vehicle</caption>
         <thead className="bg-surface text-xs font-bold tracking-wider text-ink-soft uppercase">

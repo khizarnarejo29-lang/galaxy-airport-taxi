@@ -55,6 +55,7 @@ export function llmsText(): string {
     "",
     `- [Get a quote](${absolute("/quote")}): instant fixed price and online booking.`,
     `- [Airport transfers](${absolute("/airport-transfers")}): how drop-offs, pickups and prices work.`,
+    `- [Prices](${absolute("/prices")}): fixed one-way prices from six London areas to each airport, for every vehicle.`,
     `- [Fleet](${absolute("/fleet")}): vehicle types and capacity.`,
     `- [Meet and Greet](${absolute("/services/meet-and-greet")}): driver waits in the arrivals hall with a name sign.`,
     `- [Corporate travel](${absolute("/services/corporate-travel")}): business and client transfers.`,
