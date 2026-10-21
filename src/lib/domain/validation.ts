@@ -75,7 +75,10 @@ function flightErrors(field: string, flightNumber: string | undefined, pickup: J
 export function validateJourneyStep(input: Partial<JourneyInput>, rules: Rules = bookingRules): FieldError[] {
   const { pickup, dropoff } = input;
   const errors = [...endErrors("pickup", pickup), ...endErrors("dropoff", dropoff)];
-  if (pickup?.kind === "airport" && dropoff?.kind === "airport") errors.push(fieldError("dropoff", "ROUTE_UNSUPPORTED"));
+  // Between two airports is fine; the same airport at both ends (a terminal change) is not offered online.
+  if (pickup?.kind === "airport" && dropoff?.kind === "airport" && pickup.airport === dropoff.airport) {
+    errors.push(fieldError("dropoff", "ROUTE_UNSUPPORTED"));
+  }
   else if (sameAddress(pickup, dropoff)) errors.push(fieldError("dropoff", "SAME_LOCATION"));
   errors.push(...stopErrors("extraStops", input.extraStops ?? [], [pickup, dropoff], rules));
   return errors;

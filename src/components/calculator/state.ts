@@ -71,8 +71,10 @@ export interface Draft {
   suitcaseCount: number;
   /** Large or unusual items (bikes, golf bags…); null until answered. Yes means price on request. */
   largeItems: boolean | null;
-  /** Terminal of the outward journey's airport end (a journey never has two airports). */
+  /** Terminal of the outward journey's airport end; its pickup terminal when both ends are airports. */
   terminal: string;
+  /** Drop-off terminal, only when both ends of the outward journey are airports. */
+  dropoffTerminal: string;
   flightNumber: string;
   /** Terminal to collect from on the way back, when the return starts at the airport. */
   returnTerminal: string;
@@ -131,6 +133,7 @@ export const emptyDraft: Draft = {
   suitcaseCount: 1,
   largeItems: null,
   terminal: "",
+  dropoffTerminal: "",
   flightNumber: "",
   returnTerminal: "",
   returnFlightNumber: "",
@@ -168,6 +171,7 @@ const PRICED_FIELDS: (keyof Draft)[] = [
   "suitcaseCount",
   "largeItems",
   "terminal",
+  "dropoffTerminal",
   "flightNumber",
   "returnTerminal",
   "returnFlightNumber",
@@ -188,6 +192,7 @@ const RELATED_ERRORS: Partial<Record<keyof Draft, string[]>> = {
   dropoffAirport: ROUTE_ERRORS,
   extraStops: ["extraStops"],
   terminal: ["pickup.terminal", "dropoff.terminal"],
+  dropoffTerminal: ["dropoff.terminal"],
 };
 
 export type Action =
@@ -209,6 +214,7 @@ export function reducer(state: CalcState, action: Action): CalcState {
       // Terminal choices belong to one airport.
       if (AIRPORT_FIELDS.some((k) => k in action.patch && action.patch[k] !== state.draft[k])) {
         draft.terminal = "";
+        draft.dropoffTerminal = "";
         draft.returnTerminal = "";
       }
       const repriced = keys.some((k) => PRICED_FIELDS.includes(k));
@@ -266,6 +272,9 @@ export function outwardAirport(d: Draft): AirportCode | null {
 export const returnPicksUpAtAirport = (d: Draft) =>
   isReturn(d) && d.dropoffKind === "airport" && !d.returnFromDifferentAddress;
 
+/** Both ends of the outward journey are airports (e.g. Heathrow to Gatwick). */
+export const betweenAirports = (d: Draft) => d.pickupKind === "airport" && d.dropoffKind === "airport";
+
 /** Airport details are only asked for when the journey uses an airport. */
 export const hasAirport = (d: Draft) => d.pickupKind === "airport" || d.dropoffKind === "airport";
 
@@ -298,7 +307,7 @@ export const returnHasAirport = (d: Draft) => d.pickupKind === "airport" || retu
 export function toJourneyInput(d: Draft): JourneyInput {
   return {
     pickup: outwardPickup(d),
-    dropoff: end(d.dropoffKind, d.dropoffAddress, d.dropoffAirport, d.terminal, d.dropoffLine1),
+    dropoff: end(d.dropoffKind, d.dropoffAddress, d.dropoffAirport, betweenAirports(d) ? d.dropoffTerminal : d.terminal, d.dropoffLine1),
     extraStops: stops(d.extraStops),
     date: d.date,
     time: d.time,

@@ -10,9 +10,9 @@ For each vehicle, in this order:
 
 1. **Matching reference fare**: an approved, in-date fare for exactly this journey (see `REFERENCE_FARES.md`). The price is the reference total **minus £2**.
 2. **Location tariff**: if no fare matches, the price comes from the distance between the address and the airport, using the figures in `src/config/pricing.ts`.
-3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a journey from one airport to another.
+3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a transfer between terminals of the same airport.
 
-The tariff is **switched on** (version `galaxy-2026-10-20`). Its figures were set from 32 quotes on the
+The tariff is **switched on** (version `galaxy-2026-10-21-2`). Its figures were set from 32 quotes on the
 reference website on 2026-10-19: six London postcodes (SW1A 1AA, E1 5NF, HA9 0WS, CR0 1LF, RM1 1AU, W5 2NU)
 to each airport, every vehicle, one way and return. At every one of them the tariff is at least £3 under the
 reference price: the £2 rule plus £1 to spare for the places in between. `src/lib/pricing/galaxy-tariff.test.ts`
@@ -40,7 +40,15 @@ Any journey between two addresses (hospital, station, office, shops, long distan
 except the 8-seater at 1.43 on local journeys. Returns, stops, child seats and the Christmas and New
 Year rates work as on airport journeys. The figures were set from 18 reference quotes (a short trip
 in Whitechapel to London–Birmingham); `galaxy-tariff.test.ts` checks every vehicle stays at least £2
-under each one. Airport to airport is still price on request.
+under each one.
+
+## Between two airports
+
+Heathrow to Gatwick and the other airport pairs are priced from `pricing.betweenAirports`: one fare
+per vehicle for each pair, the same both ways, set at the reference site's price less £3 (21 October
+2026). Returns get the usual 5% off each journey, and Meet & Greet can be added because the driver
+collects from arrivals. The tests check every pair, both directions, one way and return, against the
+reference prices. Between terminals of the same airport is still price on request.
 
 ## The figures to set
 

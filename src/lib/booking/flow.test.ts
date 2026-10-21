@@ -379,11 +379,27 @@ describe("createQuote", () => {
     expect(r.ok || r.errors.map((e) => `${e.field}:${e.code}`)).toEqual(["pickup:ADDRESS_OUTSIDE_AREA"]);
   });
 
-  it("rejects airport-to-airport journeys before any lookup", async () => {
+  it("rejects the same airport at both ends before any lookup", async () => {
     const resolve = vi.fn();
     const svc = services({ locations: { ...locations, resolve } });
-    const r = await createQuote({ ...journey, pickup: { kind: "airport", airport: "LGW", terminal: "N" }, flightNumber: "BA123" }, svc, { now, fares });
+    const r = await createQuote(
+      { ...journey, pickup: { kind: "airport", airport: "LHR", terminal: "T2" }, dropoff: { kind: "airport", airport: "LHR", terminal: "T5" }, flightNumber: "BA123" },
+      svc,
+      { now, fares },
+    );
     expect(r.ok || r.errors.map((e) => `${e.field}:${e.code}`)).toEqual(["dropoff:ROUTE_UNSUPPORTED"]);
+    expect(resolve).not.toHaveBeenCalled();
+  });
+
+  it("prices a transfer between two airports from the listed fares, with no address lookup", async () => {
+    const resolve = vi.fn();
+    const svc = services({ locations: { ...locations, resolve } });
+    const r = await createQuote(
+      { ...journey, pickup: { kind: "airport", airport: "LHR", terminal: "T5" }, dropoff: { kind: "airport", airport: "LGW", terminal: "S" }, flightNumber: "BA123" },
+      svc,
+      { now, fares: [], tariff: pricing },
+    );
+    expect(r.ok && r.quote.options.find((o) => o.vehicleId === "saloon")).toMatchObject({ available: true, total: 8200 });
     expect(resolve).not.toHaveBeenCalled();
   });
 
@@ -1024,7 +1040,7 @@ describe("activeTariff", () => {
   });
 
   it("ships switched on, with real figures", () => {
-    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-21" });
+    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-21-2" });
   });
 });
 

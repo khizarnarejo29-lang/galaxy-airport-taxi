@@ -9,7 +9,7 @@ import type { AirportCode, JourneyEnd, JourneyKind, PricedJourney } from "./type
 /** The parts of an end these helpers need, in either the request or the priced shape. */
 type EndLike = { kind: "address" } | { kind: "airport"; airport: AirportCode };
 
-/** To the airport, from the airport, or address to address. Null for airport to airport, which is never allowed. */
+/** To the airport, from the airport, or address to address. Null between two airports (priced from its own fares). */
 export function journeyKind(pickup: EndLike, dropoff: EndLike): JourneyKind | null {
   if (pickup.kind === "airport") return dropoff.kind === "airport" ? null : "from_airport";
   return dropoff.kind === "airport" ? "to_airport" : "address_to_address";
@@ -23,7 +23,7 @@ export function meetAndGreetAllowed(journey: { pickup: EndLike; returnJourney?: 
   return journey.pickup.kind === "airport" || journey.returnJourney?.pickup.kind === "airport";
 }
 
-/** The airport this journey uses, if any. A journey never has two. */
+/** The airport this journey uses, if any; the pickup airport when both ends are airports. */
 export function journeyAirport(journey: Pick<PricedJourney, "pickup" | "dropoff">): AirportCode | undefined {
   const end = [journey.pickup, journey.dropoff].find((e) => e.kind === "airport");
   return end?.kind === "airport" ? end.airport : undefined;

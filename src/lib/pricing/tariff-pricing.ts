@@ -8,7 +8,7 @@ import { getVehicle } from "@/config/fleet";
 import type { AddOns, AirportCode, Direction, JourneyEnd, LatLng, PriceLine, PricedJourney, VehicleId } from "@/lib/domain/types";
 import type { OptionPrice } from "@/lib/reference-fares/journey-pricing";
 import { haversineMiles } from "@/lib/domain/geo";
-import { activeEvent, localPrice, price, type PriceResult } from "./engine";
+import { activeEvent, betweenAirportsPrice, localPrice, price, type PriceResult } from "./engine";
 
 interface Leg {
   airport: AirportCode;
@@ -44,6 +44,10 @@ const legInput = (leg: Leg, config: PricingConfig, returnBooking: boolean) => ({
 const localLeg = (start: JourneyEnd, finish: JourneyEnd) =>
   start.kind === "address" && finish.kind === "address" ? { from: start.address, to: finish.address } : null;
 
+/** Two different airports: priced from the listed fares between them. */
+const airportPair = (start: JourneyEnd, finish: JourneyEnd) =>
+  start.kind === "airport" && finish.kind === "airport" && start.airport !== finish.airport ? { from: start.airport, to: finish.airport } : null;
+
 /** Either end within the local tariff's central radius (e.g. inside the congestion zone). */
 function localCentral(leg: { from: LatLng; to: LatLng }, config: PricingConfig) {
   const centre = config.centralZone?.centre;
@@ -72,7 +76,8 @@ export function tariffPrice(
   }
   const outward = legOf(journey.pickup, journey.dropoff);
   const outwardLocal = outward ? null : localLeg(journey.pickup, journey.dropoff);
-  if (!outward && !(outwardLocal && config.local)) return onRequest("NO_AIRPORT");
+  const outwardPair = outward ? null : airportPair(journey.pickup, journey.dropoff);
+  if (!outward && !(outwardLocal && config.local) && !outwardPair) return onRequest("NO_AIRPORT");
   // An extra the tariff has no price for is never guessed.
   const stops = journey.extraStops.length + (journey.returnJourney?.extraStops.length ?? 0);
   if (
@@ -85,9 +90,13 @@ export function tariffPrice(
   const isReturn = journey.tripType === "return";
 
   const common = { vehicleId, distanceMiles: journey.distanceMiles, date: journey.date, time: journey.time, extraStops: journey.extraStops.length };
+  const pairPrice = outwardPair && betweenAirportsPrice({ ...common, ...outwardPair, returnBooking: isReturn, addOns: extras }, config);
+  if (outwardPair && !pairPrice) return onRequest("NO_AIRPORT_FARE");
   const out: PriceResult = outward
     ? price({ ...legInput(outward, config, isReturn), ...common, addOns: extras }, config)
-    : localPrice({ ...common, central: localCentral(outwardLocal!, config), returnBooking: isReturn, addOns: { meetAndGreet: false, childSeats: extras.childSeats } }, config)!;
+    : pairPrice
+      ? pairPrice
+      : localPrice({ ...common, central: localCentral(outwardLocal!, config), returnBooking: isReturn, addOns: { meetAndGreet: false, childSeats: extras.childSeats } }, config)!;
   const lines = [...out.lines];
   const events = new Set<string>();
   const outEvent = activeEvent(config, journey.date, journey.time);
@@ -97,11 +106,16 @@ export function tariffPrice(
   if (isReturn) {
     const back = r && legOf(r.pickup, journey.pickup);
     const backLocal = r && !back ? localLeg(r.pickup, journey.pickup) : null;
-    if (!r || !(back || (backLocal && config.local))) return onRequest("NO_AIRPORT");
+    const backPair = r && !back ? airportPair(r.pickup, journey.pickup) : null;
+    if (!r || !(back || (backLocal && config.local) || backPair)) return onRequest("NO_AIRPORT");
     const backCommon = { vehicleId, distanceMiles: r.distanceMiles ?? journey.distanceMiles, date: r.date, time: r.time, extraStops: r.extraStops.length };
+    const backPairPrice = backPair && betweenAirportsPrice({ ...backCommon, ...backPair, returnBooking: true, addOns: { meetAndGreet: extras.meetAndGreet, childSeats: 0 } }, config);
+    if (backPair && !backPairPrice) return onRequest("NO_AIRPORT_FARE");
     const ret: PriceResult = back
       ? price({ ...legInput(back, config, true), ...backCommon, addOns: { meetAndGreet: extras.meetAndGreet, childSeats: 0 } }, config)
-      : localPrice({ ...backCommon, central: localCentral(backLocal!, config), returnBooking: true, addOns: { meetAndGreet: false, childSeats: 0 } }, config)!;
+      : backPairPrice
+        ? backPairPrice
+        : localPrice({ ...backCommon, central: localCentral(backLocal!, config), returnBooking: true, addOns: { meetAndGreet: false, childSeats: 0 } }, config)!;
     lines.push(...prefixed(ret.lines, "Return "));
     const retEvent = activeEvent(config, r.date, r.time);
     if (retEvent) events.add(retEvent.label);

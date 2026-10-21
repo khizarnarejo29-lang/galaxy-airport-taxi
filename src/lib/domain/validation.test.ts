@@ -36,8 +36,8 @@ describe("journey step", () => {
     expect(validateJourneyStep({ pickup, dropoff })).toEqual([]);
   });
 
-  it("refuses airport to airport, even at the same airport", () => {
-    expect(codes(validateJourneyStep({ pickup: airport("LHR"), dropoff: airport("LGW") }))).toEqual(["ROUTE_UNSUPPORTED"]);
+  it("allows two different airports, but not the same airport at both ends", () => {
+    expect(codes(validateJourneyStep({ pickup: airport("LHR"), dropoff: airport("LGW") }))).toEqual([]);
     expect(codes(validateJourneyStep({ pickup: airport("LHR", "T2"), dropoff: airport("LHR", "T5") }))).toEqual(["ROUTE_UNSUPPORTED"]);
   });
 

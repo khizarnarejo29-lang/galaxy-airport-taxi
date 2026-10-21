@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { CtaBand, FaqList, FeatureCard, RelatedLinks, Section } from "@/components/sections/blocks";
-import { AirportGrid, ExampleFaresTable } from "@/components/sections/cards";
+import { AirportGrid, ExampleFaresTable, PriceTable } from "@/components/sections/cards";
+import { otherAirportRows } from "@/content/area-pages";
 import { exampleFares } from "@/lib/pricing/example-fares";
 import { CalculatorHero } from "@/components/sections/CalculatorHero";
 import { airportContent, airportFaqs } from "@/content/airports";
@@ -141,6 +142,17 @@ export default async function AirportPage({ params }: PageProps<"/[airport]">) {
           ]}
         />
       </Section>
+
+      {otherAirportRows(airport.code).length > 0 && (
+        <Section
+          id="between-airports"
+          eyebrow="Airport to airport"
+          title={`Taxi from ${airport.shortName} to the other London airports`}
+          intro="Connecting to a flight from another airport? One way, for the whole vehicle, the same price in either direction."
+        >
+          <PriceTable label={`${airport.shortName} to the other airports`} firstColumn="To" rows={otherAirportRows(airport.code)} />
+        </Section>
+      )}
 
       <Section id="other-airports" tone="surface" eyebrow="Other airports" title="Transfers to the other London airports">
         <AirportGrid exclude={airport.code} />
