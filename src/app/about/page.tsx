@@ -20,7 +20,7 @@ export default function AboutPage() {
         crumbs={[{ label: "About Us", href: "/about" }]}
         eyebrow="About us"
         illustration="london"
-        title="Airport transfers, kept simple"
+        title="About Galaxy Airport Taxi"
         lead={`${site.name} takes you between your address and Heathrow, Gatwick, Stansted, Luton or London City airport, and on any other journey across London and the UK, at a fixed price.`}
       />
 
@@ -31,11 +31,12 @@ export default function AboutPage() {
             shows &ldquo;Price on request&rdquo; and we&apos;ll give you a price by phone or WhatsApp.
           </FeatureCard>
           <FeatureCard icon="suitcase" title="The right vehicle">
-            You tell us how many people and bags are travelling. Where we can&apos;t confirm a vehicle for your luggage
-            online, we&apos;ll check it with you by phone.
+            Tell us how many people and bags are travelling and you&apos;ll see the cars that fit. For bikes, golf bags
+            or anything unusual, call us first.
           </FeatureCard>
-          <FeatureCard icon="plane" title="Built around your flight">
-            Pickups are booked against your flight number and landing time, so the details travel with your booking.
+          <FeatureCard icon="plane" title="We follow your flight">
+            Give us your flight number and we track it. If you land late, your driver waits: the first 60 minutes after
+            landing are free.
           </FeatureCard>
         </div>
       </Section>

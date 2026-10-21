@@ -20,7 +20,7 @@ export default function AirportTransfersPage() {
         illustration="airport"
         scene="takeoff"
         title="Transfers between London and its five airports"
-        lead="Whether you're heading to departures or landing back home, book a door-to-door transfer between your address, in London or anywhere in the UK, and any London airport."
+        lead="Door-to-door transfers to and from Heathrow, Gatwick, Stansted, Luton and London City, from any address in London or the rest of the UK."
       />
 
       <Section id="airports" eyebrow="Choose your airport" title="Where are you flying from?">

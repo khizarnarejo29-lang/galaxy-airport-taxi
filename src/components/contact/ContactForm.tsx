@@ -16,7 +16,7 @@ const empty = (topic: ContactTopic): ContactInput => ({
   message: "",
 });
 
-export function ContactForm({ initialTopic = "general" }: { initialTopic?: ContactTopic }) {
+export function ContactForm({ initialTopic = "general", connected = false }: { initialTopic?: ContactTopic; connected?: boolean }) {
   const [values, setValues] = useState<ContactInput>(() => empty(initialTopic));
   const [errors, setErrors] = useState<FieldErrorType[]>([]);
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
@@ -62,15 +62,25 @@ export function ContactForm({ initialTopic = "general" }: { initialTopic?: Conta
         <span className="mx-auto grid size-12 place-items-center rounded-full bg-success-soft text-success">
           <Icon name="check" className="size-6" />
         </span>
-        <h2 className="mt-4 font-display text-2xl font-bold">Message submitted</h2>
-        <p className="mt-2 text-ink-soft">
-          Thanks, {values.name.split(" ")[0]}. Our online form isn&apos;t connected to our inbox yet, so please also call us
-          on{" "}
-          <a href={site.phone.href} className="font-semibold text-ink underline">
-            {site.phone.display}
-          </a>{" "}
-          to make sure we get your message.
-        </p>
+        <h2 className="mt-4 font-display text-2xl font-bold">{connected ? "Message sent" : "Message submitted"}</h2>
+        {connected ? (
+          <p className="mt-2 text-ink-soft">
+            Thanks, {values.name.split(" ")[0]}. We&apos;ll reply by email. If it&apos;s urgent, call or WhatsApp us on{" "}
+            <a href={site.phone.href} className="font-semibold text-ink underline">
+              {site.phone.display}
+            </a>
+            .
+          </p>
+        ) : (
+          <p className="mt-2 text-ink-soft">
+            Thanks, {values.name.split(" ")[0]}. Our online form isn&apos;t connected to our inbox yet, so please also call us
+            on{" "}
+            <a href={site.phone.href} className="font-semibold text-ink underline">
+              {site.phone.display}
+            </a>{" "}
+            to make sure we get your message.
+          </p>
+        )}
       </div>
     );
   }

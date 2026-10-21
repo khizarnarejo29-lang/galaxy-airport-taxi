@@ -6,5 +6,5 @@ export const size = ogSize;
 export const contentType = "image/png";
 
 export default function Image() {
-  return renderOgImage({ eyebrow: "London airport transfers", title: "Your airport run, made simple." });
+  return renderOgImage({ eyebrow: "Airport transfers and local rides", title: "Airport taxis at a fixed price." });
 }

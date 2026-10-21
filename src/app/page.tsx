@@ -15,29 +15,32 @@ export const metadata: Metadata = {
 };
 
 const points: { icon: IconName; text: string }[] = [
-  { icon: "check", text: "A fixed price for every vehicle, shown before you book" },
-  { icon: "terminal", text: "Airport drop-off and parking charges included" },
-  { icon: "plane", text: "Flight number recorded for every airport pickup" },
-  { icon: "user", text: "Saloons through to 8-seaters" },
+  { icon: "check", text: "Fixed price for the whole car, shown before you book" },
+  { icon: "clock", text: "60 minutes' free waiting after your flight lands" },
+  { icon: "user", text: "Child seats free, saloons to 8-seaters" },
+  { icon: "phone", text: "Open 24 hours: book online, call or WhatsApp" },
 ];
 
 const steps = [
   {
-    title: "Tell us the journey",
-    text: "Choose to or from the airport, find your address and add the date, time and who's travelling.",
+    title: "Enter your journey",
+    text: "Pickup, drop-off, date and time, and how many people and bags. An airport or any address in the UK.",
   },
   {
-    title: "See your options",
-    text: "Each vehicle shows one fixed total for your whole booking, airport charges included. A few journeys, such as those with large items, are priced by phone.",
+    title: "Pick a vehicle",
+    text: "Each vehicle shows its full price, with airport charges and any extras already added. That's what you pay.",
   },
   {
-    title: "Book and keep your reference",
-    text: "Add your contact details, check the summary and book online, or call us to book by phone.",
+    title: "Book",
+    text: "Add your name and mobile number, check the details and book. Your booking reference appears straight away.",
   },
 ];
 
 export default function HomePage() {
-  const faqPreview = faqGroups().flatMap((g) => g.items).slice(0, 5);
+  // The questions customers ask most, from the full FAQ.
+  const preview = ["How long will the driver wait?", "What happens if my flight is delayed or early?", "Can I request a child seat?", "Can I cancel or change my booking?", "Which areas do you cover?"];
+  const all = faqGroups().flatMap((g) => g.items);
+  const faqPreview = preview.flatMap((q) => all.filter((f) => f.q === q));
 
   return (
     <>
@@ -45,14 +48,14 @@ export default function HomePage() {
       {/* Withheld (null) while contact details are placeholders. */}
       <JsonLd data={localBusiness()} />
       <CalculatorHero
-        eyebrow="London airport transfers"
+        eyebrow="Airport transfers and local rides"
         illustration="london"
         title={
           <>
-            Your airport run, <span className="text-accent">made simple.</span>
+            Airport taxis and local rides, <span className="text-accent">at a fixed price.</span>
           </>
         }
-        lead="Door-to-door journeys to and from all five London airports, and any other ride across London and the UK. Tell us the route and see a fixed price for every vehicle in seconds."
+        lead="To and from Heathrow, Gatwick, Stansted, Luton and London City, or between any two addresses in London and the UK. Enter your journey to see the price for each car."
       >
         <ul className="space-y-3">
           {points.map((p) => (
@@ -87,7 +90,7 @@ export default function HomePage() {
         tone="surface"
         eyebrow="Airport transfers"
         title="All five London airports"
-        intro="Transfers in both directions between anywhere in the UK and each airport, with terminal selection where the airport has more than one."
+        intro="Pickups and drop-offs at every terminal, from any address in the UK. Prices shown are one way from central London in a saloon."
       >
         <AirportGrid />
       </Section>
@@ -95,7 +98,7 @@ export default function HomePage() {
       <Section
         id="services"
         eyebrow="Services"
-        title="Drop-offs, pickups and the extras that go with them"
+        title="What we do"
       >
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {services.map((s) => (
@@ -124,7 +127,7 @@ export default function HomePage() {
         tone="surface"
         eyebrow="Fleet"
         title="A vehicle for every group size"
-        intro="Typical maximum passengers for each vehicle class. Luggage space varies, so we confirm it for your journey. If you're unsure, call us."
+        intro="Passenger numbers are the most each car takes. Bringing a lot of luggage? Choose an estate or MPV, or ask us first."
       >
         <FleetGrid />
       </Section>
