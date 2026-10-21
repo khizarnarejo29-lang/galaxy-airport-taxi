@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo/metadata";
-import { CtaBand, FaqList, PageHero } from "@/components/sections/blocks";
+import { CtaBand, FaqList, PageHero, RelatedLinks, Section } from "@/components/sections/blocks";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { faqGroups } from "@/content/faqs";
 import { faqPage } from "@/lib/seo/jsonld";
@@ -37,6 +37,16 @@ export default function FaqPage() {
           ))}
         </div>
       </div>
+      <Section id="related" tone="surface" eyebrow="More help" title="Still deciding?">
+        <RelatedLinks
+          links={[
+            { href: "/prices", title: "Prices", text: "Fixed prices from across London to all five airports." },
+            { href: "/fleet", title: "Our fleet", text: "Which vehicle fits your group and luggage." },
+            { href: "/services/meet-and-greet", title: "Meet & Greet", text: "Your driver meets you inside the arrivals hall." },
+            { href: "/contact", title: "Contact us", text: "Call, WhatsApp or email, 24 hours a day." },
+          ]}
+        />
+      </Section>
       <CtaBand />
     </>
   );

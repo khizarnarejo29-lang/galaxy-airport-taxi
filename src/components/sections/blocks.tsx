@@ -181,6 +181,28 @@ export function NumberedSteps({ steps }: { steps: { title: string; text: string 
   );
 }
 
+/** Links to related pages, each with a line saying what the reader will find there. */
+export function RelatedLinks({ links }: { links: { href: string; title: string; text: string }[] }) {
+  return (
+    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {links.map((l) => (
+        <li key={l.href}>
+          <Link
+            href={l.href}
+            className="group flex h-full flex-col rounded-3xl border border-line bg-white p-6 transition hover:-translate-y-0.5 hover:border-ink-faint hover:shadow-card"
+          >
+            <span className="flex items-center justify-between gap-3 font-display text-lg font-bold">
+              {l.title}
+              <Icon name="arrowRight" className="size-4 shrink-0 text-accent-strong transition-transform group-hover:translate-x-0.5" />
+            </span>
+            <span className="mt-2 leading-relaxed text-ink-soft">{l.text}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** Accessible FAQ list using native <details>; works without JavaScript. */
 export function FaqList({ items }: { items: { q: string; a: string }[] }) {
   return (
@@ -200,7 +222,7 @@ export function FaqList({ items }: { items: { q: string; a: string }[] }) {
 
 export function CtaBand({
   title = "Get a price for your journey",
-  text = "Enter your route, date and passengers. Where we can price it online you'll see a fixed total before you book; otherwise call us for a price.",
+  text = "Enter your route, date and passengers to see a fixed total for each vehicle, then book online in a few minutes.",
   quoteHref = "/quote",
 }: {
   title?: string;

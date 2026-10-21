@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
-import { CtaBand, FaqList, FeatureCard, Section } from "@/components/sections/blocks";
+import { CtaBand, FaqList, FeatureCard, RelatedLinks, Section } from "@/components/sections/blocks";
 import { AirportGrid, ExampleFaresTable } from "@/components/sections/cards";
 import { exampleFares } from "@/lib/pricing/example-fares";
 import { CalculatorHero } from "@/components/sections/CalculatorHero";
@@ -73,7 +74,11 @@ export default async function AirportPage({ params }: PageProps<"/[airport]">) {
             <>
               One way, for the whole vehicle, airport charges included
               {airport.terminals.length > 1 ? ", from the lowest-priced terminal" : ""}. A return costs less than two
-              one-way trips. Enter your address above for your exact price.
+              one-way trips. Enter your address above for your exact price, or{" "}
+              <Link href="/prices" className="font-semibold text-sky underline underline-offset-2">
+                compare prices for every airport
+              </Link>
+              .
             </>
           }
         >
@@ -120,6 +125,21 @@ export default async function AirportPage({ params }: PageProps<"/[airport]">) {
         <div className="max-w-3xl">
           <FaqList items={faqs} />
         </div>
+      </Section>
+
+      <Section id="plan" eyebrow="Plan your trip" title={`Before your ${airport.shortName} transfer`}>
+        <RelatedLinks
+          links={[
+            { href: "/fleet", title: "Choose a vehicle", text: "Saloon to 8-seater, and how many passengers each one takes." },
+            {
+              href: "/services/meet-and-greet",
+              title: "Meet & Greet",
+              text: `Your driver waits in the ${airport.shortName} arrivals hall with a sign showing your name.`,
+            },
+            { href: "/faq", title: "FAQ", text: "Booking notice, extra stops, child seats and what happens after you book." },
+            { href: "/terms", title: "Terms", text: "Cancellation, refunds, waiting time and what's included in your price." },
+          ]}
+        />
       </Section>
 
       <Section id="other-airports" tone="surface" eyebrow="Other airports" title="Transfers to the other London airports">
