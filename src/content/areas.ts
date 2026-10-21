@@ -7,6 +7,8 @@ export interface Area extends NamedPoint {
   slug: string;
   /** The London borough it is in. */
   borough: string;
+  /** A shorter name for page titles, when the full one is long. */
+  shortName?: string;
 }
 
 /**
@@ -22,7 +24,7 @@ export const areas: Area[] = [
   { slug: "canary-wharf", name: "Canary Wharf", borough: "Tower Hamlets", region: "London", lat: 51.5056, lng: -0.0264 },
   { slug: "wimbledon", name: "Wimbledon", borough: "Merton", region: "London", lat: 51.4183, lng: -0.2206 },
   { slug: "harrow", name: "Harrow", borough: "Harrow", region: "London", lat: 51.5805, lng: -0.3421 },
-  { slug: "kingston", name: "Kingston upon Thames", borough: "Kingston upon Thames", region: "London", lat: 51.4123, lng: -0.3007 },
+  { slug: "kingston", name: "Kingston upon Thames", shortName: "Kingston", borough: "Kingston upon Thames", region: "London", lat: 51.4123, lng: -0.3007 },
   { slug: "enfield", name: "Enfield", borough: "Enfield", region: "London", lat: 51.6523, lng: -0.0807 },
   { slug: "bromley", name: "Bromley", borough: "Bromley", region: "London", lat: 51.4063, lng: 0.0187 },
   { slug: "hounslow", name: "Hounslow", borough: "Hounslow", region: "London", lat: 51.4704, lng: -0.3632 },

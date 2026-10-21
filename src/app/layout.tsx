@@ -14,7 +14,7 @@ const body = Manrope({ subsets: ["latin"], variable: "--font-body", display: "sw
 
 const defaultTitle = `${site.name} | London Airport Transfers`;
 const defaultDescription =
-  "Fixed-price airport taxis between any UK address and Heathrow, Gatwick, Stansted, Luton and London City. Book online 24/7, with free child seats and free waiting time.";
+  "Fixed-price taxis to Heathrow, Gatwick, Stansted, Luton and London City, and for any journey across London and the UK. Book online 24/7, child seats free.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
