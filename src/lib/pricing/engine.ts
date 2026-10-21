@@ -82,10 +82,8 @@ export function journeyFare(input: PriceInput, config: PricingConfig): Pence {
   return roundTo(saloonFare * (1 - discount) * config.vehicleMultipliers[input.vehicleId], config.roundTo);
 }
 
-export function price(input: PriceInput, config: PricingConfig): PriceResult {
-  const tariff = config.airports[input.airport];
-  const addOns = input.addOns ?? NO_ADD_ONS;
-  const fare = journeyFare(input, config);
+/** What every journey shares: the fare, event and time surcharges on it, then extra stops. */
+function fareLines(fare: Pence, input: Pick<PriceInput, "date" | "time" | "extraStops">, config: PricingConfig): PriceLine[] {
   const lines: PriceLine[] = [{ code: "journey", label: "Journey fare", amount: fare }];
 
   // Events (Christmas, New Year…) multiply the journey fare only, not extras or airport charges.
@@ -107,6 +105,27 @@ export function price(input: PriceInput, config: PricingConfig): PriceResult {
       amount: input.extraStops * (config.extras.extraStop ?? 0),
     });
   }
+  return lines;
+}
+
+/** Free child seats add no line; the booking still records how many. */
+function childSeatLines(addOns: AddOns, config: PricingConfig): PriceLine[] {
+  if (addOns.childSeats === 0 || (config.extras.childSeat ?? 0) === 0) return [];
+  return [
+    {
+      code: "child_seats",
+      label: addOns.childSeats === 1 ? "Child seat" : `Child seats × ${addOns.childSeats}`,
+      amount: addOns.childSeats * (config.extras.childSeat ?? 0),
+    },
+  ];
+}
+
+const withTotal = (lines: PriceLine[]): PriceResult => ({ lines, total: lines.reduce((sum, l) => sum + l.amount, 0) });
+
+export function price(input: PriceInput, config: PricingConfig): PriceResult {
+  const tariff = config.airports[input.airport];
+  const addOns = input.addOns ?? NO_ADD_ONS;
+  const lines = fareLines(journeyFare(input, config), input, config);
 
   const airportCharge = input.direction === "to_airport" ? tariff.dropOffCharge : tariff.pickupParking;
   if (airportCharge > 0) {
@@ -122,14 +141,26 @@ export function price(input: PriceInput, config: PricingConfig): PriceResult {
     lines.push({ code: "meet_and_greet", label: "Meet & Greet", amount: config.extras.meetAndGreet ?? 0 });
   }
 
-  // Free child seats add no line; the booking still records how many.
-  if (addOns.childSeats > 0 && (config.extras.childSeat ?? 0) > 0) {
-    lines.push({
-      code: "child_seats",
-      label: addOns.childSeats === 1 ? "Child seat" : `Child seats × ${addOns.childSeats}`,
-      amount: addOns.childSeats * (config.extras.childSeat ?? 0),
-    });
-  }
+  return withTotal([...lines, ...childSeatLines(addOns, config)]);
+}
 
-  return { lines, total: lines.reduce((sum, l) => sum + l.amount, 0) };
+export type LocalPriceInput = Omit<PriceInput, "airport" | "direction" | "terminal" | "outsideLondon">;
+
+/** Saloon fare for a journey with no airport, then the vehicle's multiplier. Null without a local tariff. */
+export function localJourneyFare(input: LocalPriceInput, config: PricingConfig): Pence | null {
+  const local = config.local;
+  if (!local) return null;
+  const chargeable = Math.max(0, input.distanceMiles - local.includedMiles);
+  const miles = Math.min(chargeable, local.longAfterMiles) * local.perMile + Math.max(0, chargeable - local.longAfterMiles) * local.longPerMile;
+  const saloonFare = Math.max(local.minimumFare, local.baseFare + miles + (input.central ? local.centralSupplement : 0));
+  const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
+  const multiplier = local.vehicleMultipliers?.[input.vehicleId] ?? config.vehicleMultipliers[input.vehicleId];
+  return roundTo(saloonFare * (1 - discount) * multiplier, config.roundTo);
+}
+
+/** A journey between two addresses (hospital, station, office, home…). Null without a local tariff. */
+export function localPrice(input: LocalPriceInput, config: PricingConfig): PriceResult | null {
+  const fare = localJourneyFare(input, config);
+  if (fare === null) return null;
+  return withTotal([...fareLines(fare, input, config), ...childSeatLines(input.addOns ?? NO_ADD_ONS, config)]);
 }

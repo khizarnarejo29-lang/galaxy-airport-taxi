@@ -58,6 +58,8 @@ interface Props {
   /** Pre-select an airport (e.g. on an airport landing page): the drop-off, or the pickup when coming from the airport. */
   initialAirport?: AirportCode;
   initialDirection?: Direction;
+  /** Start with an address at both ends (local and area pages). */
+  initialLocal?: boolean;
   /** "hero": the page has its own <h1>, so step titles are <h2>. "page": step titles are the <h1>. */
   variant?: "hero" | "page";
 }
@@ -76,17 +78,18 @@ function focusField(errors: FieldError[]) {
 }
 
 /** The starting journey for a page: to the airport unless the page says otherwise. */
-function initialDraft(airport?: AirportCode, direction?: Direction): Draft {
+function initialDraft(airport?: AirportCode, direction?: Direction, local?: boolean): Draft {
+  if (local) return { ...emptyDraft, dropoffKind: "address" };
   return direction === "from_airport"
     ? { ...emptyDraft, pickupKind: "airport", pickupAirport: airport ?? null, dropoffKind: "address" }
     : { ...emptyDraft, dropoffAirport: airport ?? null };
 }
 
-export function Calculator({ initialAirport, initialDirection, variant = "page" }: Props) {
+export function Calculator({ initialAirport, initialDirection, initialLocal, variant = "page" }: Props) {
   const router = useRouter();
   const [state, dispatch] = useReducer(reducer, undefined, (): CalcState => ({
     step: "journey",
-    draft: initialDraft(initialAirport, initialDirection),
+    draft: initialDraft(initialAirport, initialDirection, initialLocal),
     errors: [],
     quote: null,
     busy: null,

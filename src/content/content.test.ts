@@ -127,3 +127,29 @@ describe("prices page questions", () => {
     expect(faqs.find((f) => f.q === "Are there any extra charges?")?.a).toMatch(/child seats are free/);
   });
 });
+
+describe("area pages", () => {
+  it("prices every area to every airport and to central London, for every vehicle", async () => {
+    const { areas } = await import("./areas");
+    const { airportRows, areaFaqs, localRows } = await import("./area-pages");
+    for (const area of areas) {
+      const rows = [...airportRows(area), ...localRows(area)];
+      expect(rows).toHaveLength(airports.length + 4);
+      for (const r of rows) expect(Object.keys(r.prices), `${area.name} → ${r.label}`).toHaveLength(5);
+      expect(areaFaqs(area)[0].a).toMatch(/^From £\d+ one way/);
+    }
+  });
+
+  it("gives every area its own slug, listed in the sitemap", async () => {
+    const { areas } = await import("./areas");
+    const { indexablePaths } = await import("@/config/seo");
+    expect(new Set(areas.map((a) => a.slug)).size).toBe(areas.length);
+    for (const a of areas) expect(indexablePaths()).toContain(`/taxi/${a.slug}`);
+    expect(indexablePaths()).toContain("/taxi");
+  });
+
+  it("prices the example local routes", async () => {
+    const { exampleRouteRows } = await import("./area-pages");
+    for (const r of exampleRouteRows()) expect(r.prices.saloon, r.label).toBeGreaterThan(0);
+  });
+});

@@ -31,7 +31,7 @@ export function faqGroups(): FaqGroup[] {
         },
         {
           q: "What does “Price on request” mean?",
-          a: `Most journeys get an instant fixed price. A few can't be priced online, for example a journey that doesn't start or end at an airport, more passengers than the vehicle holds, or large items such as bikes. Call or WhatsApp us on ${site.phone.display} and we'll give you a fixed price.`,
+          a: `Most journeys get an instant fixed price. A few can't be priced online, for example a journey from one airport to another, more passengers than the vehicle holds, or large items such as bikes. Call or WhatsApp us on ${site.phone.display} and we'll give you a fixed price.`,
         },
         {
           q: "How long is my quote valid?",
@@ -48,7 +48,11 @@ export function faqGroups(): FaqGroup[] {
       items: [
         {
           q: "Which areas do you cover?",
-          a: `Journeys between any address in ${serviceArea.label}, London included, and Heathrow, Gatwick, Stansted, Luton and London City airports, in either direction. Enter your postcode in the calculator for a fixed price.`,
+          a: `Any address in ${serviceArea.label}, London included: to and from Heathrow, Gatwick, Stansted, Luton and London City airports, and between any two addresses. Enter your postcode in the calculator for a fixed price.`,
+        },
+        {
+          q: "Do you only do airport transfers?",
+          a: "No. We also take you between any two addresses, for example to a hospital appointment, a train station, your office, a shopping centre or an event. Choose “Address or postcode” for both pickup and drop-off in the calculator to see a fixed price.",
         },
         {
           q: "How far in advance do I need to book?",

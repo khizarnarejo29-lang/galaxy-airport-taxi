@@ -165,3 +165,101 @@ describe("Galaxy tariff against the reference website", () => {
   });
 });
 
+
+/** Journeys with no airport, seen on the reference website on 2026-10-21 (one way, no date or extras). */
+describe("local tariff against the reference website", () => {
+  const at: Record<string, { lat: number; lng: number }> = {
+    "E1 5NF": { lat: 51.51787, lng: -0.06705 },
+    "E1 1FR": { lat: 51.5187, lng: -0.06016 },
+    "SW1A 1AA": { lat: 51.501009, lng: -0.141588 },
+    "W5 2NU": { lat: 51.51498, lng: -0.3015 },
+    "CR0 1LF": { lat: 51.37495, lng: -0.093 },
+    "RM1 1AU": { lat: 51.57598, lng: 0.18012 },
+    "BN1 1AA": { lat: 50.82633, lng: -0.14082 },
+    "OX1 1AA": { lat: 51.75023, lng: -1.26737 },
+    "E14 5AB": { lat: 51.504937, lng: -0.019523 },
+    "SE1 7PB": { lat: 51.502499, lng: -0.11941 },
+    "HA9 0WS": { lat: 51.556692, lng: -0.279666 },
+    "SW19 5AE": { lat: 51.416893, lng: -0.213314 },
+    "E20 1EJ": { lat: 51.544336, lng: -0.006347 },
+    "W1A 1AA": { lat: 51.518561, lng: -0.143799 },
+    "CB2 1TN": { lat: 52.205105, lng: 0.116179 },
+    "RG1 1JX": { lat: 51.457328, lng: -0.971939 },
+    "GU1 3UW": { lat: 51.234747, lng: -0.572973 },
+    "B2 4QA": { lat: 52.477662, lng: -1.898012 },
+    "SL4 1NJ": { lat: 51.483876, lng: -0.606415 },
+  };
+  // Saloon, estate, executive (not recorded on some), MPV, 8-seater.
+  const local: [from: string, to: string, fares: (number | null)[]][] = [
+    ["E1 5NF", "E1 1FR", [46, 52, 59, 59, 83]],
+    ["E1 5NF", "SW1A 1AA", [56, 62, 69, 69, 93]],
+    ["E1 5NF", "W5 2NU", [59, 67, 77, 77, 104]],
+    ["SW1A 1AA", "CR0 1LF", [66, 73, 82, 82, 108]],
+    ["SW1A 1AA", "RM1 1AU", [77, 86, 97, 97, 124]],
+    ["E1 5NF", "BN1 1AA", [151, 171, 199, 199, 219]],
+    ["SW1A 1AA", "OX1 1AA", [138, 155, 179, 179, 197]],
+    ["E1 5NF", "E14 5AB", [46, 52, null, 59, 83]],
+    ["E1 5NF", "SE1 7PB", [56, 62, null, 69, 93]],
+    ["W5 2NU", "HA9 0WS", [41, 47, null, 54, 78]],
+    ["CR0 1LF", "SW19 5AE", [46, 53, null, 61, 88]],
+    ["RM1 1AU", "E20 1EJ", [57, 65, null, 74, 101]],
+    ["HA9 0WS", "W1A 1AA", [64, 71, null, 80, 105]],
+    ["E1 5NF", "CB2 1TN", [122, 139, 161, 161, 178]],
+    ["SW1A 1AA", "RG1 1JX", [111, 125, 143, 143, 157]],
+    ["CR0 1LF", "GU1 3UW", [86, 98, 114, 114, 134]],
+    ["E1 5NF", "B2 4QA", [211, 241, 282, 282, 312]],
+    ["HA9 0WS", "SL4 1NJ", [68, 78, 91, 91, 113]],
+  ];
+  const vehicles: VehicleId[] = ["saloon", "estate", "executive", "mpv", "minibus"];
+  const end = (postcode: string): JourneyEnd => ({
+    kind: "address",
+    address: { id: `pc:${postcode}`, kind: "postcode", label: postcode, postcode, region: "London", ...at[postcode] },
+  });
+
+  async function localJourney(from: string, to: string, tripType: "one_way" | "return"): Promise<PricedJourney> {
+    const miles = await distance.routeMiles([at[from], at[to]]);
+    return {
+      pickup: end(from),
+      dropoff: end(to),
+      extraStops: [],
+      date: "2026-11-20",
+      time: "12:00",
+      pickupAtUtc: "2026-11-20T12:00:00Z",
+      passengers: 1,
+      luggage: { large: 0, small: 0 },
+      distanceMiles: miles,
+      tripType,
+      largeItems: false,
+      extras: { meetAndGreet: false, childSeats: 0 },
+      returnJourney:
+        tripType === "return"
+          ? { pickup: end(to), extraStops: [], date: "2026-11-27", time: "12:00", pickupAtUtc: "2026-11-27T12:00:00Z", distanceMiles: miles }
+          : undefined,
+    };
+  }
+
+  it.each(local)("is at least £2 under the reference: %s to %s", async (from, to, fares) => {
+    const j = await localJourney(from, to, "one_way");
+    vehicles.forEach((vehicleId, i) => {
+      const reference = fares[i];
+      if (reference === null) return;
+      const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
+      expect(priced.pricing.status, vehicleId).toBe("tariff");
+      expect(priced.total, `${vehicleId}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100 - 200);
+    });
+  });
+
+  it("prices a local return as two lower legs, and adds stops and nothing for child seats", async () => {
+    const one = tariffPrice(await localJourney("E1 5NF", "E1 1FR", "one_way"), "saloon", { meetAndGreet: false, childSeats: 2 }, pricing);
+    const ret = tariffPrice(await localJourney("E1 5NF", "E1 1FR", "return"), "saloon", { meetAndGreet: false, childSeats: 0 }, pricing);
+    expect(one.lines.map((l) => l.code)).toEqual(["journey"]);
+    expect(ret.lines.map((l) => l.code)).toEqual(["journey", "return_journey"]);
+    expect(ret.total).toBeLessThan(one.total * 2);
+  });
+
+  it("still can't price airport to airport", async () => {
+    const j = await localJourney("E1 5NF", "E1 1FR", "one_way");
+    const priced = tariffPrice({ ...j, pickup: { kind: "airport", airport: "LHR", terminal: "T5" }, dropoff: { kind: "airport", airport: "LGW", terminal: "S" } }, "saloon", { meetAndGreet: false, childSeats: 0 }, pricing);
+    expect(priced.pricing.status).toBe("price_on_request");
+  });
+});

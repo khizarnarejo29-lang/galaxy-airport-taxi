@@ -5,10 +5,10 @@
  */
 import type { PricingConfig } from "@/config/pricing";
 import { getVehicle } from "@/config/fleet";
-import type { AddOns, AirportCode, Direction, JourneyEnd, PriceLine, PricedJourney, VehicleId } from "@/lib/domain/types";
+import type { AddOns, AirportCode, Direction, JourneyEnd, LatLng, PriceLine, PricedJourney, VehicleId } from "@/lib/domain/types";
 import type { OptionPrice } from "@/lib/reference-fares/journey-pricing";
 import { haversineMiles } from "@/lib/domain/geo";
-import { activeEvent, price } from "./engine";
+import { activeEvent, localPrice, price, type PriceResult } from "./engine";
 
 interface Leg {
   airport: AirportCode;
@@ -40,6 +40,17 @@ const legInput = (leg: Leg, config: PricingConfig, returnBooking: boolean) => ({
   outsideLondon: leg.address.region !== undefined && leg.address.region !== "London",
 });
 
+/** Both ends of a leg with no airport: priced by the local tariff. */
+const localLeg = (start: JourneyEnd, finish: JourneyEnd) =>
+  start.kind === "address" && finish.kind === "address" ? { from: start.address, to: finish.address } : null;
+
+/** Either end within the local tariff's central radius (e.g. inside the congestion zone). */
+function localCentral(leg: { from: LatLng; to: LatLng }, config: PricingConfig) {
+  const centre = config.centralZone?.centre;
+  const radius = config.local?.centralRadiusMiles ?? 0;
+  return Boolean(centre && [leg.from, leg.to].some((p) => haversineMiles(p, centre) <= radius));
+}
+
 const onRequest = (reason: string): OptionPrice => ({ pricing: { status: "price_on_request", reason }, lines: [], total: 0 });
 
 const prefixed = (lines: PriceLine[], prefix: string) =>
@@ -60,7 +71,8 @@ export function tariffPrice(
     return { pricing: { status: "price_on_request", reason: "TOO_MANY_PASSENGERS" }, lines: [], total: 0 };
   }
   const outward = legOf(journey.pickup, journey.dropoff);
-  if (!outward) return onRequest("NO_AIRPORT");
+  const outwardLocal = outward ? null : localLeg(journey.pickup, journey.dropoff);
+  if (!outward && !(outwardLocal && config.local)) return onRequest("NO_AIRPORT");
   // An extra the tariff has no price for is never guessed.
   const stops = journey.extraStops.length + (journey.returnJourney?.extraStops.length ?? 0);
   if (
@@ -72,18 +84,10 @@ export function tariffPrice(
   }
   const isReturn = journey.tripType === "return";
 
-  const out = price(
-    {
-      ...legInput(outward, config, isReturn),
-      vehicleId,
-      distanceMiles: journey.distanceMiles,
-      date: journey.date,
-      time: journey.time,
-      extraStops: journey.extraStops.length,
-      addOns: extras,
-    },
-    config,
-  );
+  const common = { vehicleId, distanceMiles: journey.distanceMiles, date: journey.date, time: journey.time, extraStops: journey.extraStops.length };
+  const out: PriceResult = outward
+    ? price({ ...legInput(outward, config, isReturn), ...common, addOns: extras }, config)
+    : localPrice({ ...common, central: localCentral(outwardLocal!, config), returnBooking: isReturn, addOns: { meetAndGreet: false, childSeats: extras.childSeats } }, config)!;
   const lines = [...out.lines];
   const events = new Set<string>();
   const outEvent = activeEvent(config, journey.date, journey.time);
@@ -92,19 +96,12 @@ export function tariffPrice(
   const r = journey.returnJourney;
   if (isReturn) {
     const back = r && legOf(r.pickup, journey.pickup);
-    if (!r || !back) return onRequest("NO_AIRPORT");
-    const ret = price(
-      {
-        ...legInput(back, config, true),
-        vehicleId,
-        distanceMiles: r.distanceMiles ?? journey.distanceMiles,
-        date: r.date,
-        time: r.time,
-        extraStops: r.extraStops.length,
-        addOns: { meetAndGreet: extras.meetAndGreet, childSeats: 0 },
-      },
-      config,
-    );
+    const backLocal = r && !back ? localLeg(r.pickup, journey.pickup) : null;
+    if (!r || !(back || (backLocal && config.local))) return onRequest("NO_AIRPORT");
+    const backCommon = { vehicleId, distanceMiles: r.distanceMiles ?? journey.distanceMiles, date: r.date, time: r.time, extraStops: r.extraStops.length };
+    const ret: PriceResult = back
+      ? price({ ...legInput(back, config, true), ...backCommon, addOns: { meetAndGreet: extras.meetAndGreet, childSeats: 0 } }, config)
+      : localPrice({ ...backCommon, central: localCentral(backLocal!, config), returnBooking: true, addOns: { meetAndGreet: false, childSeats: 0 } }, config)!;
     lines.push(...prefixed(ret.lines, "Return "));
     const retEvent = activeEvent(config, r.date, r.time);
     if (retEvent) events.add(retEvent.label);
