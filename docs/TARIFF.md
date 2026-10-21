@@ -10,7 +10,7 @@ For each vehicle, in this order:
 
 1. **Matching reference fare**: an approved, in-date fare for exactly this journey (see `REFERENCE_FARES.md`). The price is the reference total **minus £2**.
 2. **Location tariff**: if no fare matches, the price comes from the distance between the address and the airport, using the figures in `src/config/pricing.ts`.
-3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a journey with no airport.
+3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a journey from one airport to another.
 
 The tariff is **switched on** (version `galaxy-2026-10-20`). Its figures were set from 32 quotes on the
 reference website on 2026-10-19: six London postcodes (SW1A 1AA, E1 5NF, HA9 0WS, CR0 1LF, RM1 1AU, W5 2NU)
@@ -30,6 +30,17 @@ places far from the six samples.
 
 Extras: Meet & Greet is £6, as on the reference site. A stop is £10 plus the extra miles (the reference
 charged £16 more for a stop on one checked route). Child seats are free (owner's decision), so they add nothing to the price.
+
+## Journeys with no airport (local rides)
+
+Any journey between two addresses (hospital, station, office, shops, long distance) is priced by
+`pricing.local` (owner's decision, 2026-10-21: at least £2 under the reference website). Saloon fare:
+£38 for the first 4 miles, then £1.40 a mile for the next 20 miles and £1.30 a mile after that, plus
+£12 if either end is within 1.5 miles of Charing Cross. Other vehicles use `vehicleMultipliers`,
+except the 8-seater at 1.43 on local journeys. Returns, stops, child seats and the Christmas and New
+Year rates work as on airport journeys. The figures were set from 18 reference quotes (a short trip
+in Whitechapel to London–Birmingham); `galaxy-tariff.test.ts` checks every vehicle stays at least £2
+under each one. Airport to airport is still price on request.
 
 ## The figures to set
 

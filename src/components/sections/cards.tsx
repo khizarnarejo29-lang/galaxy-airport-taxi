@@ -3,9 +3,9 @@ import { Icon } from "@/components/ui/Icon";
 import { fleet } from "@/config/fleet";
 import { airportContent } from "@/content/airports";
 import { airports, getAirport } from "@/lib/domain/airports";
-import type { AirportCode } from "@/lib/domain/types";
+import type { AirportCode, VehicleId } from "@/lib/domain/types";
 import { centralLondonFrom, exampleFares, exampleVehicles } from "@/lib/pricing/example-fares";
-import { formatGBP } from "@/lib/utils/money";
+import { formatGBP, type Pence } from "@/lib/utils/money";
 
 export function AirportGrid({ exclude }: { exclude?: AirportCode }) {
   return (
@@ -66,9 +66,14 @@ export function FleetGrid() {
   );
 }
 
-/** Example one-way prices from several London areas to one airport, per vehicle. */
-export function ExampleFaresTable({ airport }: { airport: AirportCode }) {
-  const rows = exampleFares(airport);
+export interface PriceRow {
+  label: string;
+  sub?: string;
+  prices: Partial<Record<VehicleId, Pence>>;
+}
+
+/** One-way prices per vehicle, one row per journey. Scrolls sideways on small screens. */
+export function PriceTable({ label, firstColumn = "From", rows }: { label: string; firstColumn?: string; rows: PriceRow[] }) {
   if (!rows.length) return null;
   const vehicles = exampleVehicles.map((id) => fleet.find((v) => v.id === id)!);
   return (
@@ -76,14 +81,14 @@ export function ExampleFaresTable({ airport }: { airport: AirportCode }) {
     <div
       className="overflow-x-auto rounded-3xl border border-line bg-white focus-visible:outline-2 focus-visible:outline-offset-2"
       role="region"
-      aria-label={`${getAirport(airport)?.name ?? airport} prices`}
+      aria-label={label}
       tabIndex={0}
     >
       <table className="w-full min-w-[36rem] text-left text-sm">
-        <caption className="sr-only">One-way prices by area and vehicle</caption>
+        <caption className="sr-only">{label}: one-way prices by vehicle</caption>
         <thead className="bg-surface text-xs font-bold tracking-wider text-ink-soft uppercase">
           <tr>
-            <th scope="col" className="px-5 py-3.5">From</th>
+            <th scope="col" className="px-5 py-3.5">{firstColumn}</th>
             {vehicles.map((v) => (
               <th key={v.id} scope="col" className="px-4 py-3.5 text-right">{v.name}</th>
             ))}
@@ -91,10 +96,10 @@ export function ExampleFaresTable({ airport }: { airport: AirportCode }) {
         </thead>
         <tbody className="divide-y divide-line">
           {rows.map((r) => (
-            <tr key={r.postcode}>
+            <tr key={`${r.label}-${r.sub ?? ""}`}>
               <th scope="row" className="px-5 py-3.5 font-normal">
-                <span className="block font-semibold text-ink">{r.area}</span>
-                <span className="text-ink-soft">{r.postcode}</span>
+                <span className="block font-semibold text-ink">{r.label}</span>
+                {r.sub && <span className="text-ink-soft">{r.sub}</span>}
               </th>
               {vehicles.map((v) => (
                 <td key={v.id} className="px-4 py-3.5 text-right font-display text-base font-semibold tabular-nums">
@@ -107,4 +112,10 @@ export function ExampleFaresTable({ airport }: { airport: AirportCode }) {
       </table>
     </div>
   );
+}
+
+/** Example one-way prices from several London areas to one airport, per vehicle. */
+export function ExampleFaresTable({ airport }: { airport: AirportCode }) {
+  const rows = exampleFares(airport).map((r) => ({ label: r.area, sub: r.postcode, prices: r.prices }));
+  return <PriceTable label={`${getAirport(airport)?.name ?? airport} prices`} rows={rows} />;
 }

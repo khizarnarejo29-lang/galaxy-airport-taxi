@@ -91,13 +91,15 @@ interface TaxiServiceInput {
   path: string;
   /** For an airport page: the airport served. */
   airport?: { name: string; iataCode: string };
+  /** For an area page: the place served, e.g. "Croydon, London". */
+  place?: string;
 }
 
 /**
  * One service the business offers, as described on its page. Linked to the
  * business by id; no prices or ratings are included.
  */
-export function taxiService({ name, description, path, airport }: TaxiServiceInput): JsonLdObject | null {
+export function taxiService({ name, description, path, airport, place }: TaxiServiceInput): JsonLdObject | null {
   if (site.isPlaceholder) return null;
   return {
     "@context": "https://schema.org",
@@ -108,7 +110,9 @@ export function taxiService({ name, description, path, airport }: TaxiServiceInp
     provider: { "@id": businessId },
     areaServed: airport
       ? [{ "@type": "Airport", name: airport.name, iataCode: airport.iataCode }, { "@type": "Country", name: "United Kingdom" }]
-      : { "@type": "Country", name: "United Kingdom" },
+      : place
+        ? [{ "@type": "Place", name: place }, { "@type": "Country", name: "United Kingdom" }]
+        : { "@type": "Country", name: "United Kingdom" },
   };
 }
 

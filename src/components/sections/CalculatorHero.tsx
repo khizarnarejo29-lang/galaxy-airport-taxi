@@ -11,6 +11,8 @@ interface Props {
   title: ReactNode;
   lead: string;
   initialAirport?: AirportCode;
+  /** Start the calculator with an address at both ends. */
+  initialLocal?: boolean;
   scene?: RoadScene;
   /** Picture of the page's subject, after the intro (below the calculator on phones). */
   illustration?: IllustrationName;
@@ -19,7 +21,7 @@ interface Props {
 }
 
 /** Hero with the quote calculator. On phones the calculator comes straight after the headline. */
-export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, scene, illustration, children }: Props) {
+export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, initialLocal, scene, illustration, children }: Props) {
   return (
     <section id="quote" className="relative isolate scroll-mt-16 overflow-hidden bg-night text-white">
       <RoadSkyline scene={scene} />
@@ -43,7 +45,7 @@ export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, s
         </div>
 
         <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
-          <Calculator variant="hero" initialAirport={initialAirport} />
+          <Calculator variant="hero" initialAirport={initialAirport} initialLocal={initialLocal} />
         </div>
 
         {(children || illustration) && (

@@ -52,7 +52,7 @@ export default function HomePage() {
             Your airport run, <span className="text-accent">made simple.</span>
           </>
         }
-        lead="Door-to-door journeys between any address in London or across the UK and all five London airports. Tell us the route and see a fixed price for every vehicle in seconds."
+        lead="Door-to-door journeys to and from all five London airports, and any other ride across London and the UK. Tell us the route and see a fixed price for every vehicle in seconds."
       >
         <ul className="space-y-3">
           {points.map((p) => (

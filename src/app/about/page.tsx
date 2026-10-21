@@ -21,7 +21,7 @@ export default function AboutPage() {
         eyebrow="About us"
         illustration="london"
         title="Airport transfers, kept simple"
-        lead={`${site.name} focuses on one thing: getting you between your address and Heathrow, Gatwick, Stansted, Luton or London City airport.`}
+        lead={`${site.name} takes you between your address and Heathrow, Gatwick, Stansted, Luton or London City airport, and on any other journey across London and the UK, at a fixed price.`}
       />
 
       <Section id="approach" eyebrow="How we work" title="Fixed prices, straightforward booking">

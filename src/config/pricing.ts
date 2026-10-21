@@ -41,6 +41,23 @@ export interface EventSurcharge {
   enabled: boolean;
 }
 
+/** Journeys with no airport at either end (to a hospital, station, office, shop…). */
+export interface LocalTariff {
+  /** Saloon fare for the first `includedMiles`. */
+  baseFare: Pence;
+  includedMiles: number;
+  perMile: Pence;
+  /** After this many chargeable miles, `longPerMile` applies instead. */
+  longAfterMiles: number;
+  longPerMile: Pence;
+  minimumFare: Pence;
+  /** Added when either end is within `centralRadiusMiles` of `centralZone.centre`. */
+  centralSupplement: Pence;
+  centralRadiusMiles: number;
+  /** Per-vehicle multipliers that differ from `vehicleMultipliers` on local journeys. */
+  vehicleMultipliers?: Partial<Record<VehicleId, number>>;
+}
+
 export interface PricingConfig {
   /** Stored with every quote and booking. Change it whenever any figure changes. */
   version: string;
@@ -57,6 +74,8 @@ export interface PricingConfig {
   returnDiscountPercent?: number;
   /** For an address outside Greater London: this rate per mile instead of the airport's `perMile`. */
   outsideLondon?: { perMile: Pence };
+  /** Address-to-address journeys. Without it they are price on request. */
+  local?: LocalTariff;
   timeSurcharges: TimeSurcharge[];
   eventSurcharges: EventSurcharge[];
 }
@@ -75,7 +94,7 @@ export interface PricingConfig {
  * Galaxy's are free.
  */
 export const pricing: PricingConfig = {
-  version: "galaxy-2026-10-20",
+  version: "galaxy-2026-10-21",
   isPlaceholder: false,
   roundTo: 100,
   airports: {
@@ -110,6 +129,21 @@ export const pricing: PricingConfig = {
   // Outside London the reference site charges much less per mile: B1 1BB to Heathrow T5 £183,
   // M1 1AE to Heathrow T5 £287, BN1 1AA to Gatwick South £71, MK9 1AA to Luton £65 (2026-10-19).
   outsideLondon: { perMile: 110 },
+  // Owner's decision (2026-10-21): take any journey, not only airports, at least £2 under the
+  // reference site. Set from 18 of its quotes that day, short London trips to Birmingham; this is
+  // at least £3 under every one of them for every vehicle (see galaxy-tariff.test.ts).
+  local: {
+    baseFare: 3800,
+    includedMiles: 4,
+    perMile: 140,
+    longAfterMiles: 20,
+    longPerMile: 130,
+    minimumFare: 3800,
+    centralSupplement: 1200,
+    centralRadiusMiles: 1.5,
+    // The reference 8-seater costs relatively less on local journeys than on airport ones.
+    vehicleMultipliers: { minibus: 1.43 },
+  },
   timeSurcharges: [{ label: "Late-night surcharge", from: "23:00", to: "05:00", percent: 10, enabled: false }],
   // Owner's decision: double fares at Christmas and New Year. The windows are the ones the
   // reference site publishes for its own holiday surcharge (see holidayWindows).

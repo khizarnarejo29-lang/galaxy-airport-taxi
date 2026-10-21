@@ -3,7 +3,7 @@ import type { Booking, JourneyInput, Quote, ResolvedLocation } from "@/lib/domai
 import { journeySchema } from "@/lib/api/schemas";
 import type { PricedJourney } from "@/lib/domain/types";
 import { priceVehicle } from "@/lib/reference-fares/journey-pricing";
-import { activeTariff, type PricingConfig } from "@/config/pricing";
+import { activeTariff, pricing, type PricingConfig } from "@/config/pricing";
 import { journeyFare } from "@/lib/pricing/engine";
 import { createQuote } from "@/lib/quote/create-quote";
 import { signQuote, verifyQuote } from "@/lib/quote/token";
@@ -697,6 +697,11 @@ describe("point-to-point journeys", () => {
     expect(empty.ok && empty.quote.options.every((o) => !o.available && o.total === 0)).toBe(true);
   });
 
+  it("prices any address-to-address journey from the local tariff when no fare matches", async () => {
+    const r = await createQuote(a2a, services(), { now, fares: [], tariff: pricing });
+    expect(r.ok && r.quote.options.every((o) => o.available && o.pricing.status === "tariff" && o.total > 0)).toBe(true);
+  });
+
   it("checks both address ends against Greater London, and lets the airports through", async () => {
     expect(await codes({ ...a2a, dropoff: at("pc:OX1 1AA") })).toEqual(["dropoff:ADDRESS_OUTSIDE_AREA"]);
     expect(await codes({ ...journey, dropoff: { kind: "airport", airport: "STN" } })).toEqual([]);
@@ -1019,7 +1024,7 @@ describe("activeTariff", () => {
   });
 
   it("ships switched on, with real figures", () => {
-    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-20" });
+    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-21" });
   });
 });
 

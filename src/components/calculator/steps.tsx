@@ -69,7 +69,7 @@ export function PriceOnRequestPanel({ compact = false }: { compact?: boolean }) 
         {compact ? "Price on request" : "We can't show an instant price for this journey yet."}
       </p>
       <p className="mt-1 leading-relaxed text-ink-soft">
-        Please call us for a fixed price. Phone is currently the most reliable way to get a quote.
+        Please call or WhatsApp us and we&apos;ll give you a fixed price.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <a

@@ -33,6 +33,7 @@ export const mainNav: NavItem[] = [
     href: "/services",
     children: [
       { label: "All services", href: "/services" },
+      { label: "Local Taxi (any journey)", href: "/taxi" },
       { label: "Meet & Greet", href: "/services/meet-and-greet" },
       { label: "Corporate Travel", href: "/services/corporate-travel" },
     ],
