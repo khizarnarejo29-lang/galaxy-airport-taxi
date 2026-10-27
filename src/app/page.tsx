@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { InstallButton } from "@/components/app/InstallButton";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { CtaBand, FaqList, NumberedSteps, Section } from "@/components/sections/blocks";
 import { AirportGrid, FleetGrid } from "@/components/sections/cards";
@@ -132,7 +134,23 @@ export default function HomePage() {
         <FleetGrid />
       </Section>
 
-      <Section id="faq" eyebrow="FAQ" title="Common questions">
+      <Section
+        id="app"
+        eyebrow="Galaxy Taxi app"
+        title="Book faster with our app"
+        intro="Add Galaxy Taxi to your phone's home screen and book in a few taps. It's free, takes a few seconds, and always shows our latest prices."
+      >
+        <div className="flex flex-wrap items-center gap-4">
+          <Image src="/app/icon-192.png" alt="Galaxy Taxi app icon" width={56} height={56} className="rounded-2xl shadow-card" />
+          <InstallButton tone="onLight" />
+          <Link href="/app" className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-ink hover:underline">
+            How to install on iPhone and Android
+            <Icon name="arrowRight" className="size-4" />
+          </Link>
+        </div>
+      </Section>
+
+      <Section id="faq" tone="surface" eyebrow="FAQ" title="Common questions">
         <div className="max-w-3xl">
           <FaqList items={faqPreview} />
           <Link href="/faq" className="mt-6 inline-flex items-center gap-1.5 font-semibold text-ink hover:underline">
