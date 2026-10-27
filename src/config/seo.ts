@@ -12,5 +12,5 @@ export function indexablePaths(): string[] {
   const navPaths = mainNav.flatMap((item) => (isGroup(item) ? item.children.map((c) => c.href) : [item.href]));
   // The privacy policy and terms are real pages now, so they are listed too.
   const areaPaths = areas.map((a) => `/taxi/${a.slug}`);
-  return [...new Set(["/", "/quote", ...navPaths, ...areaPaths, ...legalNav.map((l) => l.href)])];
+  return [...new Set(["/", "/quote", ...navPaths, ...areaPaths, "/app", ...legalNav.map((l) => l.href)])];
 }

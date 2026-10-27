@@ -16,7 +16,17 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // The app's service worker: always fetched fresh, so updates reach installed apps straight away.
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
+    ];
   },
   // One address for search engines: www. goes to the bare domain.
   async redirects() {
