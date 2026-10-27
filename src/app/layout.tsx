@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Manrope } from "next/font/google";
+import { captureInstallPrompt } from "@/components/app/install-prompt";
 import { ServiceWorker } from "@/components/app/ServiceWorker";
 import { FloatingContact } from "@/components/layout/FloatingContact";
 import { MobileActionBar } from "@/components/layout/MobileActionBar";
@@ -43,6 +44,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en-GB" data-scroll-behavior="smooth" className={`${heading.variable} ${body.variable} antialiased`}>
+      <head>
+        {/* Runs before the page's scripts so an early install offer isn't missed. */}
+        <script dangerouslySetInnerHTML={{ __html: captureInstallPrompt }} />
+      </head>
       <body className="flex min-h-dvh flex-col">
         <a
           href="#main"
