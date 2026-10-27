@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Manrope } from "next/font/google";
+import { ServiceWorker } from "@/components/app/ServiceWorker";
 import { FloatingContact } from "@/components/layout/FloatingContact";
 import { MobileActionBar } from "@/components/layout/MobileActionBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -29,6 +30,8 @@ export const metadata: Metadata = {
     description: defaultDescription,
   },
   twitter: { card: "summary_large_image" },
+  // Added to an iPhone home screen, it opens full screen like an app.
+  appleWebApp: { capable: true, title: "Galaxy Taxi", statusBarStyle: "black-translucent" },
   // Hidden from search engines until SITE_INDEXING=on is set at launch.
   robots: indexingEnabled ? { index: true, follow: true } : { index: false, follow: false },
 };
@@ -54,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteFooter />
         <MobileActionBar />
         <FloatingContact />
+        <ServiceWorker />
       </body>
     </html>
   );

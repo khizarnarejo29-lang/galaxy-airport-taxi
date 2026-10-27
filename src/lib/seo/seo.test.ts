@@ -115,3 +115,19 @@ describe("llms.txt", () => {
     expect(text).not.toMatch(/admin|\/api\//);
   });
 });
+
+describe("installable app", () => {
+  it("has a manifest with any and maskable icons and shortcuts", async () => {
+    const manifest = (await import("@/app/manifest")).default();
+    expect(manifest).toMatchObject({ display: "standalone", start_url: "/", scope: "/" });
+    expect(manifest.icons?.map((i) => i.purpose)).toEqual(expect.arrayContaining(["any", "maskable"]));
+    expect(manifest.icons?.some((i) => i.sizes === "192x192")).toBe(true);
+    expect(manifest.shortcuts?.map((s) => s.url)).toEqual(["/quote", "/taxi"]);
+  });
+
+  it("lists the app page in the sitemap, but not the offline page", async () => {
+    const { indexablePaths } = await import("@/config/seo");
+    expect(indexablePaths()).toContain("/app");
+    expect(indexablePaths()).not.toContain("/offline");
+  });
+});

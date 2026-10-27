@@ -15,7 +15,7 @@ export function SiteFooter() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed">
-            Transfers between London, anywhere in the UK, and Heathrow, Gatwick, Stansted, Luton and London City airports.
+            Fixed-price taxis to Heathrow, Gatwick, Stansted, Luton and London City airports, and for any journey across London and the UK.
           </p>
           <ul className="mt-5 space-y-0.5 text-sm">
             <li>
@@ -68,6 +68,11 @@ export function SiteFooter() {
               <QuoteLink className="inline-block py-1.5 transition-colors hover:text-white">
                 Get a Quote
               </QuoteLink>
+            </li>
+            <li>
+              <Link href="/app" className="inline-block py-1.5 transition-colors hover:text-white">
+                Get the app
+              </Link>
             </li>
           </ul>
         </nav>
