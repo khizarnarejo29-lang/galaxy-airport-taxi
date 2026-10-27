@@ -19,7 +19,7 @@ const subscribe = (onChange: () => void) => {
   return () => query.removeEventListener("change", onChange);
 };
 
-export function InstallButton() {
+export function InstallButton({ tone = "onDark" }: { tone?: "onDark" | "onLight" }) {
   const [prompt, setPrompt] = useState<InstallPromptEvent | null>(null);
   const [justInstalled, setInstalled] = useState(false);
   // Already running as the installed app (not known on the server).
@@ -58,7 +58,9 @@ export function InstallButton() {
         if (outcome === "accepted") setInstalled(true);
         setPrompt(null);
       }}
-      className="inline-flex h-13 items-center gap-2 rounded-xl bg-white px-6 font-bold text-ink transition hover:bg-navy-100"
+      className={`inline-flex h-13 items-center gap-2 rounded-xl px-6 font-bold transition ${
+        tone === "onDark" ? "bg-white text-ink hover:bg-navy-100" : "bg-ink text-white hover:bg-night-3"
+      }`}
     >
       <Icon name="plus" className="size-5" />
       Install the app
