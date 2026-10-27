@@ -9,6 +9,8 @@ export interface Area extends NamedPoint {
   borough: string;
   /** A shorter name for page titles, when the full one is long. */
   shortName?: string;
+  /** A few lines about the place: well-known facts only (stations, landmarks), nothing about the business. */
+  about: string;
 }
 
 /**
@@ -16,24 +18,24 @@ export interface Area extends NamedPoint {
  * area name (2026-10-21). Only facts that follow from the point are stated.
  */
 export const areas: Area[] = [
-  { slug: "croydon", name: "Croydon", borough: "Croydon", region: "London", lat: 51.377, lng: -0.0957 },
-  { slug: "wembley", name: "Wembley", borough: "Brent", region: "London", lat: 51.556, lng: -0.2796 },
-  { slug: "ealing", name: "Ealing", borough: "Ealing", region: "London", lat: 51.5133, lng: -0.3043 },
-  { slug: "romford", name: "Romford", borough: "Havering", region: "London", lat: 51.5775, lng: 0.1786 },
-  { slug: "stratford", name: "Stratford", borough: "Newham", region: "London", lat: 51.5426, lng: -0.001 },
-  { slug: "canary-wharf", name: "Canary Wharf", borough: "Tower Hamlets", region: "London", lat: 51.5056, lng: -0.0264 },
-  { slug: "wimbledon", name: "Wimbledon", borough: "Merton", region: "London", lat: 51.4183, lng: -0.2206 },
-  { slug: "harrow", name: "Harrow", borough: "Harrow", region: "London", lat: 51.5805, lng: -0.3421 },
-  { slug: "kingston", name: "Kingston upon Thames", shortName: "Kingston", borough: "Kingston upon Thames", region: "London", lat: 51.4123, lng: -0.3007 },
-  { slug: "enfield", name: "Enfield", borough: "Enfield", region: "London", lat: 51.6523, lng: -0.0807 },
-  { slug: "bromley", name: "Bromley", borough: "Bromley", region: "London", lat: 51.4063, lng: 0.0187 },
-  { slug: "hounslow", name: "Hounslow", borough: "Hounslow", region: "London", lat: 51.4704, lng: -0.3632 },
+  { slug: "croydon", name: "Croydon", borough: "Croydon", region: "London", lat: 51.377, lng: -0.0957, about: "Croydon is one of the largest town centres in south London, built around East Croydon and West Croydon stations and the Tramlink tram network." },
+  { slug: "wembley", name: "Wembley", borough: "Brent", region: "London", lat: 51.556, lng: -0.2796, about: "Wembley, in the London Borough of Brent, is home to Wembley Stadium and OVO Arena Wembley. On stadium event days the roads around Wembley Park get very busy, so allow extra time for your pickup." },
+  { slug: "ealing", name: "Ealing", borough: "Ealing", region: "London", lat: 51.5133, lng: -0.3043, about: "Ealing is in west London, centred on Ealing Broadway station, which is served by the Elizabeth line and the Central and District lines. Heathrow is only a short drive away." },
+  { slug: "romford", name: "Romford", borough: "Havering", region: "London", lat: 51.5775, lng: 0.1786, about: "Romford is the main town in the London Borough of Havering, on London's eastern edge near the Essex border. Romford station is on the Elizabeth line." },
+  { slug: "stratford", name: "Stratford", borough: "Newham", region: "London", lat: 51.5426, lng: -0.001, about: "Stratford in east London is home to Westfield Stratford City and the Queen Elizabeth Olympic Park, and Stratford station is one of London's busiest interchanges. London City Airport is a short drive away." },
+  { slug: "canary-wharf", name: "Canary Wharf", borough: "Tower Hamlets", region: "London", lat: 51.5056, lng: -0.0264, about: "Canary Wharf is a business district on the Isle of Dogs in east London. London City Airport is only a few miles to the east, which makes it a quick transfer for business trips." },
+  { slug: "wimbledon", name: "Wimbledon", borough: "Merton", region: "London", lat: 51.4183, lng: -0.2206, about: "Wimbledon in south-west London is best known for the tennis championships held there every summer. During the tournament the roads near the All England Club are busy, so allow extra time." },
+  { slug: "harrow", name: "Harrow", borough: "Harrow", region: "London", lat: 51.5805, lng: -0.3421, about: "Harrow is in north-west London, around Harrow-on-the-Hill station and the town centre. Heathrow is the nearest airport." },
+  { slug: "kingston", name: "Kingston upon Thames", shortName: "Kingston", borough: "Kingston upon Thames", region: "London", lat: 51.4123, lng: -0.3007, about: "Kingston upon Thames is a riverside town in south-west London, with its station and shopping streets close to the Thames. Heathrow is the nearest airport." },
+  { slug: "enfield", name: "Enfield", borough: "Enfield", region: "London", lat: 51.6523, lng: -0.0807, about: "Enfield sits on London's northern edge, around Enfield Town and its station. London City, Luton and Stansted are all within reach." },
+  { slug: "bromley", name: "Bromley", borough: "Bromley", region: "London", lat: 51.4063, lng: 0.0187, about: "Bromley is in south-east London, around Bromley South station and the town's high street. London City and Gatwick are the nearest airports." },
+  { slug: "hounslow", name: "Hounslow", borough: "Hounslow", region: "London", lat: 51.4704, lng: -0.3632, about: "Hounslow in west London lies right next to Heathrow, so a transfer from here is one of the shortest airport journeys in London." },
 ];
 
 export const getArea = (slug: string) => areas.find((a) => a.slug === slug);
 
 /** Trafalgar Square, the usual centre point for "central London". */
-export const centralLondon: Area = { slug: "central-london", name: "central London", borough: "Westminster", region: "London", lat: 51.508, lng: -0.1281 };
+export const centralLondon: Area = { slug: "central-london", name: "central London", borough: "Westminster", region: "London", lat: 51.508, lng: -0.1281, about: "" };
 
 /** Airports nearest first, by straight-line distance. */
 export function airportsByDistance(area: Area): AirportCode[] {

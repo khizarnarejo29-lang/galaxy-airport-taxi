@@ -6,7 +6,8 @@ import { CalculatorHero } from "@/components/sections/CalculatorHero";
 import { PriceTable } from "@/components/sections/cards";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { airportRows, areaFaqs, localRows } from "@/content/area-pages";
-import { areas, getArea, nearbyAreas } from "@/content/areas";
+import { airportsByDistance, areas, getArea, nearbyAreas } from "@/content/areas";
+import { getAirport } from "@/lib/domain/airports";
 import { faqPage, taxiService } from "@/lib/seo/jsonld";
 import { pageMetadata } from "@/lib/seo/metadata";
 
@@ -36,6 +37,7 @@ export default async function AreaPage({ params }: PageProps<"/taxi/[area]">) {
   const local = localRows(area);
   const faqs = areaFaqs(area);
   const nearby = nearbyAreas(area, 4);
+  const nearestAirport = getAirport(airportsByDistance(area)[0])!;
 
   return (
     <>
@@ -52,13 +54,18 @@ export default async function AreaPage({ params }: PageProps<"/taxi/[area]">) {
         crumbs={[{ label: "Taxi", href: "/taxi" }, { label: area.name, href: `/taxi/${area.slug}` }]}
         eyebrow={`London Borough of ${area.borough}`}
         title={`${area.name} taxi`}
-        lead={`Fixed-price taxis from ${area.name} to all five London airports, and to anywhere else in London and the UK. See your price for every vehicle before you book.`}
+        lead={`Fixed-price taxis from ${area.name} to ${nearestAirport.name} and the other London airports, and for local journeys around the borough of ${area.borough} and beyond. See your price for every vehicle before you book.`}
         initialLocal
         illustration="london"
       />
 
+      <Section id="about" eyebrow={area.borough === area.name ? "The area" : `London Borough of ${area.borough}`} title={`About ${area.name}`}>
+        <p className="max-w-3xl text-lg leading-relaxed text-ink-soft">{area.about}</p>
+      </Section>
+
       <Section
         id="airports"
+        tone="surface"
         eyebrow="Airport transfers"
         title={`Taxi from ${area.name} to the airports`}
         intro={
@@ -76,7 +83,6 @@ export default async function AreaPage({ params }: PageProps<"/taxi/[area]">) {
 
       <Section
         id="local"
-        tone="surface"
         eyebrow="Local rides"
         title={`Local journeys from ${area.name}`}
         intro="Hospital appointments, stations, the office or a night out: any journey, at a fixed price. These are examples from the centre of each place."
@@ -84,13 +90,13 @@ export default async function AreaPage({ params }: PageProps<"/taxi/[area]">) {
         <PriceTable label={`Journeys from ${area.name}`} firstColumn="To" rows={local} />
       </Section>
 
-      <Section id="questions" eyebrow="Questions" title={`${area.name} taxi questions`}>
+      <Section id="questions" tone="surface" eyebrow="Questions" title={`${area.name} taxi questions`}>
         <div className="max-w-3xl">
           <FaqList items={faqs} />
         </div>
       </Section>
 
-      <Section id="nearby" tone="surface" eyebrow="Nearby" title="Taxis in nearby areas">
+      <Section id="nearby" eyebrow="Nearby" title="Taxis in nearby areas">
         <RelatedLinks
           links={nearby.map((a) => ({
             href: `/taxi/${a.slug}`,
