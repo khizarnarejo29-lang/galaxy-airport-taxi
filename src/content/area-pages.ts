@@ -6,6 +6,7 @@ import type { AirportCode, VehicleId } from "@/lib/domain/types";
 import { betweenAirportsFare } from "@/lib/pricing/engine";
 import { exampleVehicles } from "@/lib/pricing/example-fares";
 import { airportFareFrom, localFare, type NamedPoint } from "@/lib/pricing/route-fares";
+import { haversineMiles } from "@/lib/domain/geo";
 import { formatGBP, type Pence } from "@/lib/utils/money";
 import type { Faq } from "./airports";
 import { airportsByDistance, centralLondon, exampleLocalRoutes, nearbyAreas, type Area } from "./areas";
@@ -60,7 +61,12 @@ export function areaFaqs(area: Area): Faq[] {
   const airport = getAirport(nearest)!;
   const toAirport = airportFareFrom(area, nearest, "saloon");
   const toCentre = localFare(area, centralLondon, "saloon");
+  const miles = Math.round(haversineMiles(area, airport));
   return [
+    {
+      q: `Which airport is closest to ${area.name}?`,
+      a: `${airport.name} is the closest, about ${miles} miles away in a straight line. The table on this page shows the price from ${area.name} to all five London airports, nearest first.`,
+    },
     ...(toAirport !== null
       ? [
           {

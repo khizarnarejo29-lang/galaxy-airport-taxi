@@ -136,7 +136,9 @@ describe("area pages", () => {
       const rows = [...airportRows(area), ...localRows(area)];
       expect(rows).toHaveLength(airports.length + 4);
       for (const r of rows) expect(Object.keys(r.prices), `${area.name} → ${r.label}`).toHaveLength(5);
-      expect(areaFaqs(area)[0].a).toMatch(/^From £\d+ one way/);
+      expect(areaFaqs(area)[0].q).toBe(`Which airport is closest to ${area.name}?`);
+      expect(areaFaqs(area)[1].a).toMatch(/^From £\d+ one way/);
+      expect(area.about.length, area.name).toBeGreaterThan(60);
     }
   });
 
