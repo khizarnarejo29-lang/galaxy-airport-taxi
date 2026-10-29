@@ -247,3 +247,10 @@
     animation-delay: 0s !important;
   }
 }
+
+/* Height of the phone Call / Get a Quote bar, so the calculator's action bar sits just above it. */
+@media (width < 64rem) {
+  body:has([data-mobile-bar]) {
+    --mobile-bar-height: calc(3.75rem + 1px + max(0.75rem, env(safe-area-inset-bottom)));
+  }
+}

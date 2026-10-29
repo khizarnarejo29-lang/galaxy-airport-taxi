@@ -108,7 +108,7 @@ describe("privacy policy", () => {
     for (const banned of [/onward travel/i, /opayo/i, /google analytics/i, /openai/i, /finance act/i, /\d+\s*(year|month)s?/i, /licen[cs]e/i, /company (no|number|registration)/i, /record(ed|ing) (calls|chats)/i, /card number|security code/i, /being prepared|will be published here/i]) {
       expect(text).not.toMatch(banned);
     }
-    for (const required of ["Galaxy Airport Taxi", "4-6 Greatorex Street, London E1 5NF", "info@galaxyairporttaxi.co.uk", "+44 7470 046660"]) {
+    for (const required of ["Galaxy Airport Taxi", "4-6 Greatorex Street, London E1 5NF", "info@galaxyairporttaxi.co.uk", "020 3769 2728"]) {
       expect(text).toContain(required);
     }
   });

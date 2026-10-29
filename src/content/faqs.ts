@@ -1,6 +1,6 @@
 import { bookingRules } from "@/config/booking-rules";
 import { serviceArea } from "@/config/service-area";
-import { site } from "@/config/site";
+import { callOrWhatsApp, site } from "@/config/site";
 import type { Faq } from "./airports";
 import { policies } from "./policies";
 
@@ -31,7 +31,7 @@ export function faqGroups(): FaqGroup[] {
         },
         {
           q: "What does “Price on request” mean?",
-          a: `Most journeys get an instant fixed price. A few can't be priced online, for example more passengers than the vehicle holds, a transfer between two terminals of the same airport, or large items such as bikes. Call or WhatsApp us on ${site.phone.display} and we'll give you a fixed price.`,
+          a: `Most journeys get an instant fixed price. A few can't be priced online, for example more passengers than the vehicle holds, a transfer between two terminals of the same airport, or large items such as bikes. Please ${callOrWhatsApp()} and we'll give you a fixed price.`,
         },
         {
           q: "How long is my quote valid?",
@@ -39,7 +39,7 @@ export function faqGroups(): FaqGroup[] {
         },
         {
           q: "Why can't I choose some vehicles?",
-          a: `A vehicle can be booked online when it fits your group and has a confirmed price for your journey. If none fits, call or WhatsApp us on ${site.phone.display} and we'll help.`,
+          a: `A vehicle can be booked online when it fits your group and has a confirmed price for your journey. If none fits, ${callOrWhatsApp()} and we'll help.`,
         },
       ],
     },

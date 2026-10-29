@@ -16,6 +16,7 @@ export function SiteHeader() {
           <SiteNav />
           <a
             href={site.phone.href}
+            aria-label={`Call ${site.phone.display}`}
             className="hidden h-10 items-center gap-2 rounded-full px-3 text-sm font-semibold whitespace-nowrap text-ink transition-colors hover:bg-surface sm:inline-flex xl:ml-2"
           >
             <Icon name="phone" className="size-4" />

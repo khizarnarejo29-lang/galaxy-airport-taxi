@@ -65,10 +65,18 @@ export function ContactForm({ initialTopic = "general", connected = false }: { i
         <h2 className="mt-4 font-display text-2xl font-bold">{connected ? "Message sent" : "Message submitted"}</h2>
         {connected ? (
           <p className="mt-2 text-ink-soft">
-            Thanks, {values.name.split(" ")[0]}. We&apos;ll reply by email. If it&apos;s urgent, call or WhatsApp us on{" "}
+            Thanks, {values.name.split(" ")[0]}. We&apos;ll reply by email. If it&apos;s urgent, call us on{" "}
             <a href={site.phone.href} className="font-semibold text-ink underline">
               {site.phone.display}
             </a>
+            {site.whatsapp && (
+              <>
+                {" "}or WhatsApp us on{" "}
+                <a href={site.whatsapp.href} className="font-semibold text-ink underline">
+                  {site.whatsapp.display}
+                </a>
+              </>
+            )}
             .
           </p>
         ) : (

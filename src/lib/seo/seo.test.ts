@@ -69,7 +69,7 @@ describe("structured data", () => {
     expect(localBusiness()).toMatchObject({
       "@type": "LocalBusiness",
       name: "Galaxy Airport Taxi",
-      telephone: "+447470046660",
+      telephone: "+442037692728",
       email: "info@galaxyairporttaxi.co.uk",
       "@id": businessId,
       address: { "@type": "PostalAddress", streetAddress: "4-6 Greatorex Street", addressLocality: "London", postalCode: "E1 5NF", addressCountry: "GB" },
@@ -109,7 +109,8 @@ describe("llms.txt", () => {
   it("summarises the business from the site's own details", () => {
     const text = llmsText();
     expect(text.startsWith("# Galaxy Airport Taxi\n")).toBe(true);
-    expect(text).toContain("+44 7470 046660");
+    expect(text).toContain("Phone: 020 3769 2728");
+    expect(text).toContain("WhatsApp: +44 7470 046660");
     expect(text).toContain("Child seats: free of charge.");
     for (const a of airports) expect(text).toContain(`https://galaxyairporttaxi.co.uk/${a.slug}`);
     expect(text).not.toMatch(/admin|\/api\//);

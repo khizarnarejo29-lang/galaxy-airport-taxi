@@ -22,7 +22,7 @@ export default async function QuotePage({ searchParams }: PageProps<"/quote">) {
 
   // Side by side on desktop; on phones a short intro, then straight into the calculator.
   return (
-    <section className="relative isolate overflow-hidden bg-night text-white">
+    <section className="relative isolate overflow-clip bg-night text-white">
       <RoadSkyline scene="takeoff" />
       <div className="mx-auto grid max-w-6xl gap-x-14 gap-y-5 px-4 pt-6 pb-16 sm:px-6 sm:pt-10 lg:grid-cols-[1fr_minmax(0,30rem)] lg:pt-14 lg:pb-28">
         <div className="lg:pt-6">

@@ -1,5 +1,5 @@
 import { bookingRules } from "@/config/booking-rules";
-import { site } from "@/config/site";
+import { callOrWhatsApp } from "@/config/site";
 import { activeTariff } from "@/config/pricing";
 import { airports, getAirport } from "@/lib/domain/airports";
 import type { AirportCode, VehicleId } from "@/lib/domain/types";
@@ -89,7 +89,7 @@ export function areaFaqs(area: Area): Faq[] {
     },
     {
       q: "How do I book?",
-      a: `Enter your pickup and drop-off in the calculator to see a fixed price for each vehicle and book online, with at least ${bookingRules.minNoticeMinutes / 60} hours' notice. For sooner journeys, call or WhatsApp us on ${site.phone.display}.`,
+      a: `Enter your pickup and drop-off in the calculator to see a fixed price for each vehicle and book online, with at least ${bookingRules.minNoticeMinutes / 60} hours' notice. For sooner journeys, ${callOrWhatsApp()}.`,
     },
     ...(policies.waitingTime ? [{ q: "How long will the driver wait?", a: policies.waitingTime }] : []),
   ];

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { Calculator } from "@/components/calculator/Calculator";
+import { Icon } from "@/components/ui/Icon";
+import { site } from "@/config/site";
 import type { AirportCode } from "@/lib/domain/types";
 import { Breadcrumbs, type Crumb } from "./blocks";
 import { PageIllustration, type IllustrationName } from "./PageIllustration";
@@ -23,7 +25,8 @@ interface Props {
 /** Hero with the quote calculator. On phones the calculator comes straight after the headline. */
 export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, initialLocal, scene, illustration, children }: Props) {
   return (
-    <section id="quote" className="relative isolate scroll-mt-16 overflow-hidden bg-night text-white">
+    // overflow-clip, not hidden: hidden would stop the calculator's action bar from sticking.
+    <section id="quote" className="relative isolate scroll-mt-16 overflow-clip bg-night text-white">
       <RoadSkyline scene={scene} />
       <div className="mx-auto grid max-w-6xl gap-x-14 gap-y-8 px-4 pt-7 pb-14 sm:px-6 sm:pt-10 lg:grid-cols-[1fr_minmax(0,30rem)] lg:grid-rows-[auto_1fr] lg:pt-14 lg:pb-24">
         <div className="lg:pt-6">
@@ -42,6 +45,14 @@ export function CalculatorHero({ crumbs, eyebrow, title, lead, initialAirport, i
             {title}
           </h1>
           <p className="mt-3 max-w-xl leading-relaxed text-white/75 sm:mt-5 sm:text-lg">{lead}</p>
+          <a
+            href={site.phone.href}
+            aria-label={`Call ${site.phone.display}`}
+            className="mt-5 inline-flex h-12 items-center gap-2.5 rounded-xl bg-accent px-5 font-display text-lg font-bold text-night tabular-nums shadow-card transition hover:bg-white sm:mt-7 sm:h-14 sm:px-6 sm:text-xl"
+          >
+            <Icon name="phone" className="size-5" />
+            {site.phone.display}
+          </a>
         </div>
 
         <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
