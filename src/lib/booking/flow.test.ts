@@ -594,7 +594,7 @@ describe("createBooking", () => {
   });
 
   describe("when the booking can't be saved", () => {
-    const unavailable = "We couldn’t save your booking, so it has not been made. Please call us on +44 7470 046660 to book.";
+    const unavailable = "We couldn’t save your booking, so it has not been made. Please call us on 020 3769 2728 to book.";
 
     it.each([
       ["storage isn't configured", unavailableBookingRepository()],

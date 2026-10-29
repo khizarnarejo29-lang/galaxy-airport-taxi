@@ -293,7 +293,7 @@ export function Calculator({ initialAirport, initialDirection, initialLocal, var
         "scroll-mt-20 overflow-clip rounded-2xl bg-white text-ink shadow-card ring-1 ring-navy-900/5 sm:rounded-3xl " +
         // Focused fields keep room below them for their error message and the sticky action bar,
         // and room above for the site header.
-        "[&_:is(input,textarea,button,fieldset,output)]:scroll-mt-28 [&_:is(input,textarea,button,fieldset,output)]:scroll-mb-44"
+        "[&_:is(input,textarea,button,fieldset,output)]:scroll-mt-28 [&_:is(input,textarea,button,fieldset,output)]:scroll-mb-[calc(11rem+var(--mobile-bar-height,0px))]"
       }
       aria-busy={state.busy !== null}
     >
@@ -378,8 +378,9 @@ export function Calculator({ initialAirport, initialDirection, initialLocal, var
           <StepBody state={state} set={set} go={go} />
         </div>
 
-        {/* Action bar — sticks to the bottom of the screen on mobile while the card is in view. */}
-        <div className="sticky bottom-0 z-20 border-t border-line bg-white/95 px-5 py-3.5 backdrop-blur sm:px-8 sm:py-4">
+        {/* Action bar — sticks to the bottom of the screen on mobile while the card is in view,
+            just above the site's Call / Get a Quote bar. */}
+        <div className="sticky bottom-[var(--mobile-bar-height,0px)] z-20 border-t border-line bg-white/95 px-5 py-3.5 backdrop-blur sm:px-8 sm:py-4">
           <div className="flex items-center gap-3 sm:gap-4">
             {index > 0 && (
               <button

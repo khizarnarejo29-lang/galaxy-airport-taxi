@@ -9,17 +9,19 @@ const WHATSAPP_GLYPH =
 
 /**
  * WhatsApp and email buttons fixed to the bottom-right corner, above the phone action bars.
- * On phones only WhatsApp shows (email is in the footer), and it steps aside while the
- * calculator's prices are on screen, so it never covers one.
+ * On phones only WhatsApp shows (email is in the footer). While the calculator is on screen
+ * it moves up above the calculator's Continue bar, and it steps aside while prices are
+ * listed, so it never covers a button or a price.
  */
 export function FloatingContact() {
-  const pricesInView = usePricesInView();
+  const { inView, pricesInView } = useCalculatorInView();
   if (!site.whatsapp) return null;
   return (
     <aside
       aria-label="Contact us"
       className={
-        "fixed right-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-30 flex flex-col items-end gap-3 transition-opacity print:hidden " +
+        "fixed right-4 z-30 flex flex-col items-end gap-3 transition-[opacity,bottom] print:hidden " +
+        (inView ? "bottom-[calc(11rem+env(safe-area-inset-bottom))] " : "bottom-[calc(6rem+env(safe-area-inset-bottom))] ") +
         "lg:visible lg:right-6 lg:bottom-6 lg:opacity-100 " +
         (pricesInView ? "invisible opacity-0" : "visible opacity-100")
       }
@@ -51,8 +53,8 @@ export function FloatingContact() {
 /** Calculator steps that list prices. */
 const PRICE_STEPS = ["vehicle", "review"];
 
-/** True while the calculator is on screen at a step that lists prices. */
-function usePricesInView() {
+/** Whether the calculator is on screen, and whether it is listing prices. */
+function useCalculatorInView() {
   const [state, setState] = useState({ visible: false, step: "" });
   useEffect(() => {
     const calculator = document.querySelector<HTMLElement>("[data-calculator]");
@@ -68,5 +70,5 @@ function usePricesInView() {
       mo.disconnect();
     };
   }, []);
-  return state.visible && PRICE_STEPS.includes(state.step);
+  return { inView: state.visible, pricesInView: state.visible && PRICE_STEPS.includes(state.step) };
 }

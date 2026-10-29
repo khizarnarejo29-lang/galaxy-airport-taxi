@@ -3,7 +3,7 @@ import { pageMetadata } from "@/lib/seo/metadata";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { PageHero } from "@/components/sections/blocks";
 import { Icon } from "@/components/ui/Icon";
-import { site } from "@/config/site";
+import { callOrWhatsApp, site } from "@/config/site";
 import { contactTopics, type ContactTopic } from "@/lib/domain/contact";
 import { smtpConfigFromEnv } from "@/lib/services/notifications/smtp";
 
@@ -33,7 +33,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
         eyebrow="Contact"
         illustration="contact"
         title="Get in touch"
-        lead={`To change a booking or ask anything else, call or WhatsApp us on ${site.phone.display}, 24 hours a day, or email ${site.email}.`}
+        lead={`To change a booking or ask anything else, ${callOrWhatsApp()}, 24 hours a day, or email ${site.email}.`}
       />
       <div className="bg-surface">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.4fr]">

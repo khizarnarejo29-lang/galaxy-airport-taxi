@@ -9,8 +9,9 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://galaxyairporttaxi.co.uk",
   /** False now that real contact details are set; allows business structured data. */
   isPlaceholder: false,
-  phone: { display: "+44 7470 046660", href: "tel:+447470046660" },
-  /** WhatsApp Business on the same number, confirmed by the owner. Opens a chat with a greeting filled in. */
+  /** Calls (owner's number since 2026-10-29). WhatsApp stays on the mobile below. */
+  phone: { display: "020 3769 2728", href: "tel:+442037692728" },
+  /** WhatsApp Business, on the mobile number. Opens a chat with a greeting filled in. */
   whatsapp: {
     display: "+44 7470 046660",
     href: `https://wa.me/447470046660?text=${encodeURIComponent("Hello Galaxy Airport Taxi, I would like a quote.")}`,
@@ -33,3 +34,7 @@ export const site = {
   /** None provided. e.g. "Licensed by Transport for London, operator licence no. …". */
   licence: null as string | null,
 } as const;
+
+/** "call us on … or WhatsApp us on …", with both numbers. */
+export const callOrWhatsApp = () =>
+  site.whatsapp ? `call us on ${site.phone.display} or WhatsApp us on ${site.whatsapp.display}` : `call us on ${site.phone.display}`;
