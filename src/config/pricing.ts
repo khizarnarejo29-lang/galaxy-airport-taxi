@@ -146,35 +146,36 @@ export const pricing: PricingConfig = {
   // Outside London the reference site charges much less per mile: B1 1BB to Heathrow T5 £183,
   // M1 1AE to Heathrow T5 £287, BN1 1AA to Gatwick South £71, MK9 1AA to Luton £65 (2026-10-19).
   outsideLondon: { perMile: 110 },
-  // Owner's decision (2026-10-21): take any journey, not only airports, at least £2 under the
-  // reference site. Set from 18 of its quotes that day, short London trips to Birmingham; this is
-  // at least £3 under every one of them for every vehicle (see galaxy-tariff.test.ts).
+  // Any journey, not only airports (owner's decision, 2026-10-21), at the reference site's price
+  // (owner's decision, 2026-11-22). Set from 17 of its quotes on 2026-11-22, short London trips to
+  // Birmingham: never above any of them for any vehicle, and level with 16 of the 84 (see
+  // galaxy-tariff.test.ts). Every vehicle is listed so the airport figures never leak in.
   local: {
-    baseFare: 3800,
+    baseFare: 4100,
     includedMiles: 4,
     perMile: 140,
-    longAfterMiles: 20,
+    longAfterMiles: 25,
     longPerMile: 130,
-    minimumFare: 3800,
+    minimumFare: 4100,
     centralSupplement: 1200,
     centralRadiusMiles: 1.5,
-    // The reference 8-seater costs relatively less on local journeys than on airport ones.
-    vehicleMultipliers: { minibus: 1.43 },
+    vehicleMultipliers: { saloon: 1, estate: 1.12, executive: 1.29, mpv: 1.29, minibus: 1.13 },
+    vehicleSurcharges: { saloon: 0, estate: 100, executive: 0, mpv: 0, minibus: 3200 },
   },
-  // Owner's rule, at least £2 under the reference site: its one-way prices between airports on
-  // 2026-10-21, both directions (they match), less £3. Where its terminals differed (Heathrow T2 to
-  // Gatwick North against T5 to South), the lower price per vehicle was used.
+  // Owner's rule (2026-11-22): the same as the reference site. Its one-way prices between airports,
+  // the same in both directions, checked on 2026-11-22. Where its terminals differed (Heathrow T2
+  // to Gatwick North against T5 to South) the lower price per vehicle is used.
   betweenAirports: {
-    "LGW-LHR": { saloon: 8200, estate: 9500, executive: 11200, mpv: 11200, minibus: 12800 },
-    "LHR-STN": { saloon: 10500, estate: 12100, executive: 14200, mpv: 14200, minibus: 15900 },
-    "LHR-LTN": { saloon: 7400, estate: 8700, executive: 10200, mpv: 10200, minibus: 12200 },
-    "LCY-LHR": { saloon: 11400, estate: 13100, executive: 15500, mpv: 15500, minibus: 17200 },
-    "LGW-STN": { saloon: 12100, estate: 13900, executive: 16400, mpv: 16400, minibus: 18300 },
-    "LGW-LTN": { saloon: 12600, estate: 14600, executive: 17200, mpv: 17200, minibus: 19100 },
-    "LCY-LGW": { saloon: 9300, estate: 10700, executive: 12600, mpv: 12600, minibus: 14100 },
-    "LTN-STN": { saloon: 9900, estate: 11400, executive: 13400, mpv: 13400, minibus: 14900 },
-    "LCY-STN": { saloon: 7500, estate: 8600, executive: 10200, mpv: 10200, minibus: 12100 },
-    "LCY-LTN": { saloon: 9500, estate: 11000, executive: 13000, mpv: 13000, minibus: 14400 },
+    "LGW-LHR": { saloon: 8500, estate: 9800, executive: 11500, mpv: 11500, minibus: 13100 },
+    "LHR-STN": { saloon: 10800, estate: 12400, executive: 14500, mpv: 14500, minibus: 16200 },
+    "LHR-LTN": { saloon: 7700, estate: 9000, executive: 10500, mpv: 10500, minibus: 12500 },
+    "LCY-LHR": { saloon: 11700, estate: 13400, executive: 15800, mpv: 15800, minibus: 17500 },
+    "LGW-STN": { saloon: 12400, estate: 14200, executive: 16700, mpv: 16700, minibus: 18600 },
+    "LGW-LTN": { saloon: 12900, estate: 14900, executive: 17500, mpv: 17500, minibus: 19400 },
+    "LCY-LGW": { saloon: 9600, estate: 11000, executive: 12900, mpv: 12900, minibus: 14400 },
+    "LTN-STN": { saloon: 10200, estate: 11700, executive: 13700, mpv: 13700, minibus: 15200 },
+    "LCY-STN": { saloon: 7800, estate: 8900, executive: 10500, mpv: 10500, minibus: 12400 },
+    "LCY-LTN": { saloon: 9800, estate: 11300, executive: 13300, mpv: 13300, minibus: 14700 },
   },
   timeSurcharges: [{ label: "Late-night surcharge", from: "23:00", to: "05:00", percent: 10, enabled: false }],
   // Owner's decision: double fares at Christmas and New Year. The windows are the ones the

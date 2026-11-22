@@ -71,6 +71,17 @@ export function activeEvent(config: PricingConfig, date: string | undefined, tim
     .sort((a, b) => b.multiplier - a.multiplier)[0];
 }
 
+/**
+ * A journey fare to the tariff's step. A return leg's discounted fare rounds down, as the
+ * reference site's return prices do (£85 one way: £160 return, two legs of £80).
+ */
+function legFare(fare: number, discount: number, config: PricingConfig): Pence {
+  if (discount === 0) return roundTo(fare, config.roundTo);
+  const step = config.roundTo > 0 ? config.roundTo : 1;
+  // A hair of tolerance so a fare that is a whole number of steps isn't pushed down by float error.
+  return Math.floor((fare * (1 - discount)) / step + 1e-9) * step;
+}
+
 export function journeyFare(input: PriceInput, config: PricingConfig): Pence {
   const tariff = config.airports[input.airport];
   const chargeableMiles = Math.max(0, input.distanceMiles - tariff.includedMiles);
@@ -84,7 +95,7 @@ export function journeyFare(input: PriceInput, config: PricingConfig): Pence {
       : Math.max(tariff.minimumFare, tariff.baseFare + chargeableMiles * perMile + adjustments);
   const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
   const vehicleFare = saloonFare * config.vehicleMultipliers[input.vehicleId] + (config.vehicleSurcharges?.[input.vehicleId] ?? 0);
-  return roundTo(vehicleFare * (1 - discount), config.roundTo);
+  return legFare(vehicleFare, discount, config);
 }
 
 /** What every journey shares: the fare, event and time surcharges on it, then extra stops. */
@@ -161,7 +172,7 @@ export function localJourneyFare(input: LocalPriceInput, config: PricingConfig):
   const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
   const multiplier = local.vehicleMultipliers?.[input.vehicleId] ?? config.vehicleMultipliers[input.vehicleId];
   const surcharge = local.vehicleSurcharges?.[input.vehicleId] ?? config.vehicleSurcharges?.[input.vehicleId] ?? 0;
-  return roundTo((saloonFare * multiplier + surcharge) * (1 - discount), config.roundTo);
+  return legFare(saloonFare * multiplier + surcharge, discount, config);
 }
 
 /** A journey between two addresses (hospital, station, office, home…). Null without a local tariff. */
@@ -183,7 +194,7 @@ export function betweenAirportsFare(input: Pick<BetweenAirportsInput, "from" | "
   const fare = config.betweenAirports?.[key]?.[input.vehicleId];
   if (fare === undefined || input.from === input.to) return null;
   const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
-  return roundTo(fare * (1 - discount), config.roundTo);
+  return legFare(fare, discount, config);
 }
 
 /** A transfer from one airport to another. Meet & Greet applies: the driver collects from arrivals. */

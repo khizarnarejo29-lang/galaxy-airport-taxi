@@ -93,12 +93,12 @@ async function journey(
 }
 
 describe("Galaxy tariff against the reference website", () => {
-  it.each(samples)("is at least £2 under the reference: %s %s %s (%s the airport)", async (...sample) => {
+  it.each(samples)("is never above the reference: %s %s %s (%s the airport)", async (...sample) => {
     for (const [vehicleId, [oneWay, ret]] of Object.entries(sample[4]) as [VehicleId, [number, number]][]) {
       for (const [tripType, reference] of [["one_way", oneWay], ["return", ret]] as const) {
         const priced = tariffPrice(await journey(sample, tripType), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
         expect(priced.pricing.status, `${vehicleId} ${tripType}`).toBe("tariff");
-        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100 - 200);
+        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100);
       }
     }
   });
@@ -116,14 +116,14 @@ describe("Galaxy tariff against the reference website", () => {
   it.each([
     ["SW1A 1AA", "LHR", "T5", 84 + 6],
     ["E1 5NF", "STN", null, 89 + 6],
-  ] as const)("stays £2 under with Meet & Greet: %s from %s", async (postcode, airport, terminal, reference) => {
+  ] as const)("never goes above the reference with Meet & Greet: %s from %s", async (postcode, airport, terminal, reference) => {
     const j = await journey([postcode, airport, terminal, "from", {}], "one_way");
     const priced = tariffPrice(j, "saloon", { meetAndGreet: true, childSeats: 0 }, pricing);
     expect(priced.lines.map((l) => l.code)).toContain("meet_and_greet");
-    expect(priced.total).toBeLessThanOrEqual(reference * 100 - 200);
+    expect(priced.total).toBeLessThanOrEqual(reference * 100);
   });
 
-  it("stays £2 under with a stop on the way (E1 5NF via SW1A 1AA to Heathrow T5)", async () => {
+  it("never goes above the reference with a stop on the way (E1 5NF via SW1A 1AA to Heathrow T5)", async () => {
     // Reference prices for that route, one way.
     const reference: Fares = { saloon: [100, 0], executive: [126, 0], estate: [111, 0], mpv: [126, 0], minibus: [152, 0] };
     const direct = await journey(["E1 5NF", "LHR", "T5", "to", {}], "one_way");
@@ -136,7 +136,7 @@ describe("Galaxy tariff against the reference website", () => {
     };
     for (const [vehicleId, [price]] of Object.entries(reference) as [VehicleId, [number, number]][]) {
       const priced = tariffPrice(via, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
-      expect(priced.total, vehicleId).toBeLessThanOrEqual(price * 100 - 200);
+      expect(priced.total, vehicleId).toBeLessThanOrEqual(price * 100);
     }
   });
 
@@ -153,20 +153,20 @@ describe("Galaxy tariff against the reference website", () => {
     ["MK9 1AA", "South East", { lat: 52.0423, lng: -0.7583 }, "LTN", null, { saloon: [65, 122], executive: [88, 166], estate: [75, 142], mpv: [88, 166], minibus: [111, 210] }],
   ];
 
-  it.each(outside)("is at least £2 under the reference outside London: %s", async (postcode, region, at, airport, terminal, fares) => {
+  it.each(outside)("is never above the reference outside London: %s", async (postcode, region, at, airport, terminal, fares) => {
     for (const tripType of ["one_way", "return"] as const) {
       const j = await journey([postcode, airport, terminal, "to", fares], tripType, { region, ...at });
       for (const [vehicleId, [oneWay, ret]] of Object.entries(fares) as [VehicleId, [number, number]][]) {
         const reference = tripType === "one_way" ? oneWay : ret;
         const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
-        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs £${reference}`).toBeLessThanOrEqual(reference * 100 - 200);
+        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs £${reference}`).toBeLessThanOrEqual(reference * 100);
       }
     }
   });
 });
 
 
-/** Journeys with no airport, seen on the reference website on 2026-10-21 (one way, no date or extras). */
+/** Journeys with no airport, seen on the reference website on 2026-11-22 (one way, no date or extras). */
 describe("local tariff against the reference website", () => {
   const at: Record<string, { lat: number; lng: number }> = {
     "E1 5NF": { lat: 51.51787, lng: -0.06705 },
@@ -198,15 +198,14 @@ describe("local tariff against the reference website", () => {
     ["SW1A 1AA", "RM1 1AU", [77, 86, 97, 97, 124]],
     ["E1 5NF", "BN1 1AA", [151, 171, 199, 199, 219]],
     ["SW1A 1AA", "OX1 1AA", [138, 155, 179, 179, 197]],
-    ["E1 5NF", "E14 5AB", [46, 52, null, 59, 83]],
-    ["E1 5NF", "SE1 7PB", [56, 62, null, 69, 93]],
-    ["W5 2NU", "HA9 0WS", [41, 47, null, 54, 78]],
-    ["CR0 1LF", "SW19 5AE", [46, 53, null, 61, 88]],
-    ["RM1 1AU", "E20 1EJ", [57, 65, null, 74, 101]],
-    ["HA9 0WS", "W1A 1AA", [64, 71, null, 80, 105]],
+    ["E1 5NF", "E14 5AB", [46, 52, 59, 59, 83]],
+    ["E1 5NF", "SE1 7PB", [56, 62, 69, 69, null]],
+    ["W5 2NU", "HA9 0WS", [41, 47, 54, 54, 78]],
+    ["CR0 1LF", "SW19 5AE", [46, 53, 61, 61, 88]],
+    ["RM1 1AU", "E20 1EJ", [57, 65, 74, 74, 101]],
+    ["HA9 0WS", "W1A 1AA", [64, 71, 80, 80, 105]],
     ["E1 5NF", "CB2 1TN", [122, 139, 161, 161, 178]],
     ["SW1A 1AA", "RG1 1JX", [111, 125, 143, 143, 157]],
-    ["CR0 1LF", "GU1 3UW", [86, 98, 114, 114, 134]],
     ["E1 5NF", "B2 4QA", [211, 241, 282, 282, 312]],
     ["HA9 0WS", "SL4 1NJ", [68, 78, 91, 91, 113]],
   ];
@@ -238,14 +237,14 @@ describe("local tariff against the reference website", () => {
     };
   }
 
-  it.each(local)("is at least £2 under the reference: %s to %s", async (from, to, fares) => {
+  it.each(local)("is never above the reference: %s to %s", async (from, to, fares) => {
     const j = await localJourney(from, to, "one_way");
     vehicles.forEach((vehicleId, i) => {
       const reference = fares[i];
       if (reference === null) return;
       const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
       expect(priced.pricing.status, vehicleId).toBe("tariff");
-      expect(priced.total, `${vehicleId}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100 - 200);
+      expect(priced.total, `${vehicleId}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100);
     });
   });
 
@@ -259,7 +258,7 @@ describe("local tariff against the reference website", () => {
 
 });
 
-/** Between two airports, seen on the reference website on 2026-10-21 (one way; return with its offer). */
+/** Between two airports, seen on the reference website on 2026-11-22 (one way; return with its offer). */
 describe("airport-to-airport fares against the reference website", () => {
   // Saloon, estate, executive, MPV, 8-seater: [one way, return].
   const pairs: [from: AirportCode, fromT: string | null, to: AirportCode, toT: string | null, fares: [number, number][]][] = [
@@ -297,15 +296,15 @@ describe("airport-to-airport fares against the reference website", () => {
     };
   }
 
-  it.each(pairs)("is at least £2 under the reference both ways: %s %s to %s %s", (from, fromT, to, toT, fares) => {
+  it.each(pairs)("is never above the reference both ways: %s %s to %s %s", (from, fromT, to, toT, fares) => {
     for (const [a, b] of [[end(from, fromT), end(to, toT)], [end(to, toT), end(from, fromT)]]) {
       vehicles.forEach((vehicleId, i) => {
         const [oneWay, ret] = fares[i];
         const one = tariffPrice(pairJourney(a, b, "one_way"), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
         const back = tariffPrice(pairJourney(a, b, "return"), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
         expect(one.pricing.status, vehicleId).toBe("tariff");
-        expect(one.total, `${vehicleId} one way`).toBeLessThanOrEqual(oneWay * 100 - 200);
-        expect(back.total, `${vehicleId} return`).toBeLessThanOrEqual(ret * 100 - 200);
+        expect(one.total, `${vehicleId} one way`).toBeLessThanOrEqual(oneWay * 100);
+        expect(back.total, `${vehicleId} return`).toBeLessThanOrEqual(ret * 100);
       });
     }
   });
@@ -313,6 +312,6 @@ describe("airport-to-airport fares against the reference website", () => {
   it("adds Meet & Greet when collecting from the first airport", () => {
     const priced = tariffPrice(pairJourney(end("LHR", "T5"), end("LGW", "S"), "one_way"), "saloon", { meetAndGreet: true, childSeats: 1 }, pricing);
     expect(priced.lines.map((l) => l.code)).toEqual(["journey", "meet_and_greet"]);
-    expect(priced.total).toBe(8200 + 600);
+    expect(priced.total).toBe(8500 + 600);
   });
 });

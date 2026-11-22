@@ -406,7 +406,7 @@ describe("createQuote", () => {
       svc,
       { now, fares: [], tariff: pricing },
     );
-    expect(r.ok && r.quote.options.find((o) => o.vehicleId === "saloon")).toMatchObject({ available: true, total: 8200 });
+    expect(r.ok && r.quote.options.find((o) => o.vehicleId === "saloon")).toMatchObject({ available: true, total: 8500 });
     expect(resolve).not.toHaveBeenCalled();
   });
 
