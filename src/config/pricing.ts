@@ -56,6 +56,8 @@ export interface LocalTariff {
   centralRadiusMiles: number;
   /** Per-vehicle multipliers that differ from `vehicleMultipliers` on local journeys. */
   vehicleMultipliers?: Partial<Record<VehicleId, number>>;
+  /** Per-vehicle fixed amounts that differ from `vehicleSurcharges` on local journeys. */
+  vehicleSurcharges?: Partial<Record<VehicleId, Pence>>;
 }
 
 export interface PricingConfig {
@@ -66,6 +68,8 @@ export interface PricingConfig {
   roundTo: Pence;
   airports: Record<AirportCode, AirportTariff>;
   vehicleMultipliers: Record<VehicleId, number>;
+  /** A fixed amount added to the vehicle's fare after its multiplier (e.g. the 8-seater). */
+  vehicleSurcharges?: Partial<Record<VehicleId, Pence>>;
   /** Each extra's price. Null: not priced by the tariff, so a journey with it is price on request. */
   extras: { meetAndGreet: Pence | null; childSeat: Pence | null; extraStop: Pence | null };
   /** Central London, where `centralSupplement` applies: within this many miles of the centre. */
@@ -73,7 +77,14 @@ export interface PricingConfig {
   /** Both legs of a return booking are charged this much less. Shown only as lower leg fares. */
   returnDiscountPercent?: number;
   /** For an address outside Greater London: this rate per mile instead of the airport's `perMile`. */
-  outsideLondon?: { perMile: Pence };
+  outsideLondon?: {
+    perMile: Pence;
+    /**
+     * With this set, an address outside Greater London is priced as this plus `perMile` for
+     * every mile, whatever the airport (no airport base fare or included miles).
+     */
+    baseFare?: Pence;
+  };
   /** Address-to-address journeys. Without it they are price on request. */
   local?: LocalTariff;
   /**

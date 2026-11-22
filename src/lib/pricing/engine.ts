@@ -77,9 +77,14 @@ export function journeyFare(input: PriceInput, config: PricingConfig): Pence {
   const perMile = (input.outsideLondon && config.outsideLondon?.perMile) || tariff.perMile;
   const adjustments =
     (input.central ? (tariff.centralSupplement ?? 0) : 0) + ((input.terminal && tariff.terminalAdjustments?.[input.terminal]) || 0);
-  const saloonFare = Math.max(tariff.minimumFare, tariff.baseFare + chargeableMiles * perMile + adjustments);
+  const outsideBase = input.outsideLondon ? config.outsideLondon?.baseFare : undefined;
+  const saloonFare =
+    outsideBase !== undefined
+      ? outsideBase + input.distanceMiles * config.outsideLondon!.perMile + adjustments
+      : Math.max(tariff.minimumFare, tariff.baseFare + chargeableMiles * perMile + adjustments);
   const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
-  return roundTo(saloonFare * (1 - discount) * config.vehicleMultipliers[input.vehicleId], config.roundTo);
+  const vehicleFare = saloonFare * config.vehicleMultipliers[input.vehicleId] + (config.vehicleSurcharges?.[input.vehicleId] ?? 0);
+  return roundTo(vehicleFare * (1 - discount), config.roundTo);
 }
 
 /** What every journey shares: the fare, event and time surcharges on it, then extra stops. */
@@ -155,7 +160,8 @@ export function localJourneyFare(input: LocalPriceInput, config: PricingConfig):
   const saloonFare = Math.max(local.minimumFare, local.baseFare + miles + (input.central ? local.centralSupplement : 0));
   const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
   const multiplier = local.vehicleMultipliers?.[input.vehicleId] ?? config.vehicleMultipliers[input.vehicleId];
-  return roundTo(saloonFare * (1 - discount) * multiplier, config.roundTo);
+  const surcharge = local.vehicleSurcharges?.[input.vehicleId] ?? config.vehicleSurcharges?.[input.vehicleId] ?? 0;
+  return roundTo((saloonFare * multiplier + surcharge) * (1 - discount), config.roundTo);
 }
 
 /** A journey between two addresses (hospital, station, office, home…). Null without a local tariff. */
