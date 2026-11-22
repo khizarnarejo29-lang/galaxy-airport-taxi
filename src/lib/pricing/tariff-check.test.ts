@@ -82,7 +82,7 @@ describe("formatTariffCheck", () => {
     const text = formatTariffCheck([], { version: "v1", isPlaceholder: true });
     expect(text).toContain("No reference fares stored yet");
     expect(text).toContain("PLACEHOLDER");
-    expect(text).not.toContain("at least £2 under");
+    expect(text).not.toContain("at or under the most allowed");
   });
 
   it("lists over-priced fares and how much to lower them", () => {
@@ -91,6 +91,6 @@ describe("formatTariffCheck", () => {
       { version: "v1", isPlaceholder: false },
     );
     expect(text).toContain("TOO HIGH A [approved] saloon: reference £61.00, most allowed £59.00, tariff £60.00 (£1.00 over)");
-    expect(text).toContain("1 fare(s) where the tariff is more than reference minus £2");
+    expect(text).toContain("1 fare(s) where the tariff is more than the most allowed");
   });
 });

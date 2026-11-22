@@ -1,8 +1,8 @@
 /**
  * Checks the location tariff against the recorded reference fares, so the owner
- * can set tariff figures that stay at least £2 under the reference website:
+ * can set tariff figures that stay at or under the reference website's prices:
  * for each fare, what the tariff would charge for the same journey and vehicle,
- * and whether that is above the reference total minus £2.
+ * and whether that is above the reference total less the reference-fare deduction (none now).
  */
 import type { PricingConfig } from "@/config/pricing";
 import { referenceFareRules, vehicleMapping } from "@/config/reference-vehicles";
@@ -18,7 +18,7 @@ export interface TariffCheckRow {
   status: ReferenceFare["status"];
   vehicleId: VehicleId | null;
   referenceTotal: Pence;
-  /** The most the tariff may charge: reference total minus £2. */
+  /** The most the tariff may charge: the reference total less the reference-fare deduction. */
   ceiling: Pence;
   tariffTotal: Pence | null;
   /** "ok": at or under the ceiling; "too_high": above it; "not_checked": see note. */

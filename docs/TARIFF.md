@@ -1,22 +1,31 @@
 # Location tariff: owner guide
 
 How the website prices journeys that no reference fare covers, how to set the
-figures so they stay at least £2 under the reference website, and how to add
+figures so they match the reference website without going above it, and how to add
 event rates such as Christmas.
+
+**Owner's rule (since 2026-11-22): the same price as the reference website** (it was £2 under before).
 
 ## How a price is chosen
 
 For each vehicle, in this order:
 
-1. **Matching reference fare**: an approved, in-date fare for exactly this journey (see `REFERENCE_FARES.md`). The price is the reference total **minus £2**.
+1. **Matching reference fare**: an approved, in-date fare for exactly this journey (see `REFERENCE_FARES.md`). The price is the reference total (no deduction now; `referenceFareRules.discountPence` is 0).
 2. **Location tariff**: if no fare matches, the price comes from the distance between the address and the airport, using the figures in `src/config/pricing.ts`.
 3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a transfer between terminals of the same airport.
 
-The tariff is **switched on** (version `galaxy-2026-10-21-2`). Its figures were set from 32 quotes on the
-reference website on 2026-10-19: six London postcodes (SW1A 1AA, E1 5NF, HA9 0WS, CR0 1LF, RM1 1AU, W5 2NU)
-to each airport, every vehicle, one way and return. At every one of them the tariff is at least £3 under the
-reference price: the £2 rule plus £1 to spare for the places in between. `src/lib/pricing/galaxy-tariff.test.ts`
-holds those quotes and fails if a change takes any price above reference − £2.
+The tariff is **switched on** (version `galaxy-2026-11-22`). Its figures were set from 76 quotes on the
+reference website on 2026-11-22: fourteen London postcodes (SW1A 1AA, E1 5NF, HA9 0WS, CR0 1LF, RM1 1AU,
+W5 2NU, E20 1EJ, E14 5AB, SW19 5AE, HA1 1BB, EN1 1YX, BR1 1EY, TW3 2EB, KT1 1TP) to each airport and four
+places outside London, every vehicle, one way and return. The reference doesn't price by straight distance
+alone (Stratford to Heathrow is £127 there, Whitechapel to Heathrow £84), so no formula can equal it
+everywhere: the figures are level with it where they can be and **never above it at any of those quotes**
+(level on 48 of 377, a saloon on average £8.70 under). `src/lib/pricing/galaxy-tariff.test.ts` holds the
+quotes and fails if a change takes any price above the reference.
+
+Outside Greater London the price is £32 plus £1.24 a mile whatever the airport (`outsideLondon`), and the
+8-seater is 1.13 × the saloon plus £31 (`vehicleSurcharges`). A return leg's 5% discount rounds down, as the
+reference's returns do (£85 one way, £160 return).
 
 What the reference site does, and the tariff copies:
 
@@ -34,19 +43,19 @@ charged £16 more for a stop on one checked route). Child seats are free (owner'
 ## Journeys with no airport (local rides)
 
 Any journey between two addresses (hospital, station, office, shops, long distance) is priced by
-`pricing.local` (owner's decision, 2026-10-21: at least £2 under the reference website). Saloon fare:
-£38 for the first 4 miles, then £1.40 a mile for the next 20 miles and £1.30 a mile after that, plus
-£12 if either end is within 1.5 miles of Charing Cross. Other vehicles use `vehicleMultipliers`,
-except the 8-seater at 1.43 on local journeys. Returns, stops, child seats and the Christmas and New
-Year rates work as on airport journeys. The figures were set from 18 reference quotes (a short trip
-in Whitechapel to London–Birmingham); `galaxy-tariff.test.ts` checks every vehicle stays at least £2
-under each one.
+`pricing.local` (owner's decisions: any journey, 2026-10-21; the reference site's price, 2026-11-22).
+Saloon fare: £41 for the first 4 miles, then £1.40 a mile for the next 25 miles and £1.30 a mile after
+that, plus £12 if either end is within 1.5 miles of Charing Cross. Vehicles have their own local
+multipliers and fixed amounts (the 8-seater is 1.13 × the saloon plus £32). Returns, stops, child seats
+and the Christmas and New Year rates work as on airport journeys. The figures were set from 17
+reference quotes on 2026-11-22 (a short trip in Whitechapel to London–Birmingham);
+`galaxy-tariff.test.ts` checks no vehicle is above any of them.
 
 ## Between two airports
 
 Heathrow to Gatwick and the other airport pairs are priced from `pricing.betweenAirports`: one fare
-per vehicle for each pair, the same both ways, set at the reference site's price less £3 (21 October
-2026). Returns get the usual 5% off each journey, and Meet & Greet can be added because the driver
+per vehicle for each pair, the same both ways, equal to the reference site's price (checked
+2026-11-22). Returns get the usual 5% off each journey (rounded down, as the reference does), and Meet & Greet can be added because the driver
 collects from arrivals. The tests check every pair, both directions, one way and return, against the
 reference prices. Between terminals of the same airport is still price on request.
 
@@ -76,11 +85,11 @@ Distance is estimated from the postcodes (straight line × 1.3 for London roads)
 - `GOOGLE_MAPS_API_KEY` (server only, never shown to the browser) turns on Google address search: streets, house numbers, hotels and stations, as on the reference website. Needs **Places API (New)** enabled on the key.
 - Real driving miles also need `ROAD_DISTANCE=google` and the **Routes API**. The tariff figures were set against the estimate, so before switching it on:
   1. Put the key in `.env.local` and run `npm run road-miles`. It saves the real miles for the six sample postcodes to `src/config/road-miles.json` (the key is never printed or saved).
-  2. Re-check the tariff against the reference prices with those miles, and adjust the figures if any price is no longer at least £2 under.
+  2. Re-check the tariff against the reference prices with those miles, and adjust the figures if any price would go above the reference.
   3. Then set `ROAD_DISTANCE=google` in Hostinger and rebuild.
 - If Google can't be reached, search falls back to postcodes and the distance to the estimate, so quotes keep working.
 
-## Keeping prices £2 under the reference website
+## Keeping prices at the reference website's level
 
 1. Record a range of reference fares as usual (different areas, each airport, each vehicle). They don't need to be in date for this check.
 2. Enter your tariff figures in `src/config/pricing.ts`.
@@ -90,7 +99,7 @@ Distance is estimated from the postcodes (straight line × 1.3 for London roads)
    npm run tariff:check
    ```
 
-   Every stored reference fare is compared with what the tariff would charge for the same journey and vehicle. Each line says **OK** (at least £2 under), **TOO HIGH** (with how much over) or **SKIPPED** (with the reason).
+   Every stored reference fare is compared with what the tariff would charge for the same journey and vehicle. Each line says **OK** (at or under the reference), **TOO HIGH** (with how much over) or **SKIPPED** (with the reason).
 4. Lower the figures behind any TOO HIGH line and run it again until none are left.
 
 The check only covers journeys you have recorded, so record enough of them to be confident about every area and airport.

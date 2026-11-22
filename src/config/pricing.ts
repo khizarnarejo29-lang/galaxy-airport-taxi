@@ -98,54 +98,58 @@ export interface PricingConfig {
 }
 
 /**
- * Galaxy's location tariff, set from 32 quotes on the reference website
- * (2026-10-19): six London postcodes to each airport, every vehicle. At each of
- * them this tariff is at least £3 under the reference price (the £2 rule plus a
- * £1 cushion for the places in between). Re-check with `npm run tariff:check`
- * whenever a figure changes. Prices include airport drop-off and parking, as the
- * reference prices do.
+ * Galaxy's location tariff. Owner's rule (2026-11-22): the same price as the reference website.
+ * Set from 76 of its quotes on 2026-11-22: fourteen London postcodes (the six earlier samples and
+ * the areas with their own page) to each airport, plus four places outside London, every vehicle,
+ * one way and return. A formula can't follow the reference everywhere (it doesn't price by
+ * straight distance alone), so this is fitted to be level with it where it can and never above
+ * it at any of those quotes: level on 48 of 377, on average £8.70 under for a saloon (see
+ * galaxy-tariff.test.ts). Prices include airport drop-off and parking, as the reference does.
  *
- * Extras, also from the reference website: Meet & Greet is +£6 there (Heathrow and
- * Stansted). A stop on the way cost £16 more there (E1 5NF via SW1A 1AA to Heathrow T5);
- * here a stop is £10 plus the extra miles. The reference site offers no child seats;
+ * Extras, also from the reference website: Meet & Greet is +£6 there (Heathrow and Stansted).
+ * A stop on the way is £10 plus the extra miles. The reference site offers no child seats;
  * Galaxy's are free.
  */
 export const pricing: PricingConfig = {
-  version: "galaxy-2026-10-21-2",
+  version: "galaxy-2026-11-22",
   isPlaceholder: false,
   roundTo: 100,
   airports: {
-    // Fitted to Terminal 5; Terminals 2, 3 and 4 are cheaper on the reference site (T2 £8 less).
+    // Terminals 2, 3 and 4 are £8 cheaper than Terminal 5 on the reference site.
     LHR: {
-      baseFare: 5300,
-      includedMiles: 10,
+      baseFare: 4500,
+      includedMiles: 7,
       perMile: 230,
-      minimumFare: 5300,
+      minimumFare: 4500,
       dropOffCharge: 0,
       pickupParking: 0,
+      centralSupplement: 400,
       terminalAdjustments: { T2: -800, T3: -800, T4: -800 },
     },
-    LGW: { baseFare: 4200, includedMiles: 9, perMile: 170, minimumFare: 4200, dropOffCharge: 0, pickupParking: 0, centralSupplement: 2400 },
-    STN: { baseFare: 1900, includedMiles: 0, perMile: 180, minimumFare: 1900, dropOffCharge: 0, pickupParking: 0 },
-    LTN: { baseFare: 3900, includedMiles: 17, perMile: 255, minimumFare: 3900, dropOffCharge: 0, pickupParking: 0 },
-    LCY: { baseFare: 2000, includedMiles: 1, perMile: 295, minimumFare: 2000, dropOffCharge: 0, pickupParking: 0, centralSupplement: 700 },
+    LGW: { baseFare: 3200, includedMiles: 1, perMile: 170, minimumFare: 3200, dropOffCharge: 0, pickupParking: 0, centralSupplement: 2300 },
+    STN: { baseFare: 2600, includedMiles: 2, perMile: 180, minimumFare: 2600, dropOffCharge: 0, pickupParking: 0 },
+    LTN: { baseFare: 2400, includedMiles: 1, perMile: 190, minimumFare: 2400, dropOffCharge: 0, pickupParking: 0 },
+    LCY: { baseFare: 4600, includedMiles: 8, perMile: 165, minimumFare: 4600, dropOffCharge: 0, pickupParking: 0, centralSupplement: 100 },
   },
   vehicleMultipliers: {
     saloon: 1,
-    estate: 1.12,
+    estate: 1.13,
     executive: 1.29,
     mpv: 1.29,
-    minibus: 1.49,
+    minibus: 1.13,
   },
+  // The reference 8-seater is a fixed amount more as well as a multiple of the saloon.
+  vehicleSurcharges: { minibus: 3100 },
   // Owner's decision (2026-10-20): child seats are free.
   extras: { meetAndGreet: 600, childSeat: 0, extraStop: 1000 },
   // Within 3 miles of Charing Cross: the reference site charges more for central London.
   centralZone: { centre: { lat: 51.5073, lng: -0.1276 }, radiusMiles: 3 },
   // The reference site takes 5% off both journeys of a return.
   returnDiscountPercent: 5,
-  // Outside London the reference site charges much less per mile: B1 1BB to Heathrow T5 £183,
-  // M1 1AE to Heathrow T5 £287, BN1 1AA to Gatwick South £71, MK9 1AA to Luton £65 (2026-10-19).
-  outsideLondon: { perMile: 110 },
+  // Outside London the reference site charges about £32 plus £1.24 a mile, whatever the airport:
+  // B1 1BB to Heathrow T5 £183, M1 1AE to Heathrow T5 £287, BN1 1AA to Gatwick South £71,
+  // MK9 1AA to Luton £65 (2026-11-22).
+  outsideLondon: { baseFare: 3200, perMile: 124 },
   // Any journey, not only airports (owner's decision, 2026-10-21), at the reference site's price
   // (owner's decision, 2026-11-22). Set from 17 of its quotes on 2026-11-22, short London trips to
   // Birmingham: never above any of them for any vehicle, and level with 16 of the 84 (see
