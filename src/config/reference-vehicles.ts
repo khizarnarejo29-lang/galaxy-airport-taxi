@@ -2,8 +2,9 @@ import type { VehicleId } from "@/lib/domain/types";
 import type { Pence } from "@/lib/utils/money";
 
 /**
- * Settings for reference-fare pricing: Galaxy charges a fixed amount less
- * than a matching, owner-approved reference fare. Nothing here is a price.
+ * Settings for reference-fare pricing: Galaxy charges the same as a matching,
+ * owner-approved reference fare (owner's decision, 2026-11-22; it was £2 less
+ * before). Nothing here is a price.
  */
 export const referenceFareRules = {
   /**
@@ -11,8 +12,8 @@ export const referenceFareRules = {
    * Version 2: journeys and fares have a pickup and a drop-off, each an address or an airport.
    */
   pricingVersion: "reference-fares-2",
-  /** Taken off the whole booking total once — never per leg or per item. */
-  discountPence: 200 as Pence,
+  /** Taken off the whole booking total once — never per leg or per item. None now: same as the reference. */
+  discountPence: 0 as Pence,
   /** A fare can be used for this long after it was checked. */
   validForDays: 7,
 } as const;

@@ -1,8 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { PricingConfig } from "@/config/pricing";
 import type { ReferenceFare } from "@/lib/reference-fares/schema";
 import { formatTariffCheck } from "../../../scripts/tariff-check.mjs";
 import { checkTariffAgainstFares } from "./tariff-check";
+
+// These tests check the reference-fare deduction mechanism with a £2 deduction. The shipped
+// setting is £0 (the same price as the reference site), which match.test.ts checks.
+vi.mock("@/config/reference-vehicles", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/config/reference-vehicles")>();
+  return { ...real, referenceFareRules: { ...real.referenceFareRules, discountPence: 200 } };
+});
 
 // Test figures only: not Galaxy's rates or real reference fares.
 const flat = { baseFare: 4000, includedMiles: 10, perMile: 200, minimumFare: 4500, dropOffCharge: 0, pickupParking: 0 };
