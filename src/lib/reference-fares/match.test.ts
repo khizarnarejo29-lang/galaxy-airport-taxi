@@ -1,8 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { excludedReferenceVehicles, holidaySurchargeSource, vehicleMapping } from "@/config/reference-vehicles";
 import type { VehicleId } from "@/lib/domain/types";
 import { galaxyFareFromReference, inHolidayWindow, matchReferenceFare, type FareQuery } from "./match";
 import type { ReferenceFare } from "./schema";
+
+// These tests check the reference-fare deduction mechanism with a £2 deduction. The shipped
+// setting is £0 (the same price as the reference site), which match.test.ts checks.
+vi.mock("@/config/reference-vehicles", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/config/reference-vehicles")>();
+  return { ...real, referenceFareRules: { ...real.referenceFareRules, discountPence: 200 } };
+});
 
 // Test fixtures only — a made-up address and amounts, not real reference fares.
 const CHECKED = "2026-06-01T10:00:00+01:00";
@@ -379,4 +386,11 @@ it("never prices a pending re-check alongside the approved fare", () => {
 
 it("refuses to choose between two matching fares", () => {
   expect(reason(matchReferenceFare(query, [oneWay, { ...oneWay, id: "copy", referenceTotalPence: 5500 }], now))).toBe("AMBIGUOUS");
+});
+
+describe("the shipped reference-fare setting", () => {
+  it("charges the same as the reference site: no deduction (owner's decision, 2026-11-22)", async () => {
+    const real = await vi.importActual<typeof import("@/config/reference-vehicles")>("@/config/reference-vehicles");
+    expect(real.referenceFareRules.discountPence).toBe(0);
+  });
 });

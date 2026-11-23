@@ -14,7 +14,7 @@ describe("example fares", () => {
 
   it("uses the cheapest terminal, as a 'from' price", () => {
     // Central London to Heathrow: Terminal 5 is £71, Terminals 2–4 £8 less.
-    expect(centralLondonFrom("LHR", pricing)).toBe(6300);
+    expect(centralLondonFrom("LHR", pricing)).toBe(6600);
   });
 
   it("shows nothing without a tariff", () => {

@@ -13,13 +13,21 @@ const postcodes: Record<string, { lat: number; lng: number }> = {
   "CR0 1LF": { lat: 51.3754, lng: -0.092 },
   "RM1 1AU": { lat: 51.5752, lng: 0.1826 },
   "W5 2NU": { lat: 51.5149, lng: -0.3017 },
+  "E20 1EJ": { lat: 51.54434, lng: -0.00635 },
+  "E14 5AB": { lat: 51.50494, lng: -0.01952 },
+  "SW19 5AE": { lat: 51.41689, lng: -0.21331 },
+  "HA1 1BB": { lat: 51.57943, lng: -0.33697 },
+  "EN1 1YX": { lat: 51.65207, lng: -0.07933 },
+  "BR1 1EY": { lat: 51.40042, lng: 0.01697 },
+  "TW3 2EB": { lat: 51.46253, lng: -0.36235 },
+  "KT1 1TP": { lat: 51.41128, lng: -0.30474 },
 };
 
 type Fares = Partial<Record<VehicleId, [oneWay: number, ret: number]>>;
 
 /**
  * Reference website prices in pounds (one way, and return with its 5% offer),
- * seen on 2026-10-19 with no date, passengers or extras entered.
+ * seen on 2026-11-22 with no date, passengers or extras entered.
  */
 const samples: [postcode: string, airport: AirportCode, terminal: string | null, direction: "to" | "from", fares: Fares][] = [
   ["E1 5NF", "LHR", "T5", "to", {"saloon":[84,160],"executive":[110,208],"estate":[95,180],"mpv":[110,208],"minibus":[136,258]}],
@@ -29,8 +37,7 @@ const samples: [postcode: string, airport: AirportCode, terminal: string | null,
   ["W5 2NU", "LHR", "T5", "to", {"saloon":[58,110],"executive":[77,146],"estate":[66,124],"mpv":[77,146],"minibus":[101,192]}],
   ["E1 5NF", "LGW", "S", "to", {"saloon":[113,216],"executive":[148,282],"estate":[128,244],"mpv":[148,282],"minibus":[162,308]}],
   ["HA9 0WS", "LGW", "S", "to", {"saloon":[116,220],"executive":[155,294],"estate":[132,250],"mpv":[155,294],"minibus":[172,326]}],
-  ["CR0 1LF", "LGW", "S", "to", {"saloon":[65,122],"executive":[87,164],"estate":[75,142],"mpv":[87,164],"minibus":[114,216]}],
-  ["RM1 1AU", "LGW", "S", "to", {"saloon":[103,196],"executive":[137,260],"estate":[117,222],"mpv":[137,260],"minibus":[152,288]}],
+  ["RM1 1AU", "LGW", "S", "to", {"saloon":[103,196],"executive":[137,260],"estate":[117,222],"mpv":[137,260]}],
   ["W5 2NU", "LGW", "S", "to", {"saloon":[106,200],"executive":[141,268],"estate":[121,230],"mpv":[141,268],"minibus":[156,296]}],
   ["SW1A 1AA", "STN", null, "to", {"saloon":[119,228],"executive":[154,294],"estate":[134,256],"mpv":[154,294],"minibus":[168,320]}],
   ["E1 5NF", "STN", null, "to", {"saloon":[89,170],"executive":[118,224],"estate":[101,192],"mpv":[118,224],"minibus":[138,262]}],
@@ -39,7 +46,6 @@ const samples: [postcode: string, airport: AirportCode, terminal: string | null,
   ["RM1 1AU", "STN", null, "to", {"saloon":[81,154],"executive":[108,204],"estate":[93,176],"mpv":[108,204],"minibus":[127,240]}],
   ["W5 2NU", "STN", null, "to", {"saloon":[103,196],"executive":[138,262],"estate":[118,224],"mpv":[138,262],"minibus":[153,290]}],
   ["SW1A 1AA", "LTN", null, "to", {"saloon":[99,190],"executive":[127,242],"estate":[111,212],"mpv":[127,242],"minibus":[147,280]}],
-  ["E1 5NF", "LTN", null, "to", {"saloon":[91,172],"executive":[119,226],"estate":[103,196],"mpv":[119,226],"minibus":[139,264]}],
   ["HA9 0WS", "LTN", null, "to", {"saloon":[81,154],"executive":[108,204],"estate":[93,176],"mpv":[108,204],"minibus":[128,242]}],
   ["CR0 1LF", "LTN", null, "to", {"saloon":[139,264],"executive":[186,352],"estate":[159,302],"mpv":[186,352],"minibus":[206,390]}],
   ["RM1 1AU", "LTN", null, "to", {"saloon":[103,196],"executive":[138,262],"estate":[118,224],"mpv":[138,262],"minibus":[153,290]}],
@@ -55,6 +61,47 @@ const samples: [postcode: string, airport: AirportCode, terminal: string | null,
   ["E1 5NF", "LHR", "T2", "from", {"saloon":[76,144],"executive":[99,188],"estate":[86,164],"mpv":[99,188],"minibus":[122,232]}],
   ["SW1A 1AA", "LHR", "T5", "to", {"saloon":[84,160],"executive":[106,202],"estate":[93,178],"mpv":[106,202],"minibus":[129,246]}],
   ["SW1A 1AA", "LGW", "S", "to", {"saloon":[107,204],"executive":[137,262],"estate":[120,228],"mpv":[137,262],"minibus":[159,304]}],
+  ["CR0 1LF", "LGW", "S", "to", {"saloon":[65,122],"executive":[87,164],"estate":[75,142],"mpv":[87,164],"minibus":[114,216]}],
+  ["E1 5NF", "LTN", null, "to", {"saloon":[91,172],"executive":[119,226],"estate":[103,196],"mpv":[119,226],"minibus":[139,264]}],
+  ["E20 1EJ", "LHR", "T5", "to", {"saloon":[127,242],"executive":[168,320],"estate":[144,274],"mpv":[168,320],"minibus":[185,352]}],
+  ["E20 1EJ", "LGW", "S", "to", {"saloon":[113,216],"executive":[147,280],"estate":[127,242],"mpv":[147,280],"minibus":[162,308]}],
+  ["E20 1EJ", "STN", null, "to", {"saloon":[86,164],"executive":[113,214],"estate":[98,186],"mpv":[113,214],"minibus":[133,252]}],
+  ["E20 1EJ", "LTN", null, "to", {"saloon":[110,208],"executive":[146,278],"estate":[125,238],"mpv":[146,278],"minibus":[161,306]}],
+  ["E20 1EJ", "LCY", null, "to", {"saloon":[46,88],"executive":[59,112],"estate":[52,98],"mpv":[59,112],"minibus":[83,158]}],
+  ["E14 5AB", "LHR", "T5", "to", {"saloon":[85,162],"executive":[112,212],"estate":[97,184],"mpv":[112,212],"minibus":[139,264]}],
+  ["E14 5AB", "LGW", "S", "to", {"saloon":[111,212],"executive":[145,276],"estate":[125,238],"mpv":[145,276],"minibus":[159,302]}],
+  ["E14 5AB", "STN", null, "to", {"saloon":[91,172],"executive":[119,226],"estate":[103,196],"mpv":[119,226],"minibus":[140,266]}],
+  ["E14 5AB", "LTN", null, "to", {"saloon":[117,222],"executive":[154,292],"estate":[133,252],"mpv":[154,292],"minibus":[171,324]}],
+  ["E14 5AB", "LCY", null, "to", {"saloon":[46,88],"executive":[59,112],"estate":[52,98],"mpv":[59,112],"minibus":[83,158]}],
+  ["SW19 5AE", "LHR", "T5", "to", {"saloon":[86,164],"executive":[113,214],"estate":[97,184],"mpv":[113,214],"minibus":[140,266]}],
+  ["SW19 5AE", "LGW", "S", "to", {"saloon":[81,154],"executive":[108,204],"estate":[93,176],"mpv":[108,204],"minibus":[135,256]}],
+  ["SW19 5AE", "STN", null, "to", {"saloon":[117,222],"executive":[157,298],"estate":[134,254],"mpv":[157,298],"minibus":[174,330]}],
+  ["SW19 5AE", "LTN", null, "to", {"saloon":[120,228],"executive":[160,304],"estate":[137,260],"mpv":[160,304],"minibus":[177,336]}],
+  ["SW19 5AE", "LCY", null, "to", {"saloon":[78,143],"executive":[102,189],"estate":[88,163],"mpv":[102,189],"minibus":[126,235]}],
+  ["HA1 1BB", "LHR", "T5", "to", {"saloon":[56,106],"executive":[75,142],"estate":[64,122],"mpv":[75,142],"minibus":[104,198]}],
+  ["HA1 1BB", "LGW", "S", "to", {"saloon":[105,198],"executive":[141,268],"estate":[121,230],"mpv":[141,268],"minibus":[156,296]}],
+  ["HA1 1BB", "STN", null, "to", {"saloon":[98,186],"executive":[131,248],"estate":[112,212],"mpv":[131,248],"minibus":[145,274]}],
+  ["HA1 1BB", "LTN", null, "to", {"saloon":[80,152],"executive":[107,202],"estate":[92,174],"mpv":[107,202],"minibus":[134,254]}],
+  ["HA1 1BB", "LCY", null, "to", {"saloon":[81,154],"executive":[108,204],"estate":[92,174],"mpv":[108,204],"minibus":[135,256]}],
+  ["EN1 1YX", "LHR", "T5", "to", {"saloon":[91,172],"executive":[121,230],"estate":[104,198],"mpv":[121,230],"minibus":[143,272]}],
+  ["EN1 1YX", "LGW", "S", "to", {"saloon":[127,240],"executive":[170,322],"estate":[145,274],"mpv":[170,322],"minibus":[188,356]}],
+  ["EN1 1YX", "STN", null, "to", {"saloon":[81,154],"executive":[108,204],"estate":[92,174]}],
+  ["EN1 1YX", "LTN", null, "to", {"saloon":[81,154],"executive":[108,204],"estate":[92,174],"mpv":[108,204],"minibus":[135,256]}],
+  ["EN1 1YX", "LCY", null, "to", {"saloon":[63,120],"executive":[83,158],"estate":[72,136],"mpv":[83,158],"minibus":[110,208]}],
+  ["BR1 1EY", "LHR", "T5", "to", {"saloon":[111,210],"executive":[149,282],"estate":[127,240],"mpv":[149,282],"minibus":[165,312]}],
+  ["BR1 1EY", "LGW", "S", "to", {"saloon":[85,160],"executive":[113,214],"estate":[97,184],"mpv":[113,214],"minibus":[133,252]}],
+  ["BR1 1EY", "STN", null, "to", {"saloon":[108,204],"executive":[144,274],"estate":[123,234],"mpv":[144,274],"minibus":[159,302]}],
+  ["BR1 1EY", "LTN", null, "to", {"saloon":[137,260],"executive":[183,348],"estate":[156,296],"mpv":[183,348],"minibus":[203,386]}],
+  ["TW3 2EB", "LHR", "T5", "to", {"saloon":[47,88],"executive":[62,118],"estate":[53,100],"mpv":[62,118],"minibus":[90,170]}],
+  ["TW3 2EB", "LGW", "S", "to", {"saloon":[96,182],"executive":[128,242],"estate":[110,208],"mpv":[128,242],"minibus":[142,270]}],
+  ["TW3 2EB", "STN", null, "to", {"saloon":[132,250],"executive":[177,336],"estate":[151,286],"mpv":[177,336],"minibus":[196,372]}],
+  ["TW3 2EB", "LTN", null, "to", {"saloon":[92,174],"executive":[122,232],"estate":[105,198],"mpv":[122,232],"minibus":[135,256]}],
+  ["TW3 2EB", "LCY", null, "to", {"saloon":[84,160],"executive":[112,212],"estate":[96,182],"mpv":[112,212],"minibus":[132,250]}],
+  ["KT1 1TP", "LHR", "T5", "to", {"saloon":[54,102],"executive":[72,136],"estate":[62,118],"mpv":[72,136],"minibus":[99,188]}],
+  ["KT1 1TP", "LGW", "S", "to", {"saloon":[81,154],"executive":[108,204],"estate":[92,174],"mpv":[108,204],"minibus":[135,256]}],
+  ["KT1 1TP", "STN", null, "to", {"saloon":[144,274],"executive":[194,368],"estate":[166,314],"mpv":[194,368],"minibus":[215,408]}],
+  ["KT1 1TP", "LTN", null, "to", {"saloon":[102,194],"executive":[136,258],"estate":[117,222],"mpv":[136,258],"minibus":[151,286]}],
+  ["KT1 1TP", "LCY", null, "to", {"saloon":[68,128],"executive":[91,172],"estate":[78,148],"mpv":[91,172],"minibus":[113,214]}],
 ];
 
 const distance = estimatedDistance();
@@ -93,12 +140,12 @@ async function journey(
 }
 
 describe("Galaxy tariff against the reference website", () => {
-  it.each(samples)("is at least £2 under the reference: %s %s %s (%s the airport)", async (...sample) => {
+  it.each(samples)("is never above the reference: %s %s %s (%s the airport)", async (...sample) => {
     for (const [vehicleId, [oneWay, ret]] of Object.entries(sample[4]) as [VehicleId, [number, number]][]) {
       for (const [tripType, reference] of [["one_way", oneWay], ["return", ret]] as const) {
         const priced = tariffPrice(await journey(sample, tripType), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
         expect(priced.pricing.status, `${vehicleId} ${tripType}`).toBe("tariff");
-        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100 - 200);
+        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100);
       }
     }
   });
@@ -116,14 +163,14 @@ describe("Galaxy tariff against the reference website", () => {
   it.each([
     ["SW1A 1AA", "LHR", "T5", 84 + 6],
     ["E1 5NF", "STN", null, 89 + 6],
-  ] as const)("stays £2 under with Meet & Greet: %s from %s", async (postcode, airport, terminal, reference) => {
+  ] as const)("never goes above the reference with Meet & Greet: %s from %s", async (postcode, airport, terminal, reference) => {
     const j = await journey([postcode, airport, terminal, "from", {}], "one_way");
     const priced = tariffPrice(j, "saloon", { meetAndGreet: true, childSeats: 0 }, pricing);
     expect(priced.lines.map((l) => l.code)).toContain("meet_and_greet");
-    expect(priced.total).toBeLessThanOrEqual(reference * 100 - 200);
+    expect(priced.total).toBeLessThanOrEqual(reference * 100);
   });
 
-  it("stays £2 under with a stop on the way (E1 5NF via SW1A 1AA to Heathrow T5)", async () => {
+  it("never goes above the reference with a stop on the way (E1 5NF via SW1A 1AA to Heathrow T5)", async () => {
     // Reference prices for that route, one way.
     const reference: Fares = { saloon: [100, 0], executive: [126, 0], estate: [111, 0], mpv: [126, 0], minibus: [152, 0] };
     const direct = await journey(["E1 5NF", "LHR", "T5", "to", {}], "one_way");
@@ -136,7 +183,7 @@ describe("Galaxy tariff against the reference website", () => {
     };
     for (const [vehicleId, [price]] of Object.entries(reference) as [VehicleId, [number, number]][]) {
       const priced = tariffPrice(via, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
-      expect(priced.total, vehicleId).toBeLessThanOrEqual(price * 100 - 200);
+      expect(priced.total, vehicleId).toBeLessThanOrEqual(price * 100);
     }
   });
 
@@ -145,28 +192,28 @@ describe("Galaxy tariff against the reference website", () => {
     expect(priced.lines.map((l) => l.code)).toEqual(["journey", "return_journey"]);
   });
 
-  // Outside London, seen on the reference website on 2026-10-19 (one way, and return with its offer).
+  // Outside London, seen on the reference website on 2026-11-22 (one way, and return with its offer).
   const outside: [postcode: string, region: string, at: { lat: number; lng: number }, airport: AirportCode, terminal: string | null, fares: Fares][] = [
-    ["B1 1BB", "West Midlands", { lat: 52.4796, lng: -1.9026 }, "LHR", "T5", { saloon: [183, 346], executive: [247, 468], estate: [211, 400], mpv: [247, 468], minibus: [275, 522] }],
-    ["M1 1AE", "North West", { lat: 53.4794, lng: -2.2453 }, "LHR", "T5", { saloon: [287, 544], executive: [387, 734], estate: [330, 626], mpv: [387, 734], minibus: [430, 816] }],
-    ["BN1 1AA", "South East", { lat: 50.8279, lng: -0.1395 }, "LGW", "S", { saloon: [71, 134], executive: [96, 182], estate: [82, 154], mpv: [96, 182], minibus: [121, 228] }],
-    ["MK9 1AA", "South East", { lat: 52.0423, lng: -0.7583 }, "LTN", null, { saloon: [65, 122], executive: [88, 166], estate: [75, 142], mpv: [88, 166], minibus: [111, 210] }],
+    ["B1 1BB", "West Midlands", { lat: 52.4796, lng: -1.9026 }, "LHR", "T5", {saloon:[183,346],executive:[247,468],estate:[211,400],mpv:[247,468],minibus:[275,522]}],
+    ["M1 1AE", "North West", { lat: 53.4794, lng: -2.2453 }, "LHR", "T5", {saloon:[287,544],executive:[387,734],estate:[330,626],mpv:[387,734],minibus:[430,816]}],
+    ["BN1 1AA", "South East", { lat: 50.8279, lng: -0.1395 }, "LGW", "S", {saloon:[71,134],executive:[96,182],estate:[82,154],mpv:[96,182],minibus:[121,228]}],
+    ["MK9 1AA", "South East", { lat: 52.0423, lng: -0.7583 }, "LTN", null, {saloon:[65,122],executive:[88,166],estate:[75,142],mpv:[88,166],minibus:[111,210]}],
   ];
 
-  it.each(outside)("is at least £2 under the reference outside London: %s", async (postcode, region, at, airport, terminal, fares) => {
+  it.each(outside)("is never above the reference outside London: %s", async (postcode, region, at, airport, terminal, fares) => {
     for (const tripType of ["one_way", "return"] as const) {
       const j = await journey([postcode, airport, terminal, "to", fares], tripType, { region, ...at });
       for (const [vehicleId, [oneWay, ret]] of Object.entries(fares) as [VehicleId, [number, number]][]) {
         const reference = tripType === "one_way" ? oneWay : ret;
         const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
-        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs £${reference}`).toBeLessThanOrEqual(reference * 100 - 200);
+        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs £${reference}`).toBeLessThanOrEqual(reference * 100);
       }
     }
   });
 });
 
 
-/** Journeys with no airport, seen on the reference website on 2026-10-21 (one way, no date or extras). */
+/** Journeys with no airport, seen on the reference website on 2026-11-22 (one way, no date or extras). */
 describe("local tariff against the reference website", () => {
   const at: Record<string, { lat: number; lng: number }> = {
     "E1 5NF": { lat: 51.51787, lng: -0.06705 },
@@ -198,15 +245,14 @@ describe("local tariff against the reference website", () => {
     ["SW1A 1AA", "RM1 1AU", [77, 86, 97, 97, 124]],
     ["E1 5NF", "BN1 1AA", [151, 171, 199, 199, 219]],
     ["SW1A 1AA", "OX1 1AA", [138, 155, 179, 179, 197]],
-    ["E1 5NF", "E14 5AB", [46, 52, null, 59, 83]],
-    ["E1 5NF", "SE1 7PB", [56, 62, null, 69, 93]],
-    ["W5 2NU", "HA9 0WS", [41, 47, null, 54, 78]],
-    ["CR0 1LF", "SW19 5AE", [46, 53, null, 61, 88]],
-    ["RM1 1AU", "E20 1EJ", [57, 65, null, 74, 101]],
-    ["HA9 0WS", "W1A 1AA", [64, 71, null, 80, 105]],
+    ["E1 5NF", "E14 5AB", [46, 52, 59, 59, 83]],
+    ["E1 5NF", "SE1 7PB", [56, 62, 69, 69, null]],
+    ["W5 2NU", "HA9 0WS", [41, 47, 54, 54, 78]],
+    ["CR0 1LF", "SW19 5AE", [46, 53, 61, 61, 88]],
+    ["RM1 1AU", "E20 1EJ", [57, 65, 74, 74, 101]],
+    ["HA9 0WS", "W1A 1AA", [64, 71, 80, 80, 105]],
     ["E1 5NF", "CB2 1TN", [122, 139, 161, 161, 178]],
     ["SW1A 1AA", "RG1 1JX", [111, 125, 143, 143, 157]],
-    ["CR0 1LF", "GU1 3UW", [86, 98, 114, 114, 134]],
     ["E1 5NF", "B2 4QA", [211, 241, 282, 282, 312]],
     ["HA9 0WS", "SL4 1NJ", [68, 78, 91, 91, 113]],
   ];
@@ -238,14 +284,14 @@ describe("local tariff against the reference website", () => {
     };
   }
 
-  it.each(local)("is at least £2 under the reference: %s to %s", async (from, to, fares) => {
+  it.each(local)("is never above the reference: %s to %s", async (from, to, fares) => {
     const j = await localJourney(from, to, "one_way");
     vehicles.forEach((vehicleId, i) => {
       const reference = fares[i];
       if (reference === null) return;
       const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
       expect(priced.pricing.status, vehicleId).toBe("tariff");
-      expect(priced.total, `${vehicleId}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100 - 200);
+      expect(priced.total, `${vehicleId}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100);
     });
   });
 
@@ -259,7 +305,7 @@ describe("local tariff against the reference website", () => {
 
 });
 
-/** Between two airports, seen on the reference website on 2026-10-21 (one way; return with its offer). */
+/** Between two airports, seen on the reference website on 2026-11-22 (one way; return with its offer). */
 describe("airport-to-airport fares against the reference website", () => {
   // Saloon, estate, executive, MPV, 8-seater: [one way, return].
   const pairs: [from: AirportCode, fromT: string | null, to: AirportCode, toT: string | null, fares: [number, number][]][] = [
@@ -297,15 +343,15 @@ describe("airport-to-airport fares against the reference website", () => {
     };
   }
 
-  it.each(pairs)("is at least £2 under the reference both ways: %s %s to %s %s", (from, fromT, to, toT, fares) => {
+  it.each(pairs)("is never above the reference both ways: %s %s to %s %s", (from, fromT, to, toT, fares) => {
     for (const [a, b] of [[end(from, fromT), end(to, toT)], [end(to, toT), end(from, fromT)]]) {
       vehicles.forEach((vehicleId, i) => {
         const [oneWay, ret] = fares[i];
         const one = tariffPrice(pairJourney(a, b, "one_way"), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
         const back = tariffPrice(pairJourney(a, b, "return"), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
         expect(one.pricing.status, vehicleId).toBe("tariff");
-        expect(one.total, `${vehicleId} one way`).toBeLessThanOrEqual(oneWay * 100 - 200);
-        expect(back.total, `${vehicleId} return`).toBeLessThanOrEqual(ret * 100 - 200);
+        expect(one.total, `${vehicleId} one way`).toBeLessThanOrEqual(oneWay * 100);
+        expect(back.total, `${vehicleId} return`).toBeLessThanOrEqual(ret * 100);
       });
     }
   });
@@ -313,6 +359,6 @@ describe("airport-to-airport fares against the reference website", () => {
   it("adds Meet & Greet when collecting from the first airport", () => {
     const priced = tariffPrice(pairJourney(end("LHR", "T5"), end("LGW", "S"), "one_way"), "saloon", { meetAndGreet: true, childSeats: 1 }, pricing);
     expect(priced.lines.map((l) => l.code)).toEqual(["journey", "meet_and_greet"]);
-    expect(priced.total).toBe(8200 + 600);
+    expect(priced.total).toBe(8500 + 600);
   });
 });

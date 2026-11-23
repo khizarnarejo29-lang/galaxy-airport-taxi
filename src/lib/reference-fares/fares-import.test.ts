@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { COLUMNS, importFares, parseCsv } from "../../../scripts/fares-import.mjs";
 
+
 const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 const now = new Date("2026-06-03T12:00:00+01:00");
 
@@ -224,7 +225,7 @@ describe("importFares", () => {
     ["Meet & Greet without an airport pickup", { meet_and_greet: "yes" }, /Meet & Greet needs an airport pickup/],
     ["return details on a one-way fare", { return_pickup_postcode: "SW1A 1AA" }, /leave blank on a one-way fare/],
     ["a source that isn't the reference website", { source_url: "https://example.com/fare" }, /source_url/],
-    ["a total of £2", { reference_total_gbp: "2.00" }, /must be more than £2/],
+    ["a total of £0", { reference_total_gbp: "0.00" }, /must be more than £0/],
     ["a badly written price", { reference_total_gbp: "1,084.00" }, /reference_total_gbp/],
     ["a badly written passenger/luggage combination", { confirmed_parties: "two people" }, /should look like/],
     ["an unknown luggage category", { confirmed_parties: "2p bikes" }, /should look like "2p suitcases"/],

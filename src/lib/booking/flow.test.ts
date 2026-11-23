@@ -15,6 +15,13 @@ import { LocationLookupError, type LocationProvider } from "@/lib/services/locat
 import { memoryQuoteRequestRepository } from "@/lib/services/quote-requests";
 import { createBooking, type BookingRequest } from "./create-booking";
 
+// These tests check the reference-fare deduction mechanism with a £2 deduction. The shipped
+// setting is £0 (the same price as the reference site), which match.test.ts checks.
+vi.mock("@/config/reference-vehicles", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/config/reference-vehicles")>();
+  return { ...real, referenceFareRules: { ...real.referenceFareRules, discountPence: 200 } };
+});
+
 // Most tests here are about reference fares alone: without a tariff passed in, none is used.
 // The "location tariff" tests pass their own; activeTariff itself is tested below.
 vi.mock("@/config/pricing", async (importOriginal) => {
@@ -399,7 +406,7 @@ describe("createQuote", () => {
       svc,
       { now, fares: [], tariff: pricing },
     );
-    expect(r.ok && r.quote.options.find((o) => o.vehicleId === "saloon")).toMatchObject({ available: true, total: 8200 });
+    expect(r.ok && r.quote.options.find((o) => o.vehicleId === "saloon")).toMatchObject({ available: true, total: 8500 });
     expect(resolve).not.toHaveBeenCalled();
   });
 
@@ -1040,7 +1047,7 @@ describe("activeTariff", () => {
   });
 
   it("ships switched on, with real figures", () => {
-    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-10-21-2" });
+    expect(activeTariff({ NODE_ENV: "production" })).toMatchObject({ isPlaceholder: false, version: "galaxy-2026-11-22" });
   });
 });
 

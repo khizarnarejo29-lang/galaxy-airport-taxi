@@ -56,6 +56,8 @@ export interface LocalTariff {
   centralRadiusMiles: number;
   /** Per-vehicle multipliers that differ from `vehicleMultipliers` on local journeys. */
   vehicleMultipliers?: Partial<Record<VehicleId, number>>;
+  /** Per-vehicle fixed amounts that differ from `vehicleSurcharges` on local journeys. */
+  vehicleSurcharges?: Partial<Record<VehicleId, Pence>>;
 }
 
 export interface PricingConfig {
@@ -66,6 +68,8 @@ export interface PricingConfig {
   roundTo: Pence;
   airports: Record<AirportCode, AirportTariff>;
   vehicleMultipliers: Record<VehicleId, number>;
+  /** A fixed amount added to the vehicle's fare after its multiplier (e.g. the 8-seater). */
+  vehicleSurcharges?: Partial<Record<VehicleId, Pence>>;
   /** Each extra's price. Null: not priced by the tariff, so a journey with it is price on request. */
   extras: { meetAndGreet: Pence | null; childSeat: Pence | null; extraStop: Pence | null };
   /** Central London, where `centralSupplement` applies: within this many miles of the centre. */
@@ -73,7 +77,14 @@ export interface PricingConfig {
   /** Both legs of a return booking are charged this much less. Shown only as lower leg fares. */
   returnDiscountPercent?: number;
   /** For an address outside Greater London: this rate per mile instead of the airport's `perMile`. */
-  outsideLondon?: { perMile: Pence };
+  outsideLondon?: {
+    perMile: Pence;
+    /**
+     * With this set, an address outside Greater London is priced as this plus `perMile` for
+     * every mile, whatever the airport (no airport base fare or included miles).
+     */
+    baseFare?: Pence;
+  };
   /** Address-to-address journeys. Without it they are price on request. */
   local?: LocalTariff;
   /**
@@ -87,83 +98,88 @@ export interface PricingConfig {
 }
 
 /**
- * Galaxy's location tariff, set from 32 quotes on the reference website
- * (2026-10-19): six London postcodes to each airport, every vehicle. At each of
- * them this tariff is at least £3 under the reference price (the £2 rule plus a
- * £1 cushion for the places in between). Re-check with `npm run tariff:check`
- * whenever a figure changes. Prices include airport drop-off and parking, as the
- * reference prices do.
+ * Galaxy's location tariff. Owner's rule (2026-11-22): the same price as the reference website.
+ * Set from 76 of its quotes on 2026-11-22: fourteen London postcodes (the six earlier samples and
+ * the areas with their own page) to each airport, plus four places outside London, every vehicle,
+ * one way and return. A formula can't follow the reference everywhere (it doesn't price by
+ * straight distance alone), so this is fitted to be level with it where it can and never above
+ * it at any of those quotes: level on 48 of 377, on average £8.70 under for a saloon (see
+ * galaxy-tariff.test.ts). Prices include airport drop-off and parking, as the reference does.
  *
- * Extras, also from the reference website: Meet & Greet is +£6 there (Heathrow and
- * Stansted). A stop on the way cost £16 more there (E1 5NF via SW1A 1AA to Heathrow T5);
- * here a stop is £10 plus the extra miles. The reference site offers no child seats;
+ * Extras, also from the reference website: Meet & Greet is +£6 there (Heathrow and Stansted).
+ * A stop on the way is £10 plus the extra miles. The reference site offers no child seats;
  * Galaxy's are free.
  */
 export const pricing: PricingConfig = {
-  version: "galaxy-2026-10-21-2",
+  version: "galaxy-2026-11-22",
   isPlaceholder: false,
   roundTo: 100,
   airports: {
-    // Fitted to Terminal 5; Terminals 2, 3 and 4 are cheaper on the reference site (T2 £8 less).
+    // Terminals 2, 3 and 4 are £8 cheaper than Terminal 5 on the reference site.
     LHR: {
-      baseFare: 5300,
-      includedMiles: 10,
+      baseFare: 4500,
+      includedMiles: 7,
       perMile: 230,
-      minimumFare: 5300,
+      minimumFare: 4500,
       dropOffCharge: 0,
       pickupParking: 0,
+      centralSupplement: 400,
       terminalAdjustments: { T2: -800, T3: -800, T4: -800 },
     },
-    LGW: { baseFare: 4200, includedMiles: 9, perMile: 170, minimumFare: 4200, dropOffCharge: 0, pickupParking: 0, centralSupplement: 2400 },
-    STN: { baseFare: 1900, includedMiles: 0, perMile: 180, minimumFare: 1900, dropOffCharge: 0, pickupParking: 0 },
-    LTN: { baseFare: 3900, includedMiles: 17, perMile: 255, minimumFare: 3900, dropOffCharge: 0, pickupParking: 0 },
-    LCY: { baseFare: 2000, includedMiles: 1, perMile: 295, minimumFare: 2000, dropOffCharge: 0, pickupParking: 0, centralSupplement: 700 },
+    LGW: { baseFare: 3200, includedMiles: 1, perMile: 170, minimumFare: 3200, dropOffCharge: 0, pickupParking: 0, centralSupplement: 2300 },
+    STN: { baseFare: 2600, includedMiles: 2, perMile: 180, minimumFare: 2600, dropOffCharge: 0, pickupParking: 0 },
+    LTN: { baseFare: 2400, includedMiles: 1, perMile: 190, minimumFare: 2400, dropOffCharge: 0, pickupParking: 0 },
+    LCY: { baseFare: 4600, includedMiles: 8, perMile: 165, minimumFare: 4600, dropOffCharge: 0, pickupParking: 0, centralSupplement: 100 },
   },
   vehicleMultipliers: {
     saloon: 1,
-    estate: 1.12,
+    estate: 1.13,
     executive: 1.29,
     mpv: 1.29,
-    minibus: 1.49,
+    minibus: 1.13,
   },
+  // The reference 8-seater is a fixed amount more as well as a multiple of the saloon.
+  vehicleSurcharges: { minibus: 3100 },
   // Owner's decision (2026-10-20): child seats are free.
   extras: { meetAndGreet: 600, childSeat: 0, extraStop: 1000 },
   // Within 3 miles of Charing Cross: the reference site charges more for central London.
   centralZone: { centre: { lat: 51.5073, lng: -0.1276 }, radiusMiles: 3 },
   // The reference site takes 5% off both journeys of a return.
   returnDiscountPercent: 5,
-  // Outside London the reference site charges much less per mile: B1 1BB to Heathrow T5 £183,
-  // M1 1AE to Heathrow T5 £287, BN1 1AA to Gatwick South £71, MK9 1AA to Luton £65 (2026-10-19).
-  outsideLondon: { perMile: 110 },
-  // Owner's decision (2026-10-21): take any journey, not only airports, at least £2 under the
-  // reference site. Set from 18 of its quotes that day, short London trips to Birmingham; this is
-  // at least £3 under every one of them for every vehicle (see galaxy-tariff.test.ts).
+  // Outside London the reference site charges about £32 plus £1.24 a mile, whatever the airport:
+  // B1 1BB to Heathrow T5 £183, M1 1AE to Heathrow T5 £287, BN1 1AA to Gatwick South £71,
+  // MK9 1AA to Luton £65 (2026-11-22).
+  outsideLondon: { baseFare: 3200, perMile: 124 },
+  // Any journey, not only airports (owner's decision, 2026-10-21), at the reference site's price
+  // (owner's decision, 2026-11-22). Set from 17 of its quotes on 2026-11-22, short London trips to
+  // Birmingham: never above any of them for any vehicle, and level with 16 of the 84 (see
+  // galaxy-tariff.test.ts). Every vehicle is listed so the airport figures never leak in.
   local: {
-    baseFare: 3800,
+    baseFare: 4100,
     includedMiles: 4,
     perMile: 140,
-    longAfterMiles: 20,
+    longAfterMiles: 25,
     longPerMile: 130,
-    minimumFare: 3800,
+    minimumFare: 4100,
     centralSupplement: 1200,
     centralRadiusMiles: 1.5,
-    // The reference 8-seater costs relatively less on local journeys than on airport ones.
-    vehicleMultipliers: { minibus: 1.43 },
+    vehicleMultipliers: { saloon: 1, estate: 1.12, executive: 1.29, mpv: 1.29, minibus: 1.13 },
+    vehicleSurcharges: { saloon: 0, estate: 100, executive: 0, mpv: 0, minibus: 3200 },
   },
-  // Owner's rule, at least £2 under the reference site: its one-way prices between airports on
-  // 2026-10-21, both directions (they match), less £3. Where its terminals differed (Heathrow T2 to
-  // Gatwick North against T5 to South), the lower price per vehicle was used.
+  // Owner's rule (2026-11-22): the same as the reference site. Its one-way prices between airports,
+  // the same in both directions, checked on 2026-11-22. Where its terminals differed (Heathrow T2
+  // to Gatwick North against T5 to South) the lower price per vehicle is used.
   betweenAirports: {
-    "LGW-LHR": { saloon: 8200, estate: 9500, executive: 11200, mpv: 11200, minibus: 12800 },
-    "LHR-STN": { saloon: 10500, estate: 12100, executive: 14200, mpv: 14200, minibus: 15900 },
-    "LHR-LTN": { saloon: 7400, estate: 8700, executive: 10200, mpv: 10200, minibus: 12200 },
-    "LCY-LHR": { saloon: 11400, estate: 13100, executive: 15500, mpv: 15500, minibus: 17200 },
-    "LGW-STN": { saloon: 12100, estate: 13900, executive: 16400, mpv: 16400, minibus: 18300 },
-    "LGW-LTN": { saloon: 12600, estate: 14600, executive: 17200, mpv: 17200, minibus: 19100 },
-    "LCY-LGW": { saloon: 9300, estate: 10700, executive: 12600, mpv: 12600, minibus: 14100 },
-    "LTN-STN": { saloon: 9900, estate: 11400, executive: 13400, mpv: 13400, minibus: 14900 },
-    "LCY-STN": { saloon: 7500, estate: 8600, executive: 10200, mpv: 10200, minibus: 12100 },
-    "LCY-LTN": { saloon: 9500, estate: 11000, executive: 13000, mpv: 13000, minibus: 14400 },
+    "LGW-LHR": { saloon: 8500, estate: 9800, executive: 11500, mpv: 11500, minibus: 13100 },
+    "LHR-STN": { saloon: 10800, estate: 12400, executive: 14500, mpv: 14500, minibus: 16200 },
+    "LHR-LTN": { saloon: 7700, estate: 9000, executive: 10500, mpv: 10500, minibus: 12500 },
+    "LCY-LHR": { saloon: 11700, estate: 13400, executive: 15800, mpv: 15800, minibus: 17500 },
+    "LGW-STN": { saloon: 12400, estate: 14200, executive: 16700, mpv: 16700, minibus: 18600 },
+    "LGW-LTN": { saloon: 12900, estate: 14900, executive: 17500, mpv: 17500, minibus: 19400 },
+    "LCY-LGW": { saloon: 9600, estate: 11000, executive: 12900, mpv: 12900, minibus: 14400 },
+    "LTN-STN": { saloon: 10200, estate: 11700, executive: 13700, mpv: 13700, minibus: 15200 },
+    "LCY-STN": { saloon: 7800, estate: 8900, executive: 10500, mpv: 10500, minibus: 12400 },
+    "LCY-LTN": { saloon: 9800, estate: 11300, executive: 13300, mpv: 13300, minibus: 14700 },
   },
   timeSurcharges: [{ label: "Late-night surcharge", from: "23:00", to: "05:00", percent: 10, enabled: false }],
   // Owner's decision: double fares at Christmas and New Year. The windows are the ones the

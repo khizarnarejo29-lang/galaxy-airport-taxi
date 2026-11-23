@@ -3,7 +3,8 @@
  * Checks the location tariff (src/config/pricing.ts) against the stored
  * reference fares: for each fare, what the tariff would charge for the same
  * journey and vehicle, and whether that is more than the reference total
- * minus £2. Run it after changing tariff figures, before switching them on.
+ * less the reference-fare deduction (none now: the same price). Run it after changing tariff
+ * figures, before switching them on.
  *
  *   npm run tariff:check
  *
@@ -27,8 +28,8 @@ export function formatTariffCheck(rows, { version, isPlaceholder }) {
   }
   const high = rows.filter((r) => r.verdict === "too_high").length;
   const checked = rows.filter((r) => r.verdict !== "not_checked").length;
-  if (high) out.push("", `${high} fare(s) where the tariff is more than reference minus £2. Lower those figures.`);
-  else if (checked) out.push("", `The tariff is at least £2 under all ${checked} reference fare(s) it could check.`);
+  if (high) out.push("", `${high} fare(s) where the tariff is more than the most allowed. Lower those figures.`);
+  else if (checked) out.push("", `The tariff is at or under the most allowed for all ${checked} reference fare(s) it could check.`);
   return out.join("\n");
 }
 
