@@ -26,6 +26,13 @@ const postcodes: Record<string, { lat: number; lng: number }> = {
 type Fares = Partial<Record<VehicleId, [oneWay: number, ret: number]>>;
 
 /**
+ * Owner's rule (2026-11-23): as close to the reference as possible, sometimes a little above.
+ * The most a quote may be above it, in pence: £5 for a saloon, £8 for a bigger vehicle, per leg.
+ */
+const allowance = (vehicleId: VehicleId, tripType: "one_way" | "return" = "one_way") =>
+  (vehicleId === "saloon" ? 500 : 800) * (tripType === "return" ? 2 : 1);
+
+/**
  * Reference website prices in pounds (one way, and return with its 5% offer),
  * seen on 2026-11-22 with no date, passengers or extras entered.
  */
@@ -140,14 +147,32 @@ async function journey(
 }
 
 describe("Galaxy tariff against the reference website", () => {
-  it.each(samples)("is never above the reference: %s %s %s (%s the airport)", async (...sample) => {
+  it.each(samples)("is at most a little above the reference: %s %s %s (%s the airport)", async (...sample) => {
     for (const [vehicleId, [oneWay, ret]] of Object.entries(sample[4]) as [VehicleId, [number, number]][]) {
       for (const [tripType, reference] of [["one_way", oneWay], ["return", ret]] as const) {
         const priced = tariffPrice(await journey(sample, tripType), vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
         expect(priced.pricing.status, `${vehicleId} ${tripType}`).toBe("tariff");
-        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100);
+        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(
+          reference * 100 + allowance(vehicleId, tripType),
+        );
       }
     }
+  });
+
+  it("is on average within a few pounds of the reference, one way", async () => {
+    const diffs: Partial<Record<VehicleId, number[]>> = {};
+    for (const sample of samples) {
+      const j = await journey(sample, "one_way");
+      for (const [vehicleId, [oneWay]] of Object.entries(sample[4]) as [VehicleId, [number, number]][]) {
+        const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
+        (diffs[vehicleId] ??= []).push(priced.total / 100 - oneWay);
+      }
+    }
+    const average = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    expect(average(diffs.saloon!)).toBeGreaterThan(-6);
+    expect(average(diffs.estate!)).toBeGreaterThan(-5);
+    expect(average(diffs.executive!)).toBeGreaterThan(-7);
+    expect(average(diffs.minibus!)).toBeGreaterThan(-10);
   });
 
   it("gives child seats free: the price is the same with or without them", async () => {
@@ -163,14 +188,14 @@ describe("Galaxy tariff against the reference website", () => {
   it.each([
     ["SW1A 1AA", "LHR", "T5", 84 + 6],
     ["E1 5NF", "STN", null, 89 + 6],
-  ] as const)("never goes above the reference with Meet & Greet: %s from %s", async (postcode, airport, terminal, reference) => {
+  ] as const)("is at most a little above the reference with Meet & Greet: %s from %s", async (postcode, airport, terminal, reference) => {
     const j = await journey([postcode, airport, terminal, "from", {}], "one_way");
     const priced = tariffPrice(j, "saloon", { meetAndGreet: true, childSeats: 0 }, pricing);
     expect(priced.lines.map((l) => l.code)).toContain("meet_and_greet");
-    expect(priced.total).toBeLessThanOrEqual(reference * 100);
+    expect(priced.total).toBeLessThanOrEqual(reference * 100 + allowance("saloon"));
   });
 
-  it("never goes above the reference with a stop on the way (E1 5NF via SW1A 1AA to Heathrow T5)", async () => {
+  it("is at most a little above the reference with a stop on the way (E1 5NF via SW1A 1AA to Heathrow T5)", async () => {
     // Reference prices for that route, one way.
     const reference: Fares = { saloon: [100, 0], executive: [126, 0], estate: [111, 0], mpv: [126, 0], minibus: [152, 0] };
     const direct = await journey(["E1 5NF", "LHR", "T5", "to", {}], "one_way");
@@ -183,7 +208,7 @@ describe("Galaxy tariff against the reference website", () => {
     };
     for (const [vehicleId, [price]] of Object.entries(reference) as [VehicleId, [number, number]][]) {
       const priced = tariffPrice(via, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
-      expect(priced.total, vehicleId).toBeLessThanOrEqual(price * 100);
+      expect(priced.total, vehicleId).toBeLessThanOrEqual(price * 100 + allowance(vehicleId));
     }
   });
 
@@ -200,13 +225,15 @@ describe("Galaxy tariff against the reference website", () => {
     ["MK9 1AA", "South East", { lat: 52.0423, lng: -0.7583 }, "LTN", null, {saloon:[65,122],executive:[88,166],estate:[75,142],mpv:[88,166],minibus:[111,210]}],
   ];
 
-  it.each(outside)("is never above the reference outside London: %s", async (postcode, region, at, airport, terminal, fares) => {
+  it.each(outside)("is at most a little above the reference outside London: %s", async (postcode, region, at, airport, terminal, fares) => {
     for (const tripType of ["one_way", "return"] as const) {
       const j = await journey([postcode, airport, terminal, "to", fares], tripType, { region, ...at });
       for (const [vehicleId, [oneWay, ret]] of Object.entries(fares) as [VehicleId, [number, number]][]) {
         const reference = tripType === "one_way" ? oneWay : ret;
         const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
-        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs £${reference}`).toBeLessThanOrEqual(reference * 100);
+        expect(priced.total, `${vehicleId} ${tripType}: £${priced.total / 100} vs £${reference}`).toBeLessThanOrEqual(
+          reference * 100 + allowance(vehicleId, tripType),
+        );
       }
     }
   });
@@ -284,14 +311,16 @@ describe("local tariff against the reference website", () => {
     };
   }
 
-  it.each(local)("is never above the reference: %s to %s", async (from, to, fares) => {
+  it.each(local)("is at most a little above the reference: %s to %s", async (from, to, fares) => {
     const j = await localJourney(from, to, "one_way");
     vehicles.forEach((vehicleId, i) => {
       const reference = fares[i];
       if (reference === null) return;
       const priced = tariffPrice(j, vehicleId, { meetAndGreet: false, childSeats: 0 }, pricing);
       expect(priced.pricing.status, vehicleId).toBe("tariff");
-      expect(priced.total, `${vehicleId}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(reference * 100);
+      expect(priced.total, `${vehicleId}: £${priced.total / 100} vs reference £${reference}`).toBeLessThanOrEqual(
+        reference * 100 + allowance(vehicleId),
+      );
     });
   });
 

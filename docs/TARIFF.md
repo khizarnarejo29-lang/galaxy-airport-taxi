@@ -4,7 +4,8 @@ How the website prices journeys that no reference fare covers, how to set the
 figures so they match the reference website without going above it, and how to add
 event rates such as Christmas.
 
-**Owner's rule (since 2026-11-22): the same price as the reference website** (it was £2 under before).
+**Owner's rule (since 2026-11-23): as close as possible to the reference website's price, sometimes a
+little above** (2026-11-22 to 23: never above it; before that, £2 under).
 
 ## How a price is chosen
 
@@ -14,17 +15,21 @@ For each vehicle, in this order:
 2. **Location tariff**: if no fare matches, the price comes from the distance between the address and the airport, using the figures in `src/config/pricing.ts`.
 3. **Price on request**: if neither applies, for example large or unusual items (bikes, golf bags), more passengers than the vehicle seats, or a transfer between terminals of the same airport.
 
-The tariff is **switched on** (version `galaxy-2026-11-22`). Its figures were set from 76 quotes on the
+The tariff is **switched on** (version `galaxy-2026-11-23`). Its figures were set from 76 quotes on the
 reference website on 2026-11-22: fourteen London postcodes (SW1A 1AA, E1 5NF, HA9 0WS, CR0 1LF, RM1 1AU,
 W5 2NU, E20 1EJ, E14 5AB, SW19 5AE, HA1 1BB, EN1 1YX, BR1 1EY, TW3 2EB, KT1 1TP) to each airport and four
 places outside London, every vehicle, one way and return. The reference doesn't price by straight distance
 alone (Stratford to Heathrow is £127 there, Whitechapel to Heathrow £84), so no formula can equal it
-everywhere: the figures are level with it where they can be and **never above it at any of those quotes**
-(level on 48 of 377, a saloon on average £8.70 under). `src/lib/pricing/galaxy-tariff.test.ts` holds the
-quotes and fails if a change takes any price above the reference.
+everywhere: the figures are fitted for the least total difference, and **never more than £5 above it for a
+saloon, or £8 for a bigger vehicle, at any of those quotes** (one way: a saloon on average £5 under, an
+8-seater £9 under; before 2026-11-23 they were £8.70 and £14 under). `src/lib/pricing/galaxy-tariff.test.ts`
+holds the quotes and fails if a change takes a price further above the reference, or further under it on
+average.
 
-Outside Greater London the price is £32 plus £1.24 a mile whatever the airport (`outsideLondon`), and the
-8-seater is 1.13 × the saloon plus £31 (`vehicleSurcharges`). A return leg's 5% discount rounds down, as the
+Outside Greater London the price is £34 plus £1.23 a mile whatever the airport (`outsideLondon`). A bigger
+vehicle is a multiple of the saloon plus a fixed amount (`vehicleMultipliers`, `vehicleSurcharges`), but
+never less than the saloon plus `vehicleMinimumUplift`: the 8-seater is 1.51 × the saloon less £3, and at
+least the saloon plus £44, as on the reference site, where it is about £37–£54 more on short journeys. A return leg's 5% discount rounds down, as the
 reference's returns do (£85 one way, £160 return).
 
 What the reference site does, and the tariff copies:
@@ -44,12 +49,12 @@ charged £16 more for a stop on one checked route). Child seats are free (owner'
 
 Any journey between two addresses (hospital, station, office, shops, long distance) is priced by
 `pricing.local` (owner's decisions: any journey, 2026-10-21; the reference site's price, 2026-11-22).
-Saloon fare: £41 for the first 4 miles, then £1.40 a mile for the next 25 miles and £1.30 a mile after
-that, plus £12 if either end is within 1.5 miles of Charing Cross. Vehicles have their own local
-multipliers and fixed amounts (the 8-seater is 1.13 × the saloon plus £32). Returns, stops, child seats
+Saloon fare: £46 for the first 4 miles, then £1.30 a mile, plus £10 if either end is within 1.5 miles of
+Charing Cross. Vehicles have their own local multipliers, fixed amounts and least uplifts (the 8-seater
+is 1.26 × the saloon plus £25). Returns, stops, child seats
 and the Christmas and New Year rates work as on airport journeys. The figures were set from 17
 reference quotes on 2026-11-22 (a short trip in Whitechapel to London–Birmingham);
-`galaxy-tariff.test.ts` checks no vehicle is above any of them.
+`galaxy-tariff.test.ts` checks no vehicle is more than £5 (saloon) or £8 above any of them.
 
 ## Between two airports
 
@@ -71,6 +76,8 @@ All amounts are in pence (`4500` = £45.00).
 | `minimumFare` | Lowest saloon fare for that airport |
 | `dropOffCharge` / `pickupParking` | Airport drop-off charge or parking, added on top. Use `0` if your fares already include them |
 | `vehicleMultipliers` | Estate, Executive, MPV and 8-Seater as a multiple of the saloon fare (`1.2` = 20% more) |
+| `vehicleSurcharges` | A fixed amount added after the multiplier (negative for less) |
+| `vehicleMinimumUplift` | The least a vehicle costs above the saloon fare |
 | `extras` | Meet & Greet, each child seat (charged once per booking), each extra stop. `null`: not priced, so price on request |
 | `centralZone` / `centralSupplement` | Centre and radius of central London, and the extra per airport for it |
 | `terminalAdjustments` | Extra (or less, if negative) for a terminal, e.g. Heathrow `T2: -800` |
