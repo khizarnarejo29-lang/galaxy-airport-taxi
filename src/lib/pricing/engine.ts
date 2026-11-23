@@ -94,7 +94,10 @@ export function journeyFare(input: PriceInput, config: PricingConfig): Pence {
       ? outsideBase + input.distanceMiles * config.outsideLondon!.perMile + adjustments
       : Math.max(tariff.minimumFare, tariff.baseFare + chargeableMiles * perMile + adjustments);
   const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
-  const vehicleFare = saloonFare * config.vehicleMultipliers[input.vehicleId] + (config.vehicleSurcharges?.[input.vehicleId] ?? 0);
+  const vehicleFare = Math.max(
+    saloonFare * config.vehicleMultipliers[input.vehicleId] + (config.vehicleSurcharges?.[input.vehicleId] ?? 0),
+    saloonFare + (config.vehicleMinimumUplift?.[input.vehicleId] ?? 0),
+  );
   return legFare(vehicleFare, discount, config);
 }
 
@@ -172,7 +175,8 @@ export function localJourneyFare(input: LocalPriceInput, config: PricingConfig):
   const discount = input.returnBooking ? (config.returnDiscountPercent ?? 0) / 100 : 0;
   const multiplier = local.vehicleMultipliers?.[input.vehicleId] ?? config.vehicleMultipliers[input.vehicleId];
   const surcharge = local.vehicleSurcharges?.[input.vehicleId] ?? config.vehicleSurcharges?.[input.vehicleId] ?? 0;
-  return legFare(saloonFare * multiplier + surcharge, discount, config);
+  const uplift = local.vehicleMinimumUplift?.[input.vehicleId] ?? config.vehicleMinimumUplift?.[input.vehicleId] ?? 0;
+  return legFare(Math.max(saloonFare * multiplier + surcharge, saloonFare + uplift), discount, config);
 }
 
 /** A journey between two addresses (hospital, station, office, home…). Null without a local tariff. */

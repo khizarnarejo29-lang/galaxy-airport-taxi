@@ -58,6 +58,8 @@ export interface LocalTariff {
   vehicleMultipliers?: Partial<Record<VehicleId, number>>;
   /** Per-vehicle fixed amounts that differ from `vehicleSurcharges` on local journeys. */
   vehicleSurcharges?: Partial<Record<VehicleId, Pence>>;
+  /** Per-vehicle least amounts above the saloon that differ from `vehicleMinimumUplift` on local journeys. */
+  vehicleMinimumUplift?: Partial<Record<VehicleId, Pence>>;
 }
 
 export interface PricingConfig {
@@ -70,6 +72,11 @@ export interface PricingConfig {
   vehicleMultipliers: Record<VehicleId, number>;
   /** A fixed amount added to the vehicle's fare after its multiplier (e.g. the 8-seater). */
   vehicleSurcharges?: Partial<Record<VehicleId, Pence>>;
+  /**
+   * The least a vehicle costs above the saloon fare: its fare is the larger of the multiplier
+   * figure and the saloon plus this (short journeys in a bigger car cost a fixed amount more).
+   */
+  vehicleMinimumUplift?: Partial<Record<VehicleId, Pence>>;
   /** Each extra's price. Null: not priced by the tariff, so a journey with it is price on request. */
   extras: { meetAndGreet: Pence | null; childSeat: Pence | null; extraStop: Pence | null };
   /** Central London, where `centralSupplement` applies: within this many miles of the centre. */
@@ -98,73 +105,77 @@ export interface PricingConfig {
 }
 
 /**
- * Galaxy's location tariff. Owner's rule (2026-11-22): the same price as the reference website.
- * Set from 76 of its quotes on 2026-11-22: fourteen London postcodes (the six earlier samples and
- * the areas with their own page) to each airport, plus four places outside London, every vehicle,
- * one way and return. A formula can't follow the reference everywhere (it doesn't price by
- * straight distance alone), so this is fitted to be level with it where it can and never above
- * it at any of those quotes: level on 48 of 377, on average £8.70 under for a saloon (see
- * galaxy-tariff.test.ts). Prices include airport drop-off and parking, as the reference does.
+ * Galaxy's location tariff. Owner's rule (2026-11-23): as close as possible to the reference
+ * website's price, sometimes a little above. Set from 76 of its quotes on 2026-11-22: fourteen
+ * London postcodes (the six earlier samples and the areas with their own page) to each airport,
+ * plus four places outside London, every vehicle, one way. A formula can't follow the reference
+ * everywhere (it doesn't price by straight distance alone), so this is fitted for the least total
+ * difference, never more than £5 above it for a saloon or £8 for a bigger vehicle at any of those
+ * quotes (see galaxy-tariff.test.ts). Prices include airport drop-off and parking, as the
+ * reference does.
  *
  * Extras, also from the reference website: Meet & Greet is +£6 there (Heathrow and Stansted).
  * A stop on the way is £10 plus the extra miles. The reference site offers no child seats;
  * Galaxy's are free.
  */
 export const pricing: PricingConfig = {
-  version: "galaxy-2026-11-22",
+  version: "galaxy-2026-11-23",
   isPlaceholder: false,
   roundTo: 100,
   airports: {
     // Terminals 2, 3 and 4 are £8 cheaper than Terminal 5 on the reference site.
     LHR: {
-      baseFare: 4500,
-      includedMiles: 7,
+      baseFare: 4700,
+      includedMiles: 6,
       perMile: 230,
-      minimumFare: 4500,
+      minimumFare: 4700,
       dropOffCharge: 0,
       pickupParking: 0,
-      centralSupplement: 400,
       terminalAdjustments: { T2: -800, T3: -800, T4: -800 },
     },
-    LGW: { baseFare: 3200, includedMiles: 1, perMile: 170, minimumFare: 3200, dropOffCharge: 0, pickupParking: 0, centralSupplement: 2300 },
-    STN: { baseFare: 2600, includedMiles: 2, perMile: 180, minimumFare: 2600, dropOffCharge: 0, pickupParking: 0 },
-    LTN: { baseFare: 2400, includedMiles: 1, perMile: 190, minimumFare: 2400, dropOffCharge: 0, pickupParking: 0 },
-    LCY: { baseFare: 4600, includedMiles: 8, perMile: 165, minimumFare: 4600, dropOffCharge: 0, pickupParking: 0, centralSupplement: 100 },
+    LGW: { baseFare: 4000, includedMiles: 3, perMile: 170, minimumFare: 4000, dropOffCharge: 0, pickupParking: 0, centralSupplement: 1900 },
+    STN: { baseFare: 2800, includedMiles: 3, perMile: 190, minimumFare: 2800, dropOffCharge: 0, pickupParking: 0 },
+    LTN: { baseFare: 5000, includedMiles: 13, perMile: 195, minimumFare: 5000, dropOffCharge: 0, pickupParking: 0 },
+    LCY: { baseFare: 3900, includedMiles: 1, perMile: 165, minimumFare: 3900, dropOffCharge: 0, pickupParking: 0 },
   },
   vehicleMultipliers: {
     saloon: 1,
-    estate: 1.13,
-    executive: 1.29,
-    mpv: 1.29,
-    minibus: 1.13,
+    estate: 1.15,
+    executive: 1.37,
+    mpv: 1.37,
+    minibus: 1.51,
   },
-  // The reference 8-seater is a fixed amount more as well as a multiple of the saloon.
-  vehicleSurcharges: { minibus: 3100 },
+  // On the reference site a bigger vehicle is a multiple of the saloon, but never less than a fixed
+  // amount above it (its 8-seater is about £37–£54 more than a saloon on short journeys).
+  vehicleSurcharges: { estate: 100, executive: -300, mpv: -300, minibus: -300 },
+  vehicleMinimumUplift: { estate: 800, executive: 1500, mpv: 1500, minibus: 4400 },
   // Owner's decision (2026-10-20): child seats are free.
   extras: { meetAndGreet: 600, childSeat: 0, extraStop: 1000 },
   // Within 3 miles of Charing Cross: the reference site charges more for central London.
   centralZone: { centre: { lat: 51.5073, lng: -0.1276 }, radiusMiles: 3 },
   // The reference site takes 5% off both journeys of a return.
   returnDiscountPercent: 5,
-  // Outside London the reference site charges about £32 plus £1.24 a mile, whatever the airport:
+  // Outside London the reference site charges about £34 plus £1.23 a mile, whatever the airport:
   // B1 1BB to Heathrow T5 £183, M1 1AE to Heathrow T5 £287, BN1 1AA to Gatwick South £71,
   // MK9 1AA to Luton £65 (2026-11-22).
-  outsideLondon: { baseFare: 3200, perMile: 124 },
+  outsideLondon: { baseFare: 3400, perMile: 123 },
   // Any journey, not only airports (owner's decision, 2026-10-21), at the reference site's price
-  // (owner's decision, 2026-11-22). Set from 17 of its quotes on 2026-11-22, short London trips to
-  // Birmingham: never above any of them for any vehicle, and level with 16 of the 84 (see
-  // galaxy-tariff.test.ts). Every vehicle is listed so the airport figures never leak in.
+  // (owner's decisions, 2026-11-22 and 2026-11-23: as close as possible). Set from 17 of its quotes
+  // on 2026-11-22, short London trips to Birmingham: never more than £5 above any of them for a
+  // saloon or £8 for a bigger vehicle (see galaxy-tariff.test.ts). Every vehicle is listed so the
+  // airport figures never leak in.
   local: {
-    baseFare: 4100,
+    baseFare: 4600,
     includedMiles: 4,
-    perMile: 140,
-    longAfterMiles: 25,
+    perMile: 130,
+    longAfterMiles: 15,
     longPerMile: 130,
-    minimumFare: 4100,
-    centralSupplement: 1200,
+    minimumFare: 4600,
+    centralSupplement: 1000,
     centralRadiusMiles: 1.5,
-    vehicleMultipliers: { saloon: 1, estate: 1.12, executive: 1.29, mpv: 1.29, minibus: 1.13 },
-    vehicleSurcharges: { saloon: 0, estate: 100, executive: 0, mpv: 0, minibus: 3200 },
+    vehicleMultipliers: { saloon: 1, estate: 1.13, executive: 1.34, mpv: 1.34, minibus: 1.26 },
+    vehicleSurcharges: { saloon: 0, estate: 0, executive: -400, mpv: -400, minibus: 2500 },
+    vehicleMinimumUplift: { saloon: 0, estate: 0, executive: 1300, mpv: 1300, minibus: 0 },
   },
   // Owner's rule (2026-11-22): the same as the reference site. Its one-way prices between airports,
   // the same in both directions, checked on 2026-11-22. Where its terminals differed (Heathrow T2
