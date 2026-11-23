@@ -19,7 +19,11 @@ describe("indexing switch", () => {
   it("allows crawling, hides private routes and lists the sitemap when on", async () => {
     vi.stubEnv("SITE_INDEXING", "on");
     const robots = (await import("@/app/robots")).default();
-    expect(robots.rules).toMatchObject({ allow: "/", disallow: ["/api/", "/booking/", "/admin"] });
+    const rules = [robots.rules].flat();
+    expect(rules[0]).toMatchObject({ userAgent: "*", allow: "/", disallow: ["/api/", "/booking/", "/admin"] });
+    // AI crawlers are welcomed by name, with the same private paths kept out.
+    expect(rules[1]).toMatchObject({ allow: "/", disallow: ["/api/", "/booking/", "/admin"] });
+    expect(rules[1].userAgent).toEqual(expect.arrayContaining(["GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"]));
     expect(robots.sitemap).toMatch(/\/sitemap\.xml$/);
   });
 });
